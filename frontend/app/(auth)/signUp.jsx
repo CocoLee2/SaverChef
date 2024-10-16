@@ -1,4 +1,4 @@
-import { StatusBar, View, Text, StyleSheet, ScrollView } from 'react-native'
+import { StatusBar, View, Text, StyleSheet, ScrollView, Alert } from 'react-native'
 import { React, useState} from 'react'
 import { Link, router } from "expo-router";
 import CustomButton from '../../components/CustomButton';
@@ -9,26 +9,20 @@ const SignUp = () => {
     username: "",
     email: "",
     password: "",
-    confirmPassword: ""  // Fixed typo here
+    confirmPassword: ""  
   });
-
-  const [errorMessage, setErrorMessage] = useState(''); // State to hold error messages
 
   const handleSignUp = () => {
     // Basic validation to check if all fields are filled
     if (!form.username || !form.email || !form.password || !form.confirmPassword) {
-      setErrorMessage("All fields are required!");
+      Alert.alert('Error', 'Please fill in all fields.');
       return;
     }
 
     // Check if passwords match
     if (form.password !== form.confirmPassword) {
-      setErrorMessage("Passwords do not match!"); // Show error if passwords don't match
+      Alert.alert('Error', 'Passwords do not match!');
     } else {
-      setErrorMessage(""); // Clear error if passwords match
-      // Proceed with sign-up (e.g., call API, navigate, etc.)
-      // console.log("Sign-up successful!", form);
-      
       // Navigate to home page after successful sign-up
       router.push("../(tabs)/home");
     }
@@ -67,17 +61,14 @@ const SignUp = () => {
 
           <FormField
             title="Confirm password"
-            value={form.confirmPassword}  // Fixed typo here
+            value={form.confirmPassword}  
             handleChangeText={(e) => setForm({ ...form, confirmPassword: e })}
             otherStyles={{ marginBottom: 20, marginTop: 10 }}
           />
 
-          {/* Show error message if passwords do not match or validation fails */}
-          {errorMessage !== '' && <Text style={styles.errorText}>{errorMessage}</Text>}
-
           <CustomButton 
             title="Sign Up"
-            handlePress={handleSignUp} // Fixed the event handler
+            handlePress={handleSignUp} 
             containerStyles={styles.customContainer}
           />
 

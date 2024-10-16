@@ -1,4 +1,4 @@
-import { StatusBar, Text, View, StyleSheet, ScrollView } from 'react-native';
+import { StatusBar, Text, View, StyleSheet, ScrollView, Alert } from 'react-native';
 import { React, useState } from 'react';
 import { Link, router } from "expo-router";
 import CustomButton from '../../components/CustomButton';

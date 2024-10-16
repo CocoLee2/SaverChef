@@ -11,8 +11,11 @@ const FormField = ({
   ...props
 }) => {
   const [isFocused, setIsFocused] = useState(false); // Track whether the field is focused
-  const [showPassword, setShowPassword] = useState(false); // Toggle password visibility
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false); // Toggle password visibility
+  const [showPassword, setShowPassword] = useState(false); 
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false); 
+  const [showOldPassword, setShowOldPassword] = useState(false); 
+  const [showNewPassword, setShowNewPassword] = useState(false); 
+  const [showConfirmNewPassword, setShowConfirmNewPassword] = useState(false); 
 
   return (
     <View style={[styles.container, otherStyles]}>
@@ -36,7 +39,10 @@ const FormField = ({
           onFocus={() => setIsFocused(true)}
           onBlur={() => setIsFocused(value ? true : false)}
           secureTextEntry={(title === "Password" && !showPassword) || 
-            title === "Confirm password" && !showConfirmPassword}
+            (title === "Confirm password" && !showConfirmPassword) ||
+            (title === "Old password" && !showOldPassword) || 
+            (title === "New password" && !showNewPassword) || 
+            (title === "Confirm new password" && !showConfirmNewPassword)}
           {...props}
         />
 
@@ -54,6 +60,36 @@ const FormField = ({
           <TouchableOpacity onPress={() => setShowConfirmPassword(!showConfirmPassword)}>
             <Image
               source={!showConfirmPassword ? icons.eye : icons.eyeHide}
+              style={styles.icon}
+              resizeMode="contain"
+            />
+          </TouchableOpacity>
+        )}
+
+        {title === "Old password" && (
+          <TouchableOpacity onPress={() => setShowOldPassword(!showOldPassword)}>
+            <Image
+              source={!showOldPassword ? icons.eye : icons.eyeHide}
+              style={styles.icon}
+              resizeMode="contain"
+            />
+          </TouchableOpacity>
+        )}
+        
+        {title === "New password" && (
+          <TouchableOpacity onPress={() => setShowNewPassword(!showNewPassword)}>
+            <Image
+              source={!showNewPassword ? icons.eye : icons.eyeHide}
+              style={styles.icon}
+              resizeMode="contain"
+            />
+          </TouchableOpacity>
+        )}
+
+        {title === "Confirm new password" && (
+          <TouchableOpacity onPress={() => setShowConfirmNewPassword(!showConfirmNewPassword)}>
+            <Image
+              source={!showConfirmNewPassword ? icons.eye : icons.eyeHide}
               style={styles.icon}
               resizeMode="contain"
             />

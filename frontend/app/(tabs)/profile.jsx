@@ -1,6 +1,6 @@
-import { StatusBar, Text, View, StyleSheet, ScrollView, Image, TouchableOpacity } from 'react-native';
+import { StatusBar, Text, View, StyleSheet, Alert, Image, TouchableOpacity } from 'react-native';
 import { React, useState } from 'react';
-import { Link, router } from "expo-router";
+import { router } from "expo-router";
 import userImage from '../../assets/images/userImage.webp';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import Ionicons from '@expo/vector-icons/Ionicons';
@@ -10,13 +10,9 @@ import AntDesign from '@expo/vector-icons/AntDesign';
 const Profile = () => {
   const [notification, setNotification] = useState(false);
 
-  // todo: functions/transform to other pages
   const handleGetFavoriteRecipes = () => {
+    // todo
     console.log("Favorite Recipes clicked");
-  };
-  
-  const handleChangePassword = () => {
-    console.log("Change Password clicked");
   };
 
   const handleNotification = () => {
@@ -24,8 +20,48 @@ const Profile = () => {
     console.log(notification ? "Notification off" : "Notification On");
   };
 
+  const handleLogOut = () => {
+    // Show confirmation alert
+    Alert.alert(
+      "Log out",
+      "Are you sure you want to log out your account?",
+      [
+        {
+          text: "Cancel", 
+          style: "cancel",
+        },
+        {
+          text: "Yes",
+          onPress: () => {
+            router.push("../(auth)/logIn"); 
+          },
+        },
+      ],
+      { cancelable: false } 
+    );
+  }
+
   const handleDeleteAccount = () => {
-    console.log("Delete Account clicked");
+    // Show confirmation alert
+    Alert.alert(
+      "Delete Account",
+      "Are you sure you want to delete your account? This action cannot be undone.",
+      [
+        {
+          text: "Cancel", 
+          style: "cancel",
+          onPress: () => console.log("Delete action cancelled"),
+        },
+        {
+          text: "Yes",
+          onPress: () => {
+            console.log("Account deleted"); 
+            router.push("../(auth)/logIn"); 
+          },
+        },
+      ],
+      { cancelable: false } // Forces user to choose an option
+    );
   };
 
   return (
@@ -50,7 +86,7 @@ const Profile = () => {
           <Text style={styles.listItemText}>My Favorite</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity onPress={handleChangePassword} style={styles.listItem}>
+        <TouchableOpacity onPress={() => {router.push("../(auth)/changePassword")}} style={styles.listItem}>
           <MaterialIcons name="password" size={24} color="black" style={styles.icon}  />
           <Text style={styles.listItemText}>Change Password</Text>
         </TouchableOpacity>
@@ -67,7 +103,7 @@ const Profile = () => {
         </TouchableOpacity>
 
 
-        <TouchableOpacity onPress={() => {router.push("../(auth)/logIn")}} style={styles.listItem}>
+        <TouchableOpacity onPress={handleLogOut} style={styles.listItem}>
           <AntDesign name="logout" size={24} color="black" style={styles.icon} />
           <Text style={styles.listItemText}>Log Out</Text>
         </TouchableOpacity>
