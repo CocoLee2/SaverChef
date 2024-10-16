@@ -1,5 +1,5 @@
 import { StatusBar, Text, View, StyleSheet, ScrollView, Image, TouchableOpacity } from 'react-native';
-import React from 'react';
+import { React, useState } from 'react';
 import { Link, router } from "expo-router";
 import userImage from '../../assets/images/userImage.webp';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
@@ -8,24 +8,21 @@ import AntDesign from '@expo/vector-icons/AntDesign';
 
 
 const Profile = () => {
-  const notification = false
+  const [notification, setNotification] = useState(false);
 
   // todo: functions/transform to other pages
   const handleGetFavoriteRecipes = () => {
-    console.log("Change Password clicked");
+    console.log("Favorite Recipes clicked");
   };
   
   const handleChangePassword = () => {
     console.log("Change Password clicked");
   };
 
-  const handleTurnOnNotification = () => {
-    console.log("Turn On Notification clicked");
+  const handleNotification = () => {
+    setNotification(!notification);
+    console.log(notification ? "Notification off" : "Notification On");
   };
-
-  // const handleLogOut = () => {
-  //   console.log("Log Out clicked");
-  // };
 
   const handleDeleteAccount = () => {
     console.log("Delete Account clicked");
@@ -48,10 +45,9 @@ const Profile = () => {
       
       {/* Action Buttons */}
       <View style={styles.actionsContainer}>
-        {/* todo */}
         <TouchableOpacity onPress={handleGetFavoriteRecipes} style={styles.listItem}>
-          <MaterialIcons name="password" size={24} color="black" style={styles.icon}  />
-          <Text style={styles.listItemText}>Change Password</Text>
+          <MaterialIcons name="favorite-border" size={24} color="black" style={styles.icon} />
+          <Text style={styles.listItemText}>My Favorite</Text>
         </TouchableOpacity>
 
         <TouchableOpacity onPress={handleChangePassword} style={styles.listItem}>
@@ -59,12 +55,17 @@ const Profile = () => {
           <Text style={styles.listItemText}>Change Password</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity onPress={handleTurnOnNotification} style={styles.listItem}>
-          {/* todo: show different text and icon */}
-          <Ionicons name="notifications-outline" size={24} color="black" style={styles.icon}/>
-          {/* <Ionicons name="notifications-off-outline" size={24} color="black" style={styles.icon}/> */}
-          <Text style={styles.listItemText}>Turn On Notification</Text>
+        <TouchableOpacity onPress={handleNotification} style={styles.listItem}>
+          {notification ? (
+            <Ionicons name="notifications-off-outline" size={24} color="black" style={styles.icon} />
+          ) : (
+            <Ionicons name="notifications-outline" size={24} color="black" style={styles.icon} />
+          )}
+          <Text style={styles.listItemText}>
+            {notification ? "Turn Off Notification" : "Turn On Notification"}
+          </Text>
         </TouchableOpacity>
+
 
         <TouchableOpacity onPress={() => {router.push("../(auth)/logIn")}} style={styles.listItem}>
           <AntDesign name="logout" size={24} color="black" style={styles.icon} />
@@ -110,7 +111,7 @@ const styles = StyleSheet.create({
   },
   actionsContainer: {
     marginTop: 30,
-    width: '90%',
+    width: '85%',
   },
   listItem: {
     backgroundColor: '#FFFFFF', 
