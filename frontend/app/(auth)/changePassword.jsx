@@ -24,7 +24,7 @@ const ChangePassword = () => {
       return;
     }
 
-    // other requirements on password
+    // other requirements on password go here
     // if (form.newPassword.length < 6) {
     //   Alert.alert('Error', 'New password must be at least 6 characters long.');
     //   return;
@@ -38,7 +38,7 @@ const ChangePassword = () => {
     <View style={styles.container}>
       <StatusBar barStyle="dark-content" />
       <View style={styles.formWrapper}>
-      <Text style={styles.Text1}>Change Password</Text>
+      <Text style={styles.title}>Change Password</Text>
 
       <FormField
         title="Old password"
@@ -69,6 +69,15 @@ const ChangePassword = () => {
         handlePress={handlePasswordChange} 
         containerStyles={styles.customContainer}
       />
+
+      <View style={styles.linkContainer}>
+        <Link
+          href="../(tabs)/profile"
+          style={styles.link}
+        >
+          Cancel
+        </Link>
+      </View>
       </View>
     </View>
   );
@@ -79,13 +88,13 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#FEF9ED',
   },
-  Text1: {
+  title: {
     fontSize: 34,
     fontWeight: 'bold',
     color: '#F36C21',
     marginTop: 80,
     textAlign: 'center',
-    marginBottom: 30
+    marginBottom: 40
   },
   formWrapper: {
     width: '100%',
@@ -97,9 +106,14 @@ const styles = StyleSheet.create({
     marginTop: 30,
     alignSelf: 'center', // Ensure the button is centered
   },
-  errorText: {
-    color: 'red',
-    marginTop: 10,
+  linkContainer: {
+    flexDirection: 'row',
+    paddingTop: 10,
+  },
+  link: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#F36C21',
   },
 });
 
