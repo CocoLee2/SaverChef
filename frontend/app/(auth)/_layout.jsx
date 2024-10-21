@@ -34,6 +34,13 @@ const AuthLayout = () => {
             headerShown: false,
           }}
         />
+ 
+        <Stack.Screen
+          name="showRecipe"
+          options={{
+            headerShown: false,
+          }}
+        />
       </Stack>
 
       {/* <Loader isLoading={loading} /> */}
