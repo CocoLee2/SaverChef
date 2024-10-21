@@ -2,6 +2,7 @@ import { React, useState } from 'react';
 import { View, Text, Image, ScrollView, TouchableOpacity, StyleSheet, Dimensions } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
+import CustomButton from '../../components/CustomButton';
 
 const ShowRecipe = () => {
   const { name, image, details } = useLocalSearchParams();
@@ -16,6 +17,11 @@ const ShowRecipe = () => {
     } else {
     console.log("user unmarked the recipe as favorite"); 
     }
+  };
+
+  const handleCookRecipe = () => {
+    // todo
+    console.log("User wants to cook this recipe, router push update ingredient page");
   };
 
   return (
@@ -64,6 +70,12 @@ const ShowRecipe = () => {
               {index + 1}. {step}
             </Text>
           ))}
+
+          <CustomButton 
+            title="Cook This Recipe"
+            handlePress={handleCookRecipe}
+            containerStyles={styles.customContainer}
+          />
         </View>
       </ScrollView>
     </View>
@@ -134,6 +146,12 @@ const styles = StyleSheet.create({
       marginVertical: 5,
       color: '#333', // Darker color for better readability
       paddingLeft: 10, // Add padding for cleaner list appearance
+    },
+    customContainer: {
+      width: '90%',
+      marginTop: 40,
+      marginBottom: 20,
+      alignSelf: 'center', // Ensure the button is centered
     },
   });
 
