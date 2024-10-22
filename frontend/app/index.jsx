@@ -1,4 +1,4 @@
-import { StatusBar, View, StyleSheet, ScrollView, Image, ImageBackground, Button, Text, Platform } from 'react-native';
+import { StatusBar, View, StyleSheet, ScrollView, Image, ImageBackground } from 'react-native';
 import CustomButton from '../components/CustomButton'
 import { router } from "expo-router"
 import logo from "../assets/images/logo.png"
@@ -41,7 +41,7 @@ export default function App() {
      
             <CustomButton 
               title="Loading..."
-              handlePress={() => router.push("/(auth)/splash")}
+              handlePress={() => router.push("/(other)/splash")}
               containerStyles={styles.customContainer}
             />
 

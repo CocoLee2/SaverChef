@@ -205,7 +205,7 @@ const Home = () => {
             key={recipe.id}
             style={styles.recipeContainer}
             onPress={() => router.push({
-              pathname: '../(auth)/showRecipe',
+              pathname: '../(other)/showRecipe',
               params: {
                 name: recipe.name,
                 image: Image.resolveAssetSource(recipe.image).uri,
