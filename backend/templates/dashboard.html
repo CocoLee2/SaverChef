@@ -1,0 +1,9 @@
+{% extends 'layout.html' %}
+
+
+{% block content %}
+
+<h1>Dashboard Page : {{ session['username'] }} - ( {{ session['user_id'] }} )</h1>
+<a href="/logout">Logout</a>
+
+{% endblock %}
