@@ -1,7 +1,7 @@
 import { React } from 'react';
 import { View, Text, Image, TouchableOpacity, StyleSheet, StatusBar, FlatList } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { router } from "expo-router";
+import { useLocalSearchParams, router } from "expo-router";
 
 
 const recipes = [
@@ -176,6 +176,7 @@ const recipes = [
   
 
   const SearchRecipe = () => {
+    const { query } = useLocalSearchParams();
 
     const handleRecipePress = (recipe) => {
       // Navigate to the showRecipe page with the selected recipe details
@@ -198,7 +199,7 @@ const recipes = [
         <View style={styles.header}>
           <TouchableOpacity style={styles.backButton} onPress={() => router.back()}>
             <Ionicons name="arrow-back" size={28} color="#F36C21" />
-            <Text style={styles.backText}>Back to Recipe Page</Text>
+            <Text style={styles.backText}>Back to {query} Page</Text>
           </TouchableOpacity>
         </View>
   
@@ -235,7 +236,7 @@ const recipes = [
     },
     header: {
       position: 'absolute',
-      top: 40,
+      top: 50,
       left: 20,
       zIndex: 2,
       flexDirection: 'row',
@@ -246,13 +247,13 @@ const recipes = [
       alignItems: 'center',
     },
     backText: {
-      fontSize: 18,
+      fontSize: 22,
       color: '#F36C21',
       marginLeft: 10,
       fontWeight: 'bold',
     },
     recipeList: {
-      paddingTop: 80, // Push down to avoid overlap with header
+      paddingTop: 90, 
       paddingHorizontal: 20,
     },
     recipeContainer: {

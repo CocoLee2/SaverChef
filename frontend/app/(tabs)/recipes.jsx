@@ -137,7 +137,12 @@ const Recipes = () => {
 
       <CustomButton 
         title="Use my ingredients"
-        handlePress={() => router.push('../(other)/searchRecipe')}
+        handlePress={() => router.push({
+          pathname: '../(other)/searchRecipe',
+          params: {
+            query: 'Recipe'
+          }
+        })}
         containerStyles={styles.customContainer}
       />
 

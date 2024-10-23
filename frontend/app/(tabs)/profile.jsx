@@ -81,7 +81,7 @@ const Profile = () => {
       
       {/* Action Buttons */}
       <View style={styles.actionsContainer}>
-        <TouchableOpacity onPress={handleGetFavoriteRecipes} style={styles.listItem}>
+        <TouchableOpacity onPress={() => router.push({pathname: '../(other)/searchRecipe',params: {query: 'Profile'}})} style={styles.listItem}>
           <MaterialIcons name="favorite-border" size={24} color="black" style={styles.icon} />
           <Text style={styles.listItemText}>My Favorite</Text>
         </TouchableOpacity>
