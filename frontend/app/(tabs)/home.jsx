@@ -12,7 +12,7 @@ const Home = () => {
     {
       id: 1,
       name: 'Maple Syrup Pancake',
-      image: require('../../assets/images/recipe1.jpg'),
+      image: require('../../assets/images/recipes/recipe1.jpg'),
       details: {
         ingredients: [
           { name: 'Flour', quantity: '2 cups' },
@@ -37,7 +37,7 @@ const Home = () => {
     {
       id: 2,
       name: 'Creamy Pumpkin Soup',
-      image: require('../../assets/images/recipe5.jpg'),
+      image: require('../../assets/images/recipes/recipe5.jpg'),
       details: {
         ingredients: [
           { name: 'Pumpkin', quantity: '4 cups (diced)' },
@@ -64,7 +64,7 @@ const Home = () => {
     {
       id: 3,
       name: 'Barbecued Salmon',
-      image: require('../../assets/images/recipe3.jpg'),
+      image: require('../../assets/images/recipes/recipe3.jpg'),
       details: {
         ingredients: [
           { name: 'Salmon Fillets', quantity: '4 (6 oz each)' },
@@ -89,7 +89,7 @@ const Home = () => {
     {
       id: 4,
       name: 'Creamy Tomato Rigatoni',
-      image: require('../../assets/images/recipe4.jpg'),
+      image: require('../../assets/images/recipes/recipe4.jpg'),
       details: {
         ingredients: [
           { name: 'Rigatoni', quantity: '12 oz' },
@@ -117,7 +117,7 @@ const Home = () => {
     {
       id: 5,
       name: 'Blue Cheese Salad',
-      image: require('../../assets/images/recipe2.jpg'),
+      image: require('../../assets/images/recipes/recipe2.jpg'),
       details: {
         ingredients: [
           { name: 'Mixed Greens', quantity: '4 cups' },
@@ -162,12 +162,12 @@ const Home = () => {
 
   // for "expiring inventory section"
   const foodItems = [
-    { foodName: 'Milk', image: require('../../assets/images/milk.jpg'), daysLeft: 1 },
-    { foodName: 'Eggs', image: require('../../assets/images/eggs.jpg'), daysLeft: 1 },
-    { foodName: 'Carrot', image: require('../../assets/images/carrot.jpg'), daysLeft: 3 },
-    { foodName: 'Cheese', image: require('../../assets/images/cheese.jpg'), daysLeft: 4 },
-    { foodName: 'Chicken', image: require('../../assets/images/chicken.jpg'), daysLeft: 5 },
-    { foodName: 'Flour', image: require('../../assets/images/flour.jpg'), daysLeft: 7 }
+    { foodName: 'Milk', image: require('../../assets/images/ingredients/milk.jpg'), daysLeft: 1 },
+    { foodName: 'Eggs', image: require('../../assets/images/ingredients/eggs.jpg'), daysLeft: 1 },
+    { foodName: 'Carrot', image: require('../../assets/images/ingredients/carrot.jpg'), daysLeft: 3 },
+    { foodName: 'Cheese', image: require('../../assets/images/ingredients/cheese.jpg'), daysLeft: 4 },
+    { foodName: 'Chicken', image: require('../../assets/images/ingredients/chicken.jpg'), daysLeft: 5 },
+    { foodName: 'Flour', image: require('../../assets/images/ingredients/flour.jpg'), daysLeft: 7 }
   ];
 
   // Function to generate list of InfoBox components

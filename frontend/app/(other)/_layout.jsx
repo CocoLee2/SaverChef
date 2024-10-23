@@ -1,4 +1,4 @@
-import { Redirect, Stack } from "expo-router";
+import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 
 
@@ -15,6 +15,13 @@ const AuthLayout = () => {
         
         <Stack.Screen
           name="showRecipe"
+          options={{
+            headerShown: false,
+          }}
+        />
+
+        <Stack.Screen
+          name="searchRecipe"
           options={{
             headerShown: false,
           }}

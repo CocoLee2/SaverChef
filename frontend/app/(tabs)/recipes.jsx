@@ -1,6 +1,6 @@
 import { FlatList, TouchableOpacity, View, Text, Image, StyleSheet, StatusBar } from 'react-native';
 import { SearchBar } from 'react-native-elements';
-import { Link, router } from "expo-router";
+import { router } from "expo-router";
 import { React, useState} from 'react'
 
 import CustomButton from '../../components/CustomButton';
@@ -8,15 +8,12 @@ import CustomButton from '../../components/CustomButton';
 
 const Recipes = () => {
   const [search, setSearch] = useState('');
-  const useIngredients = () => {
-    console.log("search");
-  }
 
   const recipes = [
     {
       id: 1,
       name: 'Maple Syrup Pancake',
-      image: require('../../assets/images/recipe1.jpg'),
+      image: require('../../assets/images/recipes/recipe1.jpg'),
       details: {
         ingredients: [
           { name: 'Flour', quantity: '2 cups' },
@@ -41,7 +38,7 @@ const Recipes = () => {
     {
       id: 2,
       name: 'Creamy Pumpkin Soup',
-      image: require('../../assets/images/recipe5.jpg'),
+      image: require('../../assets/images/recipes/recipe5.jpg'),
       details: {
         ingredients: [
           { name: 'Pumpkin', quantity: '4 cups (diced)' },
@@ -68,7 +65,7 @@ const Recipes = () => {
     {
       id: 3,
       name: 'Barbecued Salmon',
-      image: require('../../assets/images/recipe3.jpg'),
+      image: require('../../assets/images/recipes/recipe3.jpg'),
       details: {
         ingredients: [
           { name: 'Salmon Fillets', quantity: '4 (6 oz each)' },
@@ -93,7 +90,7 @@ const Recipes = () => {
     {
       id: 4,
       name: 'Creamy Tomato Rigatoni',
-      image: require('../../assets/images/recipe4.jpg'),
+      image: require('../../assets/images/recipes/recipe4.jpg'),
       details: {
         ingredients: [
           { name: 'Rigatoni', quantity: '12 oz' },
@@ -140,7 +137,7 @@ const Recipes = () => {
 
       <CustomButton 
         title="Use my ingredients"
-        handlePress={useIngredients}
+        handlePress={() => router.push('../(other)/searchRecipe')}
         containerStyles={styles.customContainer}
       />
 

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { View, TextInput, TouchableOpacity, Image, Text, StyleSheet } from "react-native";
-import { icons } from "../constants";
+// import { icons } from "../constants";
+import icons from "../constants/icons"
 
 const FormField = ({
   title, 
