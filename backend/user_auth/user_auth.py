@@ -1,13 +1,15 @@
 from flask import Flask, render_template, flash, redirect, url_for, session
-from forms import RegisterForm, LoginForm
-from models import db, User
+from forms import LoginForm, RegisterForm
+from models import db, Users
 from flask_bcrypt import Bcrypt
+from dotenv import load_dotenv
+from os import getenv
 
 def create_app():
+    load_dotenv()
     app = Flask(__name__)
     app.config['SECRET_KEY'] = 'CSE403'
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:password@localhost:port/db_name' # Replace with your URI
-
+    app.config['SQLALCHEMY_DATABASE_URI'] = getenv("DATABASE_URI")
     bcrypt = Bcrypt()
     bcrypt.init_app(app)
 
@@ -24,7 +26,7 @@ def create_app():
     def login():
         form = LoginForm()
         if form.validate_on_submit():
-            user = User.query.filter_by(email=form.email.data).first()
+            user = Users.query.filter_by(email=form.email.data).first()
             if user and bcrypt.check_password_hash(user.password, form.password.data):
                 session['user_id'] = user.id
                 session['username'] = user.username
@@ -41,7 +43,7 @@ def create_app():
         form = RegisterForm()
         if form.validate_on_submit():
             hashed_password = bcrypt.generate_password_hash(form.password.data).decode('utf-8')
-            user = User(
+            user = Users(
                 username = form.username.data,
                 email = form.email.data,
                 password = hashed_password
