@@ -1,14 +1,56 @@
 import { StatusBar, Text, View, StyleSheet, ScrollView, Alert } from 'react-native';
-import { React, useState } from 'react';
+import { React, useState, useContext } from 'react';
 import { Link, router } from "expo-router";
+import { GlobalContext } from "../GlobalContext";
 import CustomButton from '../../components/CustomButton';
 import FormField from '../../components/FormField';
 
 const LogIn = () => {
+  const { username, setUsername, email, setEmail, password, setPassword } = useContext(GlobalContext);
+
   const [form, setForm] = useState({
     email: "",
     password: ""
   });
+
+  const handleLogin = async() => {
+    // Basic validation to check if all fields are filled
+    if (!form.email|| !form.password) {
+      Alert.alert('Error', 'Please fill in all fields.');
+      return;
+    }
+
+    // connect to backend
+    try {
+      const response = await fetch('http://127.0.0.1:5001/login', {  
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: form.email,
+          password: form.password,
+        }),
+      });
+
+      const data = await response.json();
+      
+      if (response.ok) {
+        // Success: Navigate to the home page or show a success message
+        setUsername(data["username"]); 
+        setEmail(form.email);
+        setPassword(form.password);
+        Alert.alert('Success', 'Account created successfully!');
+        router.push("../(tabs)/home");
+      } else {
+        // Handle error
+        Alert.alert('Error', data.message || 'Log-in failed. Please try again.');
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      Alert.alert('Network Error', 'Something went wrong. Please try again later.');
+    }
+  };
 
   return (
     <View style={styles.container}>
@@ -36,16 +78,16 @@ const LogIn = () => {
             otherStyles={{ marginBottom: 20, marginTop: 10 }}
           />
 
-          <Link
+          {/* <Link
             href="/forgetPassword"
             style={styles.forgetPasswordLink}
           >
             forget password?
-          </Link>
+          </Link> */}
 
           <CustomButton 
             title="Log in"
-            handlePress={() => router.push("../(tabs)/home")}
+            handlePress={handleLogin}
             containerStyles={styles.customContainer}
           />
 
@@ -112,13 +154,13 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#F36C21',
   },
-  forgetPasswordLink: {
-    fontSize: 12,
-    fontWeight: '600',
-    color: '#F36C21',
-    alignSelf: 'flex-end',
-    paddingRight: 30,
-  },
+  // forgetPasswordLink: {
+  //   fontSize: 12,
+  //   fontWeight: '600',
+  //   color: '#F36C21',
+  //   alignSelf: 'flex-end',
+  //   paddingRight: 30,
+  // },
 });
 
 export default LogIn;

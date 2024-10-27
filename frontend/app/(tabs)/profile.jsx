@@ -1,6 +1,7 @@
 import { StatusBar, Text, View, StyleSheet, Alert, Image, TouchableOpacity } from 'react-native';
-import { React, useState } from 'react';
+import { React, useState, useContext } from 'react';
 import { router } from "expo-router";
+import { GlobalContext } from "../GlobalContext";
 import userImage from '../../assets/images/userImage.webp';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import Ionicons from '@expo/vector-icons/Ionicons';
@@ -8,6 +9,8 @@ import AntDesign from '@expo/vector-icons/AntDesign';
 
 
 const Profile = () => {
+  const { username, setUsername, email, setEmail, password, setPassword } = useContext(GlobalContext);
+
   const [notification, setNotification] = useState(false);
 
   const handleGetFavoriteRecipes = () => {
@@ -41,7 +44,7 @@ const Profile = () => {
     );
   }
 
-  const handleDeleteAccount = () => {
+  const handleDeleteAccount = async() => {
     // Show confirmation alert
     Alert.alert(
       "Delete Account",
@@ -54,9 +57,24 @@ const Profile = () => {
         },
         {
           text: "Yes",
-          onPress: () => {
-            console.log("Account deleted"); 
-            router.push("../(auth)/logIn"); 
+          onPress: async() => {
+            try {
+              const response = await fetch('http://127.0.0.1:5001/delete_account', {  
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                  email: email,
+                }),
+              });
+        
+              Alert.alert('Success', 'Account deleted successfully!')
+              router.push("../(auth)/logIn")
+            } catch (error) {
+              console.error('Error:', error);
+              Alert.alert('Network Error', 'Something went wrong. Please try again later.');
+            }
           },
         },
       ],
@@ -76,7 +94,7 @@ const Profile = () => {
         />
       </View>
 
-      <Text style={styles.username}>Nancy Cui</Text>
+      <Text style={styles.username}>{username}</Text>
       <Text style={styles.email}>nancycui@example.com</Text>
       
       {/* Action Buttons */}

@@ -1,11 +1,12 @@
-import { React, useState, useRef } from 'react';
+import { React, useState, useRef, useContext } from 'react';
 import { View, Text, Image, ScrollView, TouchableOpacity, StyleSheet, Dimensions } from 'react-native';
 import { router } from 'expo-router';
+import { GlobalContext } from "../GlobalContext";
 import userImage from '../../assets/images/userImage.webp';
 import InfoBox from '../../components/InfoBox.jsx';
 
 const Home = () => {
-  const userName = 'Nancy';
+  const { username, setUsername, email, setEmail, password, setPassword } = useContext(GlobalContext);
 
   // for suggested recipes section
   const recipes = [
@@ -186,7 +187,7 @@ const Home = () => {
     <View style={styles.container}>
       {/* User welcome text and image */}
       <View style={styles.headerContainer}>
-        <Text style={styles.welcomeText}>Welcome, {userName}!</Text>
+        <Text style={styles.welcomeText}>Welcome, {username}!</Text>
         <Image source={userImage} style={styles.userImage} />
       </View>
 
