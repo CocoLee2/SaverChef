@@ -2,6 +2,7 @@ import { StatusBar, View, Text, StyleSheet, TouchableOpacity, FlatList } from 'r
 import React, {useState} from 'react'
 import { ListItem, SearchBar } from "react-native-elements";
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
+import { router } from 'expo-router';
 
 const Inventory = () => {
   const [search, setSearch] = useState('');
@@ -58,7 +59,7 @@ const Inventory = () => {
             <MaterialIcons name="edit" size={24} color="black" />
             <Text style={styles.menuItemText}>Add Manually</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.menuItem} onPress={() => alert('Scan Barcode')}>
+          <TouchableOpacity style={styles.menuItem} onPress={() => router.push("/camera")}>
             <MaterialIcons name="qr-code-scanner" size={24} color="black" />
             <Text style={styles.menuItemText}>Scan Barcode</Text>
           </TouchableOpacity>
