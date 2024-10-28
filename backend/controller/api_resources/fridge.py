@@ -20,6 +20,22 @@ def get_fridge_by_id(fridge_id):
   except Exception as e:
     return Response(response=str(e), status=400)
 
+@fridge_bp.route('/search_by_creator')
+def get_fridges_by_creator():
+  """Acquires all fridges that have an creator equal to the given user id
+  Usage: server/fridge/search_by_owner?creator=20
+  Otherwise returns 400 error
+  """
+  try:
+    creator_id = int(request.args.get('creator'))
+    fridges = db.session.scalars(db.select(Fridge).filter_by(creator=creator_id)).all()
+    if not fridges:
+      return Response(response=str(f'fridges created by user with id {creator_id} do not exist'), status=400)
+    return jsonify([fridge.serialize() for fridge in fridges])
+  except Exception as e:
+    return Response(response=str(e), status=400)
+
+
 
 @fridge_bp.route('/create', methods=["POST"])
 def create_fridge():
