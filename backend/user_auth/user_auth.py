@@ -1,6 +1,6 @@
-from flask import Flask, render_template, flash, redirect, url_for, session
-from forms import LoginForm, RegisterForm
-from models import db, Users
+from flask import Flask, render_template, flash, redirect, url_for, session, request, jsonify
+from forms import RegisterForm, LoginForm
+from models import db, User
 from flask_bcrypt import Bcrypt
 from dotenv import load_dotenv
 from os import getenv
@@ -17,59 +17,82 @@ def create_app():
     with app.app_context():
         db.create_all()
 
-
-    @app.route('/')
-    def home():
-        return render_template("home.html")
     
-    @app.route('/login', methods = ['GET', 'POST'])
+    @app.route('/login', methods=['POST'])
     def login():
-        form = LoginForm()
-        if form.validate_on_submit():
-            user = Users.query.filter_by(email=form.email.data).first()
-            if user and bcrypt.check_password_hash(user.password, form.password.data):
-                session['user_id'] = user.id
-                session['username'] = user.username
-                flash('You have been logged in!', 'success')
-                return redirect(url_for('dashboard'))
-            else:
-                flash('Login unsuccessful. Please check email and password.', 'failure')
-        return render_template("login.html", form=form)
-    
-    @app.route('/register', methods = ['GET', 'POST'])
-    def register():
-        if 'user_id' in session:
-            return redirect(url_for('dashboard'))
-        form = RegisterForm()
-        if form.validate_on_submit():
-            hashed_password = bcrypt.generate_password_hash(form.password.data).decode('utf-8')
-            user = Users(
-                username = form.username.data,
-                email = form.email.data,
-                password = hashed_password
-            )
-            db.session.add(user)
-            db.session.commit()
-            flash('Your account has been created!', 'success')
-            return redirect(url_for('login'))
+        data = request.json  # Expecting a JSON payload with email and password
+        print(data)
+        user = User.query.filter_by(email=data['email']).first()
         
-        return render_template("register.html", form=form)
+        if user and bcrypt.check_password_hash(user.password, data['password']):
+            # If login is successful, store user data in session or return a token if JWT is used
+            session['user_id'] = user.id
+            session['username'] = user.username
+            return jsonify({"message": "Login successful", "user_id": user.id, "username": user.username}), 200
+        else:
+            return jsonify({"message": "Invalid email or password"}), 401
 
-    @app.route('/dashboard')
-    def dashboard():
-        if 'user_id' not in session:
-            return redirect(url_for('login'))
-        return render_template("dashboard.html")
+    # New route for changing password
+    @app.route('/change_password', methods=['POST'])
+    def change_password():
+        data = request.json  # Expecting JSON payload with email, newPassword
+        user = User.query.filter_by(email=data['email']).first()
+        
+        # Update with new hashed password
+        new_hashed_password = bcrypt.generate_password_hash(data['newPassword']).decode('utf-8')
+        user.password = new_hashed_password
+        db.session.commit()
+        return jsonify({"message": "Password changed successfully"}), 200
+    
+    # New route for changing password
+    @app.route('/delete_account', methods=['POST'])
+    def delete_account():
+        data = request.json  # Expecting JSON payload with email
+        user = User.query.filter_by(email=data['email']).first()
+        
+        db.session.delete(user)
+        db.session.commit()
+  
+    # Not sure if dashboard is needed.
+    # @app.route('/dashboard')
+    # def dashboard():
+    #     if 'user_id' not in session:
+    #         return redirect(url_for('login'))
+    #     return render_template("dashboard.html")
 
-    @app.route('/logout')
-    def logout():
-        session.pop('user_id')
-        session.pop('username')
-        flash('You have been logged out!', 'seccess')
-        return redirect(url_for('home'))
+    # @app.route('/logout', methods=['POST'])
+    # def logout():
+    #     if 'user_id' in session:
+    #         session.pop('user_id', None)
+    #         session.pop('username', None)
+    #         return jsonify({"message": "Successfully logged out"}), 200
+    #     else:
+    #         return jsonify({"message": "No user is logged in"}), 400
 
+    @app.route('/signup', methods=['POST'])
+    def signup():
+        data = request.json
+
+        # Check if email is already taken
+        existing_email = User.query.filter(User.email == data['email']).first()
+        if existing_email:
+            return jsonify({"message": "Email already exists"}), 400
+        
+        # Create a new user
+        new_user = User(
+            username=data['username'],
+            email=data['email'],
+            password=bcrypt.generate_password_hash(data['password']).decode('utf-8') # In real-world, hash the password using something like bcrypt
+        )
+        db.session.add(new_user)
+        db.session.commit()
+
+        return jsonify({"message": "User created successfully"}), 201
+    
     return app
-
+    
+    
 if __name__ == '__main__':
     app = create_app()
     app.run(debug=True, port=5001)
+

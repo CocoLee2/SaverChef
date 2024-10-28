@@ -1,18 +1,21 @@
-import { React, useState } from 'react';
+import { React, useState, useContext } from 'react';
 import { StatusBar, View, Text, StyleSheet, Alert } from 'react-native';
 import { Link, router } from "expo-router";
+import { GlobalContext } from "../GlobalContext";
 import CustomButton from '../../components/CustomButton';
 import FormField from '../../components/FormField';
 
 
 const ChangePassword = () => {
+  const { username, setUsername, email, setEmail, password, setPassword } = useContext(GlobalContext);
+
   const [form, setForm] = useState({
     oldPassword: "",
     newPassword: "",
     confirmPassword: ""  
   });
 
-  const handlePasswordChange = () => {
+  const handlePasswordChange = async() => {
     // Basic validation
     if (!form.oldPassword || !form.newPassword || !form.confirmPassword) {
       Alert.alert('Error', 'Please fill in all fields.');
@@ -20,18 +23,44 @@ const ChangePassword = () => {
     }
 
     if (form.newPassword !== form.confirmPassword) {
-      Alert.alert('Error', 'New password and confirm password do not match.');
+      Alert.alert('Mismatch Error', 'The new password and confirm password do not match. Please try again.');
+      return;
+    }
+    
+    if (form.oldPassword !== password) {
+      Alert.alert('Incorrect Password', 'The old password you entered is incorrect. Please check and try again.');
       return;
     }
 
-    // other requirements on password go here
-    // if (form.newPassword.length < 6) {
-    //   Alert.alert('Error', 'New password must be at least 6 characters long.');
-    //   return;
-    // }
+    // connect to backend
+    try {
+      const response = await fetch('http://127.0.0.1:5001/change_password', {  
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: email,
+          newPassword: form.newPassword,
+        }),
+      });
 
-    Alert.alert('Success', 'Password updated successfully!');
-    router.push("../(tabs)/profile");
+      const data = await response.json();
+      console.log(data)
+      
+      if (response.ok) {
+        // Success: Navigate to the home page or show a success message
+        setPassword(form.newPassword);
+        Alert.alert('Success', 'Your password has been successfully updated!');
+        router.push("../(tabs)/profile");
+      } else {
+        // Handle error
+        Alert.alert('Update Failed', data.message || 'Password update failed. Please try again later.');
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      Alert.alert('Network Error', 'Something went wrong. Please try again later.');
+    }
   };
 
   return (

@@ -1,10 +1,13 @@
 import { StatusBar, View, Text, StyleSheet, ScrollView, Alert } from 'react-native'
-import { React, useState} from 'react'
+import { React, useState, useContext} from 'react'
 import { Link, router } from "expo-router";
+import { GlobalContext } from "../GlobalContext";
 import CustomButton from '../../components/CustomButton';
 import FormField from '../../components/FormField';
 
 const SignUp = () => {
+  const { username, setUsername, email, setEmail, password, setPassword } = useContext(GlobalContext);
+
   const [form, setForm] = useState({
     username: "",
     email: "",
@@ -12,19 +15,48 @@ const SignUp = () => {
     confirmPassword: ""  
   });
 
-  const handleSignUp = () => {
+  const handleSignUp = async() => {
     // Basic validation to check if all fields are filled
     if (!form.username || !form.email || !form.password || !form.confirmPassword) {
       Alert.alert('Error', 'Please fill in all fields.');
       return;
     }
-
     // Check if passwords match
     if (form.password !== form.confirmPassword) {
-      Alert.alert('Error', 'Passwords do not match!');
-    } else {
-      // Navigate to home page after successful sign-up
-      router.push("../(tabs)/home");
+      Alert.alert('Mismatch Error', 'The password and confirm password do not match. Please try again.');
+      return;
+    } 
+
+    // connect to backend
+    try {
+      const response = await fetch('http://127.0.0.1:5001/signup', {  
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          username: form.username,
+          email: form.email,
+          password: form.password,
+        }),
+      });
+
+      const data = await response.json();
+      
+      if (response.ok) {
+        // Success: Navigate to the home page or show a success message
+        setUsername(form.username); 
+        setEmail(form.email);
+        setPassword(form.password);
+        Alert.alert('Success', 'Account created successfully!');
+        router.push("../(tabs)/home");
+      } else {
+        // Handle error
+        Alert.alert('Error', data.message || 'Sign-up failed. Please try again.');
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      Alert.alert('Network Error', 'Something went wrong. Please try again later.');
     }
   };
 
