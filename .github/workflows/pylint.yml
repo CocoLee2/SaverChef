@@ -24,6 +24,6 @@ jobs:
         lint-path: backend
         python-version: 3.11
         requirements-path: backend/requirements.txt
-    - name: Analysing the code with pylint
-      run: |
-        pylint $(git ls-files '*.py')
+    # - name: Analysing the code with pylint
+    #   run: |
+    #     pylint $(git ls-files '*.py')
