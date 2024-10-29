@@ -27,6 +27,27 @@ const AuthLayout = () => {
           }}
         />
 
+        <Stack.Screen
+          name="addManually"
+          options={{
+            headerShown: false,
+          }}
+        />
+
+        <Stack.Screen
+          name="scan"
+          options={{
+            headerShown: false,
+          }}
+        />
+
+        <Stack.Screen
+          name="share"
+          options={{
+            headerShown: false,
+          }}
+        />
+
       </Stack>
 
       {/* <Loader isLoading={loading} /> */}

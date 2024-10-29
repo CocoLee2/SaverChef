@@ -14,42 +14,42 @@ const LogIn = () => {
   });
 
   const handleLogin = async() => {
-    // Basic validation to check if all fields are filled
-    if (!form.email|| !form.password) {
-      Alert.alert('Error', 'Please fill in all fields.');
-      return;
-    }
+  //   // Basic validation to check if all fields are filled
+  //   if (!form.email|| !form.password) {
+  //     Alert.alert('Error', 'Please fill in all fields.');
+  //     return;
+  //   }
 
-    // connect to backend
-    try {
-      const response = await fetch('http://127.0.0.1:5001/login', {  
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          email: form.email,
-          password: form.password,
-        }),
-      });
+  //   // connect to backend
+  //   try {
+  //     const response = await fetch('http://127.0.0.1:5001/login', {  
+  //       method: 'POST',
+  //       headers: {
+  //         'Content-Type': 'application/json',
+  //       },
+  //       body: JSON.stringify({
+  //         email: form.email,
+  //         password: form.password,
+  //       }),
+  //     });
 
-      const data = await response.json();
+  //     const data = await response.json();
       
-      if (response.ok) {
-        // Success: Navigate to the home page or show a success message
-        setUsername(data["username"]); 
-        setEmail(form.email);
-        setPassword(form.password);
-        Alert.alert('Success', 'Account created successfully!');
+  //     if (response.ok) {
+  //       // Success: Navigate to the home page or show a success message
+  //       setUsername(data["username"]); 
+  //       setEmail(form.email);
+  //       setPassword(form.password);
+  //       Alert.alert('Success', 'Account created successfully!');
         router.push("../(tabs)/home");
-      } else {
-        // Handle error
-        Alert.alert('Error', data.message || 'Log-in failed. Please try again.');
-      }
-    } catch (error) {
-      console.error('Error:', error);
-      Alert.alert('Network Error', 'Something went wrong. Please try again later.');
-    }
+  //     } else {
+  //       // Handle error
+  //       Alert.alert('Error', data.message || 'Log-in failed. Please try again.');
+  //     }
+  //   } catch (error) {
+  //     console.error('Error:', error);
+  //     Alert.alert('Network Error', 'Something went wrong. Please try again later.');
+  //   }
   };
 
   return (
