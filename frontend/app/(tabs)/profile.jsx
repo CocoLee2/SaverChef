@@ -11,17 +11,15 @@ import AntDesign from '@expo/vector-icons/AntDesign';
 const Profile = () => {
   const { username, setUsername, email, setEmail, password, setPassword } = useContext(GlobalContext);
 
-  const [notification, setNotification] = useState(false);
-
   const handleGetFavoriteRecipes = () => {
-    // todo
     console.log("Favorite Recipes clicked");
   };
 
-  const handleNotification = () => {
-    setNotification(!notification);
-    console.log(notification ? "Notification off" : "Notification On");
-  };
+  // const [notification, setNotification] = useState(false);
+  // const handleNotification = () => {
+  //   setNotification(!notification);
+  //   console.log(notification ? "Notification off" : "Notification On");
+  // };
 
   const handleLogOut = () => {
     // Show confirmation alert
@@ -109,7 +107,7 @@ const Profile = () => {
           <Text style={styles.listItemText}>Change Password</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity onPress={handleNotification} style={styles.listItem}>
+        {/* <TouchableOpacity onPress={handleNotification} style={styles.listItem}>
           {notification ? (
             <Ionicons name="notifications-off-outline" size={24} color="black" style={styles.icon} />
           ) : (
@@ -118,7 +116,7 @@ const Profile = () => {
           <Text style={styles.listItemText}>
             {notification ? "Turn Off Notification" : "Turn On Notification"}
           </Text>
-        </TouchableOpacity>
+        </TouchableOpacity> */}
 
 
         <TouchableOpacity onPress={handleLogOut} style={styles.listItem}>

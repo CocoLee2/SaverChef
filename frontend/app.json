@@ -1,10 +1,13 @@
 {
   "expo": {
     "name": "Saverchef",
-    "slug": "Saverchef",
+    "slug": "saverchef",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
+    "notification": {
+      "icon": "./assets/images/logo.png"
+    },
     "scheme": "Saverchef",
     "userInterfaceStyle": "automatic",
     "splash": {
@@ -32,6 +35,12 @@
     ],
     "experiments": {
       "typedRoutes": true
-    }
+    },
+    "extra": {
+      "eas": {
+        "projectId": "82594d4d-4af0-440b-bf28-b2f2256b80e4"
+      }
+    },
+    "owner": "nancycui"
   }
 }
