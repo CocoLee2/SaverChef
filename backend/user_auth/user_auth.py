@@ -2,14 +2,14 @@ from flask import Flask, render_template, flash, redirect, url_for, session, req
 from forms import RegisterForm, LoginForm
 from models import db, User
 from flask_bcrypt import Bcrypt
+from dotenv import load_dotenv
+from os import getenv
 
 def create_app():
+    load_dotenv()
     app = Flask(__name__)
     app.config['SECRET_KEY'] = 'CSE403'
-    # app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:password@localhost:port/db_name' # Replace with your URI
-    app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://postgres:000721@localhost:5433/test_db'
-
-
+    app.config['SQLALCHEMY_DATABASE_URI'] = getenv("DATABASE_URI")
     bcrypt = Bcrypt()
     bcrypt.init_app(app)
 
