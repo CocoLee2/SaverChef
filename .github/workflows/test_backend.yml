@@ -24,11 +24,6 @@ jobs:
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
-    - name: Go into backend folder
-      run: |
-        cd backend
-        ls
-        
     - name: Set up Python
       uses: actions/setup-python@v2
       with:
@@ -36,8 +31,7 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        pip install -r requirements.txt
-        pip install pytest pytest-cov
+        pip install -r backend/requirements.txt
 
     - name: Wait for Database to be ready
       run: |
