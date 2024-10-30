@@ -7,11 +7,10 @@ from dotenv import load_dotenv
 from database.database import db
 from os import getenv
 
-def create_app():
-    load_dotenv()
+def create_app(database_uri):
     app = Flask(__name__)
     app.config['SECRET_KEY'] = 'CSE403'
-    app.config['SQLALCHEMY_DATABASE_URI'] = getenv("DATABASE_URI")
+    app.config['SQLALCHEMY_DATABASE_URI'] = database_uri
     app.register_blueprint(fridge_bp)
     app.register_blueprint(user_auth_bp)
     bcrypt = Bcrypt()
@@ -22,6 +21,7 @@ def create_app():
     return app
 
 if __name__ == '__main__':
-    app = create_app()
+    load_dotenv()
+    app = create_app(getenv("DATABASE_URI"))
     app.run(debug=True, port=5001)
 
