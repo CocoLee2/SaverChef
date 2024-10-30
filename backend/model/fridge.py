@@ -1,6 +1,5 @@
 from database.database import db
-from user_auth.models import Users
-
+from model.users import Users
 class Fridge(db.Model):
   __tablename__ = 'fridge'
   id: int= db.Column(db.Integer, primary_key=True)

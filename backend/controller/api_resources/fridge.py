@@ -1,6 +1,6 @@
 from flask import Blueprint, abort, request, jsonify, Response
 from model.fridge import Fridge
-from user_auth.models import Users
+from model.users import Users
 from database.database import db
 
 fridge_bp = Blueprint('fridge', __name__, url_prefix='/fridge')
