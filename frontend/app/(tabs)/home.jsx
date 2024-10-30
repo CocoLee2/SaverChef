@@ -4,6 +4,7 @@ import { router } from 'expo-router';
 import { GlobalContext } from "../GlobalContext";
 import userImage from '../../assets/images/userImage.webp';
 import InfoBox from '../../components/InfoBox.jsx';
+import images from '../../constants/images';
 
 const Home = () => {
   const { username, setUsername, email, setEmail, password, setPassword } = useContext(GlobalContext);
@@ -161,14 +162,21 @@ const Home = () => {
     }
   };
 
-  // for "expiring inventory section"
+  const getImage = (foodName) => {
+    const sanitizedFoodName = foodName.replace(/[^a-zA-Z]/g, '').toLowerCase();
+    const image = images[sanitizedFoodName];
+    return image ? image : require('../../assets/images/placeHolder.png');
+  };
+  
+  // for "expiring inventory section" 
   const foodItems = [
-    { foodName: 'Milk', image: require('../../assets/images/ingredients/milk.jpg'), daysLeft: 1 },
-    { foodName: 'Eggs', image: require('../../assets/images/ingredients/eggs.jpg'), daysLeft: 1 },
-    { foodName: 'Carrot', image: require('../../assets/images/ingredients/carrot.jpg'), daysLeft: 3 },
-    { foodName: 'Cheese', image: require('../../assets/images/ingredients/cheese.jpg'), daysLeft: 4 },
-    { foodName: 'Chicken', image: require('../../assets/images/ingredients/chicken.jpg'), daysLeft: 5 },
-    { foodName: 'Flour', image: require('../../assets/images/ingredients/flour.jpg'), daysLeft: 7 }
+    { foodName: 'Pasta', daysLeft: 1 },
+    { foodName: 'Milk', daysLeft: 1 },
+    { foodName: 'Egg', daysLeft: 1 },
+    { foodName: 'Carrot', daysLeft: 3 },
+    { foodName: 'Cheese', daysLeft: 4 },
+    { foodName: 'Chicken', daysLeft: 5 },
+    { foodName: 'Flour', daysLeft: 7 }
   ];
 
   // Function to generate list of InfoBox components
@@ -178,7 +186,8 @@ const Home = () => {
         key={index}
         title={item.foodName}
         daysLeft={item.daysLeft.toString()}
-        image={item.image}
+        // image={item.image}
+        image={getImage(item.foodName)}
       />
     ));
   };
@@ -338,3 +347,4 @@ const styles = StyleSheet.create({
 
 
 export default Home;
+
