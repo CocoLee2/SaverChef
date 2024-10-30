@@ -27,6 +27,7 @@ jobs:
     - name: Go into backend folder
       run: |
         cd backend
+        ls
         
     - name: Set up Python
       uses: actions/setup-python@v2
