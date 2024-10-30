@@ -1,4 +1,4 @@
-name: Flask Application CI
+name: Backend test 
 
 on: [push, pull_request]
 
