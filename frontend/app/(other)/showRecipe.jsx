@@ -1,22 +1,30 @@
-import { React, useState } from 'react';
+import { React, useState, useContext } from 'react';
 import { View, Text, Image, ScrollView, TouchableOpacity, StyleSheet, Dimensions } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
+import { GlobalContext } from "../GlobalContext";
 import CustomButton from '../../components/CustomButton';
 
 const ShowRecipe = () => {
-  const { name, image, details } = useLocalSearchParams();
+  const { username, setUsername, email, setEmail, password, setPassword, 
+    fridgeItems, setFridgeItems, favoriteRecipes, setFavoriteRecipes } = useContext(GlobalContext);
+
+  const { id, name, image, details } = useLocalSearchParams();
   const { ingredients, directions, readyIn, serves } = JSON.parse(details);
   const router = useRouter();
-  const [isFavorited, setIsFavorited] = useState(false);
+  const [isFavorited, setIsFavorited] = useState(favoriteRecipes.includes(id));
+
   // Toggle favorite status
   const toggleFavorite = () => {
     setIsFavorited(!isFavorited);
     if (!isFavorited) {
-    console.log("user marked the recipe as favorite"); 
+      console.log(`user marked recipe ${id} as favorite`);
+      setFavoriteRecipes([...favoriteRecipes, id]);
     } else {
-    console.log("user unmarked the recipe as favorite"); 
+      console.log(`user unmarked recipe ${id} as favorite`);
+      setFavoriteRecipes(favoriteRecipes.filter(recipeId => recipeId !== id));
     }
+    // tidi
   };
 
   const handleCookRecipe = () => {

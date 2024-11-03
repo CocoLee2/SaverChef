@@ -6,7 +6,8 @@ import CustomButton from '../../components/CustomButton';
 import FormField from '../../components/FormField';
 
 const SignUp = () => {
-  const { username, setUsername, email, setEmail, password, setPassword } = useContext(GlobalContext);
+  const { username, setUsername, email, setEmail, password, setPassword, 
+    fridgeItems, setFridgeItems, favoriteRecipes, setFavoriteRecipes } = useContext(GlobalContext);
 
   const [form, setForm] = useState({
     username: "",

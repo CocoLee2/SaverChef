@@ -7,10 +7,12 @@ import InfoBox from '../../components/InfoBox.jsx';
 import images from '../../constants/images';
 
 const Home = () => {
-  const { username, setUsername, email, setEmail, password, setPassword } = useContext(GlobalContext);
+  const { username, setUsername, email, setEmail, password, setPassword, 
+    fridgeItems, setFridgeItems, favoriteRecipes, setFavoriteRecipes } = useContext(GlobalContext);
+  console.log(`Favorite recipes are: ${favoriteRecipes}`);
 
   // for suggested recipes section
-  const recipes = [
+  const suggestedRecipes = [
     {
       id: 1,
       name: 'Maple Syrup Pancake',
@@ -210,13 +212,14 @@ const Home = () => {
         scrollEventThrottle={16}
         style={styles.carouselContainer}
       >
-        {recipes.map((recipe) => (
+        {suggestedRecipes.map((recipe) => (
           <TouchableOpacity
             key={recipe.id}
             style={styles.recipeContainer}
             onPress={() => router.push({
               pathname: '../(other)/showRecipe',
               params: {
+                id: recipe.id, 
                 name: recipe.name,
                 image: Image.resolveAssetSource(recipe.image).uri,
                 details: JSON.stringify(recipe.details),
@@ -235,7 +238,7 @@ const Home = () => {
 
       {/* Pagination Dots */}
       <View style={styles.dotContainer}>
-        {recipes.map((_, index) => (
+        {suggestedRecipes.map((_, index) => (
           <TouchableOpacity
             key={index}
             style={[styles.dot, currentRecipe === index && styles.activeDot]}

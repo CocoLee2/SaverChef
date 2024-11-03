@@ -7,7 +7,8 @@ import FormField from '../../components/FormField';
 
 
 const ChangePassword = () => {
-  const { username, setUsername, email, setEmail, password, setPassword } = useContext(GlobalContext);
+  const { username, setUsername, email, setEmail, password, setPassword, 
+    fridgeItems, setFridgeItems, favoriteRecipes, setFavoriteRecipes } = useContext(GlobalContext);
 
   const [form, setForm] = useState({
     oldPassword: "",

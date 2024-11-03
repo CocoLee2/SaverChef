@@ -1,13 +1,27 @@
 import { FlatList, TouchableOpacity, View, Text, Image, StyleSheet, StatusBar } from 'react-native';
 import { SearchBar } from 'react-native-elements';
 import { router } from "expo-router";
-import { React, useState} from 'react'
+import { React, useState, useContext} from 'react';
+import { GlobalContext } from "../GlobalContext";
+
 
 import CustomButton from '../../components/CustomButton';
 
 
 const Recipes = () => {
   const [search, setSearch] = useState('');
+
+  const { username, setUsername, email, setEmail, password, setPassword, 
+    fridgeItems, setFridgeItems, favoriteRecipes, setFavoriteRecipes } = useContext(GlobalContext);
+  
+
+  const handleUseMyIngredients = async () => {
+    const ingredientNames = fridgeItems.flatMap(fridge => 
+      fridge.fridgeItems.map(item => item.itemName)
+    );
+    console.log(ingredientNames);
+    // tidi: similar to handleGetFavoriteRecipes in profile.jsx
+  }
 
   const recipes = [
     {
@@ -137,12 +151,13 @@ const Recipes = () => {
 
       <CustomButton 
         title="Use my ingredients"
-        handlePress={() => router.push({
-          pathname: '../(other)/searchRecipe',
-          params: {
-            query: 'Recipe'
-          }
-        })}
+        // handlePress={() => router.push({
+        //   pathname: '../(other)/searchRecipe',
+        //   params: {
+        //     query: 'Recipe'
+        //   }
+        // })}
+        handlePress={handleUseMyIngredients}
         containerStyles={styles.customContainer}
       />
 
@@ -157,6 +172,7 @@ const Recipes = () => {
             onPress={() => router.push({
               pathname: '../(other)/showRecipe',
               params: {
+                id: recipe.id, 
                 name: recipe.name,
                 image: Image.resolveAssetSource(recipe.image).uri,
                 details: JSON.stringify(recipe.details),
