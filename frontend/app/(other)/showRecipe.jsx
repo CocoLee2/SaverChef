@@ -15,16 +15,40 @@ const ShowRecipe = () => {
   const [isFavorited, setIsFavorited] = useState(favoriteRecipes.includes(id));
 
   // Toggle favorite status
-  const toggleFavorite = () => {
+  const toggleFavorite = async () => {
     setIsFavorited(!isFavorited);
+    message = 'add'
     if (!isFavorited) {
       console.log(`user marked recipe ${id} as favorite`);
       setFavoriteRecipes([...favoriteRecipes, id]);
     } else {
       console.log(`user unmarked recipe ${id} as favorite`);
       setFavoriteRecipes(favoriteRecipes.filter(recipeId => recipeId !== id));
+      message = 'delete'
     }
-    // tidi
+    try {
+      const response = await fetch('http://127.0.0.1:5001/mark_favorite', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: email,
+          recipe_id: id,
+          message: message
+        }),
+      });
+  
+      const data = await response.json();
+  
+      if (!response.ok) {
+        // Handle other errors
+        Alert.alert('Error', data.message || 'Request failed. Please try again.');
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      Alert.alert('Network Error', 'Something went wrong. Please try again later.');
+    }
   };
 
   const handleCookRecipe = () => {

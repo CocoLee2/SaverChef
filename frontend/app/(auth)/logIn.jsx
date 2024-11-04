@@ -41,7 +41,7 @@ const LogIn = () => {
         setUsername(data["username"]); 
         setEmail(form.email);
         setPassword(form.password);
-        Alert.alert('Success', 'Account created successfully!');
+        setFavoriteRecipes(data["favoriteRecipes"])
         router.push("../(tabs)/home");
       } else {
         // Handle error

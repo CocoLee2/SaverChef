@@ -1,7 +1,7 @@
-import { FlatList, TouchableOpacity, View, Text, Image, StyleSheet, StatusBar } from 'react-native';
+import { FlatList, TouchableOpacity, View, Text, Image, StyleSheet, StatusBar, Alert } from 'react-native';
 import { SearchBar } from 'react-native-elements';
 import { router } from "expo-router";
-import { React, useState, useContext} from 'react';
+import { React, useState, useContext, useEffect} from 'react';
 import { GlobalContext } from "../GlobalContext";
 
 
@@ -16,11 +16,36 @@ const Recipes = () => {
   
 
   const handleUseMyIngredients = async () => {
-    const ingredientNames = fridgeItems.flatMap(fridge => 
+    const ingredients = fridgeItems.flatMap(fridge => 
       fridge.fridgeItems.map(item => item.itemName)
     );
-    console.log(ingredientNames);
-    // tidi: similar to handleGetFavoriteRecipes in profile.jsx
+    try {
+      const response = await fetch('http://127.0.0.1:5001/search', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          ingredients: ingredients, 
+        }),
+      });
+  
+      const data = await response.json();
+  
+      // Check for response status
+      if (response.ok) {
+        router.push({
+          pathname: '../(other)/searchRecipe',
+          params: { query: 'Recipe', recipes: JSON.stringify(data.recipes)},
+        });
+      } else {
+        // Handle other errors
+        Alert.alert('Error', data.message || 'Request failed. Please try again.');
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      Alert.alert('Network Error', 'Something went wrong. Please try again later.');
+    }
   }
 
   const recipes = [
@@ -131,6 +156,44 @@ const Recipes = () => {
     }
   ];
 
+  // const [recipes, setRecipes] = useState([]); // State to store the recipes
+
+  // // Function to fetch recipes
+  // const get_random_recipes = async () => {
+  //   try {
+  //     const response = await fetch('http://127.0.0.1:5001/get_random', {
+  //       method: 'POST',
+  //       headers: {
+  //         'Content-Type': 'application/json',
+  //       },
+  //       body: JSON.stringify({
+  //         number: 1,
+  //       }),
+  //     });
+
+  //     const data = await response.json();
+
+  //     if (response.ok) {
+  //       console.log(data.recipes)
+  //       setRecipes(data.recipes); // Set the recipes data in state
+  //     } else {
+  //       Alert.alert('Error', data.message || 'Request failed. Please try again.');
+  //     }
+  //   } catch (error) {
+  //     console.error('Error:', error);
+  //     Alert.alert('Network Error', 'Something went wrong. Please try again later.');
+  //   }
+  // };
+
+  // // Use useEffect to fetch recipes on component mount
+  // useEffect(() => {
+  //   get_random_recipes();
+  // }, []);
+
+  // console.log(recipes)
+  // console.log(recipes.id)
+  // console.log(recipes.image)
+
   return (
     <View style={styles.container}>
       <StatusBar barStyle="dark-content" />
@@ -151,12 +214,6 @@ const Recipes = () => {
 
       <CustomButton 
         title="Use my ingredients"
-        // handlePress={() => router.push({
-        //   pathname: '../(other)/searchRecipe',
-        //   params: {
-        //     query: 'Recipe'
-        //   }
-        // })}
         handlePress={handleUseMyIngredients}
         containerStyles={styles.customContainer}
       />
@@ -164,22 +221,24 @@ const Recipes = () => {
       <Text style={styles.subtitle}>Suggested Recipes</Text>
 
       <FlatList
-        data={recipes}
-        renderItem={({ item: recipe }) => (
-          <TouchableOpacity
-            key={recipe.id}
-            style={styles.recipeContainer}
-            onPress={() => router.push({
+      data={recipes}
+      renderItem={({ item: recipe }) => (
+        <TouchableOpacity
+          key={recipe.id}
+          style={styles.recipeContainer}
+          onPress={() =>
+            router.push({
               pathname: '../(other)/showRecipe',
               params: {
-                id: recipe.id, 
+                id: recipe.id,
                 name: recipe.name,
                 image: Image.resolveAssetSource(recipe.image).uri,
                 details: JSON.stringify(recipe.details),
-                path: 'home'
+                path: 'home',
               },
-            })}
-          >
+            })
+          }
+        >
             <View style={styles.imageContainer}>
               <Image source={recipe.image} style={styles.recipeImage} />
               <Text style={styles.recipeText}>{recipe.name}</Text>

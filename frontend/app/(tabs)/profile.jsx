@@ -8,180 +8,9 @@ import AntDesign from '@expo/vector-icons/AntDesign';
 
 
 const Profile = () => {
-  const recipes = [
-    {
-      id: 1,
-      name: 'Grilled Shrimp Tacos',
-      image: Image.resolveAssetSource(require('../../assets/images/recipes/recipe6.jpg')).uri,
-      details: {
-        ingredients: [
-          { name: 'Shrimp', quantity: '12 pieces' },
-          { name: 'Taco Shells', quantity: '6' },
-          { name: 'Lime', quantity: '1' },
-          { name: 'Cilantro', quantity: '1/4 cup' },
-          { name: 'Avocado', quantity: '1 sliced' },
-        ],
-        directions: [
-          'Grill the shrimp until pink and cooked through.',
-          'Assemble the tacos with shrimp, avocado, cilantro, and lime.',
-          'Serve with your favorite salsa.'
-        ],
-        readyIn: '20',
-        serves: '2'
-      }
-    },
-    {
-      id: 2,
-      name: 'Green Peas Cream Soup',
-      image: Image.resolveAssetSource(require('../../assets/images/recipes/recipe7.jpg')).uri,
-      details: {
-        ingredients: [
-          { name: 'Green Peas', quantity: '2 cups' },
-          { name: 'Onion', quantity: '1 small (chopped)' },
-          { name: 'Garlic', quantity: '2 cloves (minced)' },
-          { name: 'Vegetable Broth', quantity: '4 cups' },
-          { name: 'Cream', quantity: '1/2 cup' }
-        ],
-        directions: [
-          'Sauté onions and garlic in olive oil.',
-          'Add peas and broth, cook for 10 minutes.',
-          'Blend the soup until smooth and stir in the cream.'
-        ],
-        readyIn: '30',
-        serves: '4'
-      }
-    },
-    {
-      id: 3,
-      name: 'Roasted Chicken with Orange',
-      image: Image.resolveAssetSource(require('../../assets/images/recipes/recipe8.jpg')).uri,
-      details: {
-        ingredients: [
-          { name: 'Chicken', quantity: '1 whole' },
-          { name: 'Orange', quantity: '1 sliced' },
-          { name: 'Garlic', quantity: '4 cloves (crushed)' },
-          { name: 'Olive Oil', quantity: '2 tbsp' },
-          { name: 'Rosemary', quantity: '2 sprigs' }
-        ],
-        directions: [
-          'Preheat the oven to 375°F (190°C).',
-          'Rub the chicken with olive oil, garlic, and rosemary.',
-          'Stuff the chicken with orange slices and roast for 1 hour.'
-        ],
-        readyIn: '90',
-        serves: '6'
-      }
-    },
-    {
-      id: 4,
-      name: 'Fried Eggs Sunny on Baguette',
-      image: Image.resolveAssetSource(require('../../assets/images/recipes/recipe9.jpg')).uri,
-      details: {
-        ingredients: [
-          { name: 'Eggs', quantity: '2 large' },
-          { name: 'Baguette', quantity: '1/2 loaf' },
-          { name: 'Butter', quantity: '1 tbsp' },
-          { name: 'Parsley', quantity: '1 tbsp (chopped)' }
-        ],
-        directions: [
-          'Fry the eggs sunny-side up in butter.',
-          'Toast the baguette and top with the fried eggs.',
-          'Garnish with parsley and serve.'
-        ],
-        readyIn: '10',
-        serves: '1'
-      }
-    },
-    {
-      id: 5,
-      name: 'Quinoa Salad',
-      image: Image.resolveAssetSource(require('../../assets/images/recipes/recipe10.jpg')).uri,
-      details: {
-        ingredients: [
-          { name: 'Quinoa', quantity: '1 cup (cooked)' },
-          { name: 'Cucumber', quantity: '1/2 cup (chopped)' },
-          { name: 'Tomatoes', quantity: '1/2 cup (chopped)' },
-          { name: 'Lemon Juice', quantity: '2 tbsp' },
-          { name: 'Olive Oil', quantity: '1 tbsp' }
-        ],
-        directions: [
-          'Combine all the ingredients in a large bowl.',
-          'Toss with lemon juice and olive oil.',
-          'Serve chilled.'
-        ],
-        readyIn: '15',
-        serves: '2'
-      }
-    },
-    {
-      id: 6,
-      name: 'Macaroni and Cheese',
-      image: Image.resolveAssetSource(require('../../assets/images/recipes/recipe11.jpg')).uri,
-      details: {
-        ingredients: [
-          { name: 'Macaroni', quantity: '2 cups (cooked)' },
-          { name: 'Cheddar Cheese', quantity: '1 cup (shredded)' },
-          { name: 'Milk', quantity: '1 cup' },
-          { name: 'Butter', quantity: '2 tbsp' },
-          { name: 'Flour', quantity: '2 tbsp' }
-        ],
-        directions: [
-          'Make a roux with butter and flour, then stir in milk.',
-          'Add cheese to the mixture and stir until melted.',
-          'Combine with macaroni and bake for 20 minutes.'
-        ],
-        readyIn: '40',
-        serves: '4'
-      }
-    },
-    {
-      id: 7,
-      name: 'Asian Cuisine',
-      image: Image.resolveAssetSource(require('../../assets/images/recipes/recipe12.jpg')).uri,
-      details: {
-        ingredients: [
-          { name: 'Rice Noodles', quantity: '2 cups' },
-          { name: 'Soy Sauce', quantity: '3 tbsp' },
-          { name: 'Ginger', quantity: '1 tbsp (minced)' },
-          { name: 'Garlic', quantity: '2 cloves (minced)' },
-          { name: 'Sesame Oil', quantity: '1 tbsp' }
-        ],
-        directions: [
-          'Cook the rice noodles according to package instructions.',
-          'Sauté garlic and ginger in sesame oil, then add noodles.',
-          'Toss with soy sauce and serve.'
-        ],
-        readyIn: '25',
-        serves: '2'
-      }
-    },
-    {
-      id: 8,
-      name: 'Triple Layer Chocolate Cake',
-      image: Image.resolveAssetSource(require('../../assets/images/recipes/recipe13.jpg')).uri,
-      details: {
-        ingredients: [
-          { name: 'Flour', quantity: '2 cups' },
-          { name: 'Cocoa Powder', quantity: '3/4 cup' },
-          { name: 'Sugar', quantity: '2 cups' },
-          { name: 'Eggs', quantity: '3 large' },
-          { name: 'Butter', quantity: '1/2 cup (melted)' }
-        ],
-        directions: [
-          'Preheat oven to 350°F (175°C).',
-          'Mix dry ingredients, then stir in eggs and melted butter.',
-          'Bake in three pans for 30 minutes, cool, and assemble layers with frosting.'
-        ],
-        readyIn: '60',
-        serves: '8'
-      }
-    },
-  ];
-
   const { username, setUsername, email, setEmail, password, setPassword, 
     fridgeItems, setFridgeItems, favoriteRecipes, setFavoriteRecipes } = useContext(GlobalContext);
 
-  
   const handleGetFavoriteRecipes = async () => {
     console.log(`Favorite recipes are: ${favoriteRecipes}`);
     try {
@@ -191,7 +20,7 @@ const Profile = () => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          favoriet_recipes: favoriteRecipes, // Correct typo if needed
+          favoriet_recipes: favoriteRecipes,
         }),
       });
   
@@ -294,8 +123,8 @@ const Profile = () => {
       {/* Action Buttons */}
       <View style={styles.actionsContainer}>
         {/* tidi */}
-        <TouchableOpacity onPress={() => router.push({pathname: '../(other)/searchRecipe',params: {query: 'Profile', recipes: JSON.stringify(recipes)}})} style={styles.listItem}>
-        {/* <TouchableOpacity onPress={handleGetFavoriteRecipes} style={styles.listItem}> */}
+        {/* <TouchableOpacity onPress={() => router.push({pathname: '../(other)/searchRecipe',params: {query: 'Profile', recipes: JSON.stringify(recipes)}})} style={styles.listItem}> */}
+        <TouchableOpacity onPress={handleGetFavoriteRecipes} style={styles.listItem}>
           <MaterialIcons name="favorite-border" size={24} color="black" style={styles.icon} />
           <Text style={styles.listItemText}>My Favorite</Text>
         </TouchableOpacity>

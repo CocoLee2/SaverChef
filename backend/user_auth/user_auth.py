@@ -4,6 +4,7 @@ from flask_bcrypt import Bcrypt
 from model.users import db, Users
 from dotenv import load_dotenv
 from os import getenv
+from sqlalchemy.orm.attributes import flag_modified
 
 app = Blueprint('user_auth', __name__)
 
@@ -86,29 +87,23 @@ def signup():
 def mark_favorite():
     data = request.json
 
-    # Validate input
-    if not data or 'email' not in data or 'recipe_uri' not in data or 'message' not in data:
-        return jsonify({"message": "Email, recipe URI, and action message are required"}), 400
-
-    if data['message'] not in ['add', 'delete']:
-        return jsonify({"message": "Invalid action message. Must be 'add' or 'delete'"}), 400
-
     # Find the user
     user = Users.query.filter_by(email=data['email']).first()
     if not user:
         return jsonify({"message": "User not found"}), 404
 
-    recipe_uri = data['recipe_uri']
+    recipe_id = data['recipe_id']
 
     # Update user's favorite recipes list based on the message
     if data['message'] == 'add':
-        if recipe_uri not in user.favoriteRecipes:
-            user.favoriteRecipes.append(recipe_uri)
+        if recipe_id not in user.favoriteRecipes:
+            print(f"line90, add recipe{recipe_id} to favorietRecipes")
+            user.favoriteRecipes.append(recipe_id)
     elif data['message'] == 'delete':
-        if recipe_uri in user.favoriteRecipes:
-            user.favoriteRecipes.remove(recipe_uri)
+        if recipe_id in user.favoriteRecipes:
+            user.favoriteRecipes.remove(recipe_id)
 
     # Commit the changes
+    flag_modified(user, 'favoriteRecipes')
     db.session.commit()
-
     return jsonify({"message": "Updated successfully"}), 201
