@@ -1,8 +1,8 @@
-from flask import Flask, request, jsonify, render_template
+from flask import Flask, request, jsonify, render_template, Blueprint
 import requests
 import os
 
-app = Flask(__name__)
+app = Blueprint('recipes', __name__)
 
 # Use environment variables or store API credentials here
 EDAMAM_APP_ID = os.getenv("EDAMAM_APP_ID", "YOUR_APP_ID")
