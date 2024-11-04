@@ -20,7 +20,7 @@ def login():
         session['user_id'] = user.id
         session['username'] = user.username
         session['favoriteRecipes'] = user.favoriteRecipes
-        return jsonify({"message": "Login successful", "user_id": user.id, "username": user.username}), 200
+        return jsonify({"message": "Login successful", "user_id": user.id, "username": user.username, "favoriteRecipes": user.favoriteRecipes}), 200
     else:
         return jsonify({"message": "Invalid email or password"}), 401
 
