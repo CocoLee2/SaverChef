@@ -19,6 +19,7 @@ def login():
         # If login is successful, store user data in session or return a token if JWT is used
         session['user_id'] = user.id
         session['username'] = user.username
+        session['favoriteRecipes'] = user.favoriteRecipes
         return jsonify({"message": "Login successful", "user_id": user.id, "username": user.username}), 200
     else:
         return jsonify({"message": "Invalid email or password"}), 401
