@@ -2,7 +2,6 @@ from flask import Flask
 from flask_restful import Api
 from controller.api_resources.fridge import fridge_bp
 from user_auth.user_auth import app as user_auth_bp
-from recipes.recipes import app as recipes_bp
 from flask_bcrypt import Bcrypt
 from dotenv import load_dotenv
 from database.database import db
@@ -14,7 +13,6 @@ def create_app(database_uri):
     app.config['SQLALCHEMY_DATABASE_URI'] = database_uri
     app.register_blueprint(fridge_bp)
     app.register_blueprint(user_auth_bp)
-    app.register_blueprint(recipes_bp)
     bcrypt = Bcrypt()
     bcrypt.init_app(app)
     db.init_app(app)
