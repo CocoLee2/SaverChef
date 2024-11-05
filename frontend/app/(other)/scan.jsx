@@ -1,11 +1,12 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, router } from "expo-router";
-import { RNCamera } from 'react-native-camera';
+import { Camera } from 'expo-camera';
 import Modal from 'react-native-modal';
 
 const Scan = () => {
+    const [hasPermission, setHasPermission] = useState(null);
     const [isModalVisible, setModalVisible] = useState(false);
     const [scannedItem, setScannedItem] = useState({
         name: 'Organic whole milk',
@@ -13,10 +14,24 @@ const Scan = () => {
         quantity: '1 carton'
     });
 
+    useEffect(() => {
+        (async () => {
+            const { status } = await Camera.requestPermissionsAsync();
+            if (status === 'granted') {
+                setHasPermission(true);
+            } else {
+                setHasPermission(false);
+                Alert.alert(
+                    'Permission Denied',
+                    'Camera permission is required to scan barcodes. Please enable it in settings.',
+                    [{ text: 'OK' }]
+                );
+            }
+        })();
+    }, []);
+
     const handleBarCodeScanned = ({ data }) => {
-        // Handle barcode data here and fetch product details if necessary
         console.log('Barcode scanned:', data);
-        // Simulate setting the scanned item details
         setScannedItem({
             name: 'Organic whole milk',
             expirationDate: '2024-10-20',
@@ -38,11 +53,17 @@ const Scan = () => {
                 <Text style={styles.header}>Scan</Text>
             </View>
 
-            <RNCamera
-                style={styles.camera}
-                onBarCodeRead={handleBarCodeScanned}
-                captureAudio={false}
-            />
+            {hasPermission ? (
+                <Camera
+                    style={styles.camera}
+                    onBarCodeScanned={handleBarCodeScanned}
+                    ratio="16:9"
+                />
+            ) : (
+                <View style={styles.cameraPlaceholder}>
+                    <Text style={styles.placeholderText}>Camera permission is required to scan barcodes.</Text>
+                </View>
+            )}
 
             {/* Confirmation Modal */}
             <Modal
@@ -105,6 +126,19 @@ const styles = StyleSheet.create({
     camera: {
         flex: 1,
         width: '100%',
+    },
+
+    cameraPlaceholder: {
+        flex: 1,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: '#EEE',
+        width: '100%',
+    },
+
+    placeholderText: {
+        fontSize: 16,
+        color: '#888',
     },
 
     modal: {

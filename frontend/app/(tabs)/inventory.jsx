@@ -1,40 +1,165 @@
-import { StatusBar, View, Text, StyleSheet, TouchableOpacity, FlatList, TextInput } from 'react-native'
-import React, {useState} from 'react'
+import { StatusBar, View, Text, StyleSheet, TouchableOpacity, ScrollView, FlatList, TextInput, Alert, Dimensions } from 'react-native'
+import React, { useState, useEffect, useRef } from 'react'
 import { ListItem, SearchBar } from "react-native-elements";
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
-import { router } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 import Modal from 'react-native-modal';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { Ionicons } from '@expo/vector-icons';
 
+
 const Inventory = () => {
   const [search, setSearch] = useState('');
-  const [isMenuOpen, setMenuOpen] = useState(false);
   const [isModalVisible, setModalVisible] = useState(false);
   const [selectedFridge, setSelectedFridge] = useState('Fridge 1');
   const [isDropdownVisible, setDropdownVisible] = useState(false);
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showUnitPicker, setShowUnitPicker] = useState(false);
   const [selectedUnit, setSelectedUnit] = useState('pcs');
-  const [selectedItem, setSelectedItem] = useState(null);
-  const fridges = ['Fridge 1', 'Fridge 2', 'Fridge 3'];
+  const [selectedItem, setSelectedItem] = useState({ id: '', name: '', quantity: '', unit: 'pcs', bestBefore: new Date() });
+  const scrollViewRef = useRef(null);
+  const [fridges, setFridges] = useState(['Fridge 1', 'Fridge 2', 'Fridge 3']);
+  const [newFridgeName, setNewFridgeName] = useState('');
+  const [isEditingFridge, setIsEditingFridge] = useState(false);
+  const [editingFridgeIndex, setEditingFridgeIndex] = useState(null);
+  const [editedFridgeName, setEditedFridgeName] = useState('');
 
-  const [items, setItems] = useState([
-    { id: '1', name: 'Tomatoes', quantity: '3', unit: 'pcs', icon: '🍅', bestBefore: new Date(2024, 10, 28) },
-    { id: '2', name: 'Potatoes', quantity: '5', unit: 'pcs', icon: '🥔', bestBefore: new Date(2024, 11, 15) },
-    { id: '3', name: 'Cabbage', quantity: '2', unit: 'pcs', icon: '🥬', bestBefore: new Date(2024, 11, 4) },
-  ]);
 
-  const toggleMenu = () => {
-    setMenuOpen(!isMenuOpen);
+
+
+  const [itemsByFridge, setItemsByFridge] = useState({
+    'Fridge 1': [
+      { id: '1', name: 'Tomatoes', quantity: '3', unit: 'pcs', icon: '🍅', bestBefore: new Date(2024, 10, 28) },
+      { id: '2', name: 'Potatoes', quantity: '5', unit: 'pcs', icon: '🥔', bestBefore: new Date(2024, 11, 15) },
+    ],
+    'Fridge 2': [
+      { id: '3', name: 'Cabbage', quantity: '2', unit: 'pcs', icon: '🥬', bestBefore: new Date(2024, 11, 4) },
+    ],
+    'Fridge 3': [],
+  });
+
+  useEffect(() => {
+    if (!itemsByFridge[selectedFridge]) {
+        const defaultFridge = Object.keys(itemsByFridge)[0];
+        if (defaultFridge) {
+            setSelectedFridge(defaultFridge);
+        }
+    }
+  }, [selectedFridge, itemsByFridge]);
+
+  const addNewFridge = () => {
+    if (newFridgeName.trim()) {
+        setFridges([...fridges, newFridgeName.trim()]);
+        setItemsByFridge((prevItemsByFridge) => ({
+            ...prevItemsByFridge,
+            [newFridgeName.trim()]: [],
+        }));
+        setNewFridgeName('');
+        setSelectedFridge(newFridgeName.trim());
+        setDropdownVisible(false);
+    } else {
+        Alert.alert("Invalid Name", "Please enter a valid fridge name.");
+    }
+};
+
+  const editFridgeName = () => {
+    if (editedFridgeName.trim()) {
+        setFridges(fridges.map((fridge) => (fridge === selectedFridge ? editedFridgeName.trim() : fridge)));
+        setItemsByFridge((prevItemsByFridge) => {
+            const updatedItems = { ...prevItemsByFridge };
+            updatedItems[editedFridgeName.trim()] = updatedItems[selectedFridge];
+            delete updatedItems[selectedFridge];
+            return updatedItems;
+        });
+        setSelectedFridge(editedFridgeName.trim());
+        setIsEditingFridge(false);
+    } else {
+        Alert.alert("Invalid Name", "Please enter a valid fridge name.");
+    }
   };
 
+  // Start editing a specific fridge name
+  const startEditingFridge = (index) => {
+    setEditingFridgeIndex(index);
+    setEditedFridgeName(fridges[index]);
+    setIsEditingFridge(true);
+  };
+
+  // Save the edited fridge name
+  const saveEditedFridgeName = () => {
+    if (editedFridgeName.trim()) {
+        const updatedFridges = [...fridges];
+        const oldFridgeName = updatedFridges[editingFridgeIndex];
+        updatedFridges[editingFridgeIndex] = editedFridgeName.trim();
+        
+        setFridges(updatedFridges);
+
+        // Update itemsByFridge to match the new fridge name
+        setItemsByFridge((prevItemsByFridge) => {
+            const updatedItems = { ...prevItemsByFridge };
+            updatedItems[editedFridgeName.trim()] = updatedItems[oldFridgeName];
+            delete updatedItems[oldFridgeName];
+            return updatedItems;
+        });
+
+        // Update the selected fridge if it was being edited
+        if (selectedFridge === oldFridgeName) {
+            setSelectedFridge(editedFridgeName.trim());
+        }
+
+        setIsEditingFridge(false);
+        setEditingFridgeIndex(null);
+      } else {
+          Alert.alert("Invalid Name", "Please enter a valid fridge name.");
+      }
+    };
+
+    // Cancel editing the fridge name
+    const cancelEditFridgeName = () => {
+      setIsEditingFridge(false);
+      setEditingFridgeIndex(null);
+      setEditedFridgeName('');
+    };
+
+    const deleteFridge = (index) => {
+      const fridgeToDelete = fridges[index];
+      
+      Alert.alert(
+          'Delete Fridge',
+          `Are you sure you want to delete ${fridgeToDelete}?`,
+          [
+              { text: 'Cancel', style: 'cancel' },
+              {
+                  text: 'Delete', style: 'destructive', onPress: () => {
+                      setFridges(fridges.filter((_, i) => i !== index));
+                      setItemsByFridge((prevItemsByFridge) => {
+                          const updatedItems = { ...prevItemsByFridge };
+                          delete updatedItems[fridgeToDelete];
+                          return updatedItems;
+                      });
+                      if (selectedFridge === fridgeToDelete) {
+                          setSelectedFridge(fridges[0] || ''); // Select another fridge if possible
+                      }
+                  }
+              }
+          ]
+      );
+  };
+
+
   const toggleDropdown = () => setDropdownVisible(!isDropdownVisible);
+  const toggleModal = () => setModalVisible(!isModalVisible);
 
   const openEditModal = (item) => {
     setSelectedItem(item);
     setSelectedUnit(item.unit || 'pcs');
     setModalVisible(true);
+  };
+
+  const handleScroll = (event) => {
+    const scrollPosition = event.nativeEvent.contentOffset.x;
+    const screenWidth = Dimensions.get('window').width;
+    const currentIndex = Math.round(scrollPosition / screenWidth);
   };
 
   const handleDateChange = (event, selectedDate) => {
@@ -44,17 +169,52 @@ const Inventory = () => {
   };
 
   const saveChanges = () => {
-    setItems((prevItems) =>
-      prevItems.map((item) =>
+    setItemsByFridge((prevItemsByFridge) => ({
+      ...prevItemsByFridge,
+      [selectedFridge]: prevItemsByFridge[selectedFridge].map((item) =>
         item.id === selectedItem.id ? { ...selectedItem, unit: selectedUnit } : item
-      )
-    );
+      ),
+    }));
     setModalVisible(false);
   };
 
+  const addItem = () => {
+    const newItem = { ...selectedItem, id: Date.now().toString(), unit: selectedUnit };
+    setItemsByFridge((prevItemsByFridge) => ({
+      ...prevItemsByFridge,
+      [selectedFridge]: [...prevItemsByFridge[selectedFridge], newItem],
+    }));
+    setModalVisible(false);
+  };
+
+  const deleteItem = (itemId) => {
+    setItemsByFridge((prevItemsByFridge) => ({
+      ...prevItemsByFridge,
+      [selectedFridge]: prevItemsByFridge[selectedFridge].filter((item) => item.id !== itemId),
+    }));
+  };
+
+  const handleLongPress = (itemId) => {
+    Alert.alert(
+      "Delete Item",
+      "Are you sure you want to delete this item?",
+      [
+        {
+          text: "Cancel",
+          style: "cancel",
+        },
+        {
+          text: "Delete",
+          style: "destructive",
+          onPress: () => deleteItem(itemId),
+        },
+      ]
+    );
+  };
+
   const renderItem = ({ item }) => (
-    <TouchableOpacity onPress={() => openEditModal(item)} style={styles.foodItem}>
-      <Text style={styles.foodIcon}>{item.icon}</Text>
+    <TouchableOpacity onPress={() => openEditModal(item)} onLongPress={() => handleLongPress(item.id)} style={styles.foodItem}>
+      <Text style={styles.foodIcon}>{item.icon || '🛒'}</Text>
       <View style={styles.foodInfo}>
         <Text style={styles.foodName}>{item.name}</Text>
         <Text style={styles.foodDate}>Best before {item.bestBefore.toDateString()}</Text>
@@ -62,20 +222,24 @@ const Inventory = () => {
       <Text>{`${item.quantity} ${item.unit}`}</Text>
     </TouchableOpacity>
   );
-  
+
   return (
     <View style={styles.container}>
-      <StatusBar
-        barStyle="dark-content"  
-      />
+      <StatusBar barStyle="dark-content" />
 
       <View style={styles.headerContainer}>
         <TouchableOpacity onPress={toggleDropdown} style={styles.dropdownTrigger}>
           <Text style={styles.header}>{selectedFridge}</Text>
           <Ionicons name="caret-down-outline" size={20} color="#F36C21" />
         </TouchableOpacity>
-        <TouchableOpacity style={styles.addButton} onPress={toggleMenu}>
-          <MaterialIcons name={isMenuOpen ? "close" : "add"} size={30} color="white" />
+        <TouchableOpacity style={styles.button} onPress={() => { setSelectedItem({ id: '', name: '', quantity: '', unit: 'pcs', bestBefore: new Date() }); toggleModal(); }}>
+          <Ionicons name="add-circle-outline" size={30} color="#F36C21" />
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.button} onPress={() => router.push({ pathname: '../(other)/scan' })}>
+          <MaterialIcons name="qr-code-scanner" size={30} color="#F36C21" />
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.button} onPress={() => router.push({ pathname: '../(other)/share' })}>
+          <MaterialIcons name="share" size={30} color="#F36C21" />
         </TouchableOpacity>
       </View>
 
@@ -87,78 +251,114 @@ const Inventory = () => {
         inputContainerStyle={styles.searchInput}
       />
 
-      {items.length > 0 ? (
-        <FlatList
-          data={items}
-          renderItem={renderItem}
-          keyExtractor={(item) => item.id}
-          style={styles.list}
-        />
-      ) : (
-        <Text style={styles.emptyMessage}>No ingredients yet</Text>
-      )}
+      {itemsByFridge[selectedFridge] && itemsByFridge[selectedFridge].length > 0 ? (
+          <FlatList
+            data={itemsByFridge[selectedFridge]}
+            renderItem={renderItem}
+            keyExtractor={(item) => item.id}
+            style={styles.list}
+          />
+        ) : (
+          <Text style={styles.emptyMessage}>No ingredients yet</Text>
+        )}
+
+
+      <ScrollView
+        ref={scrollViewRef}
+        horizontal
+        pagingEnabled
+        showsHorizontalScrollIndicator={false}
+        onScroll={handleScroll}
+        scrollEventThrottle={16}
+        style={styles.carouselContainer}
+      ></ScrollView>
 
       {/* Dropdown Modal */}
-      <Modal
-        isVisible={isDropdownVisible}
-        onBackdropPress={toggleDropdown}
-        backdropOpacity={0.3}
-        style={styles.dropdownModal} // Apply dropdownModal style here
-      >
+      <Modal isVisible={isDropdownVisible} onBackdropPress={toggleDropdown} backdropOpacity={0.3} style={styles.dropdownModal}>
         <View style={styles.dropdown}>
-          {fridges.map((fridge, index) => (
-            <TouchableOpacity
-              key={index}
-              style={styles.dropdownItem}
-              onPress={() => {
-                setSelectedFridge(fridge);
-                setDropdownVisible(false);
-              }}
-            >
-              <Text style={styles.dropdownText}>{fridge}</Text>
+            {fridges.map((fridge, index) => (
+                <View key={index} style={styles.dropdownItemContainer}>
+                    {editingFridgeIndex === index ? (
+                        // Render input field for editing fridge name
+                        <TextInput
+                            style={styles.input}
+                            value={editedFridgeName}
+                            onChangeText={setEditedFridgeName}
+                            placeholder="Edit fridge name"
+                        />
+                    ) : (
+                        // Render fridge name with edit button
+                        <TouchableOpacity
+                            style={styles.dropdownItem}
+                            onPress={() => {
+                                setSelectedFridge(fridge);
+                                setDropdownVisible(false);
+                            }}
+                        >
+                            <Text style={styles.dropdownText}>{fridge}</Text>
+                        </TouchableOpacity>
+                    )}
+
+                    {/* Action Buttons: Edit and Delete or Save and Cancel */}
+                    {editingFridgeIndex === index ? (
+                        <View style={styles.actionButtons}>
+                            <TouchableOpacity style={styles.saveButton} onPress={saveEditedFridgeName}>
+                                <Text style={styles.buttonText}>Save</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity style={styles.cancelButton} onPress={cancelEditFridgeName}>
+                                <Text style={styles.buttonText}>Cancel</Text>
+                            </TouchableOpacity>
+                        </View>
+                    ) : (
+                        <View style={styles.actionButtons}>
+                            <TouchableOpacity style={styles.editButton} onPress={() => startEditingFridge(index)}>
+                                <Text style={styles.buttonText}>Edit</Text>
+                            </TouchableOpacity>
+                            <TouchableOpacity style={styles.deleteButton} onPress={() => deleteFridge(index)}>
+                                <Text style={styles.buttonText}>Delete</Text>
+                            </TouchableOpacity>
+                        </View>
+                    )}
+                </View>
+            ))}
+
+            {/* Input and button to create a new fridge */}
+            <TextInput
+                style={styles.input}
+                placeholder="New fridge name"
+                value={newFridgeName}
+                onChangeText={setNewFridgeName}
+            />
+            <TouchableOpacity style={styles.addButton} onPress={addNewFridge}>
+                <Text style={styles.addButtonText}>Create New Fridge</Text>
             </TouchableOpacity>
-          ))}
         </View>
+    </Modal>
+
+
+
+
+      {/* Modal for Editing Fridge Name */}
+      <Modal isVisible={isEditingFridge} onBackdropPress={() => setIsEditingFridge(false)} style={styles.modal}>
+          <View style={styles.modalContent}>
+              <Text style={styles.modalTitle}>Edit Fridge Name</Text>
+              <TextInput
+                  style={styles.input}
+                  placeholder="Enter new fridge name"
+                  value={editedFridgeName}
+                  onChangeText={setEditedFridgeName}
+              />
+              <TouchableOpacity style={styles.doneButton} onPress={editFridgeName}>
+                  <Text style={styles.doneButtonText}>Save Changes</Text>
+              </TouchableOpacity>
+          </View>
       </Modal>
 
 
-      {isMenuOpen && (
-        <View style={styles.menu}>
-          <TouchableOpacity style={styles.menuItem} onPress={() => router.push({pathname: '../(other)/addManually'})}>
-            <MaterialIcons name="edit" size={24} color="black" />
-            <Text style={styles.menuItemText}>Add Manually</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.menuItem} onPress={() => router.push({pathname: '../(other)/scan'})}>
-            <MaterialIcons name="qr-code-scanner" size={24} color="black" />
-            <Text style={styles.menuItemText}>Scan Barcode</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.menuItem} onPress={() => router.push({pathname: '../(other)/share'})}>
-            <MaterialIcons name="share" size={24} color="black" />
-            <Text style={styles.menuItemText}>Share</Text>
-          </TouchableOpacity>
-        </View>
-      )}
-
-      <View style={styles.buttonContainer}>
-        <TouchableOpacity style={styles.button} onPress={toggleMenu}>
-          <MaterialIcons name={isMenuOpen ? "close" : "add"} size={30} color="white" />
-        </TouchableOpacity>
-      </View>
-
-      <View style={styles.buttonContainer}>
-        <TouchableOpacity style={styles.button} onPress={toggleMenu}>
-          <MaterialIcons name={isMenuOpen ? 'close' : 'add'} size={30} color="white" />
-        </TouchableOpacity>
-      </View>
-
       {/* Modal for editing item */}
-      <Modal
-        isVisible={isModalVisible}
-        onBackdropPress={() => setModalVisible(false)}
-        style={styles.modal}
-      >
+      <Modal isVisible={isModalVisible} onBackdropPress={() => setModalVisible(false)} style={styles.modal}>
         <View style={styles.modalContent}>
-          <Text style={styles.modalTitle}>Edit Item</Text>
+          <Text style={styles.modalTitle}>Add / Edit Item</Text>
 
           <Text style={styles.label}>Name</Text>
           <TextInput
@@ -184,13 +384,9 @@ const Inventory = () => {
 
           {/* Unit Picker Modal */}
           {showUnitPicker && (
-            <Modal
-              isVisible={showUnitPicker}
-              onBackdropPress={() => setShowUnitPicker(false)}
-              style={styles.unitModal}
-            >
+            <Modal isVisible={showUnitPicker} onBackdropPress={() => setShowUnitPicker(false)} style={styles.unitModal}>
               <View style={styles.unitModalContent}>
-                {['pcs', 'lbs', 'kg', 'g'].map((unit) => (
+                {['pcs', 'lbs', 'kg', 'g', 'box', 'carton'].map((unit) => (
                   <TouchableOpacity key={unit} onPress={() => { setSelectedUnit(unit); setShowUnitPicker(false); }}>
                     <Text style={styles.unitOption}>{unit}</Text>
                   </TouchableOpacity>
@@ -200,29 +396,28 @@ const Inventory = () => {
           )}
 
           <Text style={styles.label}>Best Before Date</Text>
-          <TouchableOpacity style={styles.dateButton} onPress={() => setShowDatePicker(true)}>
-            <Text style={styles.dateButtonText}>
-              {selectedItem?.bestBefore ? selectedItem.bestBefore.toDateString() : 'Select Date'}
-            </Text>
-          </TouchableOpacity>
-
-          {showDatePicker && (
+          <View style={styles.datePickerContainer}>
             <DateTimePicker
               value={selectedItem?.bestBefore || new Date()}
               mode="date"
               display="default"
-              onChange={handleDateChange}
+              onChange={(event, selectedDate) => {
+                const currentDate = selectedDate || selectedItem.bestBefore;
+                setSelectedItem({ ...selectedItem, bestBefore: currentDate });
+              }}
+              style={styles.datePicker}
             />
-          )}
+          </View>
 
-          <TouchableOpacity style={styles.doneButton} onPress={saveChanges}>
-            <Text style={styles.doneButtonText}>Done</Text>
+          <TouchableOpacity style={styles.doneButton} onPress={selectedItem.id ? saveChanges : addItem}>
+            <Text style={styles.doneButtonText}>Save</Text>
           </TouchableOpacity>
         </View>
       </Modal>
     </View>
   );
 };
+
 
 
 const styles = StyleSheet.create({
@@ -265,7 +460,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
     borderRadius: 10,
     padding: 10,
-    width: 150,
+    width: 300,
     borderWidth: 1,
     borderColor: '#DDD',
     shadowColor: '#000',
@@ -274,7 +469,12 @@ const styles = StyleSheet.create({
     shadowRadius: 5,
     elevation: 5,
   },
+
   
+  button: {
+    marginLeft: 'auto',
+    padding: 5,
+  },
 
   header: {
     fontSize: 30,
@@ -294,14 +494,6 @@ const styles = StyleSheet.create({
   searchInput: {
     backgroundColor: '#FFF',
     borderRadius: 10,
-  },
-
-  button: {
-    backgroundColor: '#F36C21',
-    padding: 10,
-    borderRadius: 30,
-    alignItems: 'center',
-    justifyContent: 'center',
   },
 
   buttonContainer: {
@@ -394,16 +586,20 @@ const styles = StyleSheet.create({
   },
 
   modal: {
-    justifyContent: 'flex-end',
+    justifyContent: 'flex-start',
+    alignItems: 'center',
     margin: 0,
+    marginTop: 100,
   },
 
   modalContent: {
     backgroundColor: 'white',
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
+    borderRadius: 20,
     padding: 20,
+    width: '80%',
+    alignSelf: 'center',
   },
+
 
   modalHeader: {
     flexDirection: 'row',
@@ -413,9 +609,28 @@ const styles = StyleSheet.create({
   },
 
   modalTitle: {
-    fontSize: 20,
+    fontSize: 24,
     fontWeight: 'bold',
+    marginBottom: 10,
+    textAlign: 'center',
   },
+
+  doneButton: {
+      backgroundColor: '#F36C21',
+      paddingVertical: 12,
+      paddingHorizontal: 20,
+      borderRadius: 10,
+      alignItems: 'center',
+      marginTop: 20,
+      width: '100%',
+  },
+
+  doneButtonText: {
+      color: '#FFF',
+      fontSize: 18,
+      fontWeight: 'bold',
+  },
+
 
   label: {
     fontSize: 16,
@@ -425,10 +640,12 @@ const styles = StyleSheet.create({
 
   input: {
     backgroundColor: '#F0F0F0',
-    padding: 10,
+    padding: 12,
     borderRadius: 10,
     marginBottom: 15,
+    fontSize: 16,
   },
+
 
   quantityRow: {
     flexDirection: 'row',
@@ -493,6 +710,115 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
   },
+
+  deleteButton: {
+    backgroundColor: 'red',
+    justifyContent: 'center',
+    alignItems: 'center',
+    width: 80,
+    height: '100%',
+    borderRadius: 10,
+    padding: 10,
+  },
+  deleteButtonText: {
+    color: '#FFF',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
+
+  datePickerContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    width: '100%',
+    marginVertical: 10,
+  },
+  
+  datePicker: {
+    alignSelf: 'center',
+  },
+
+  addButton: {
+    backgroundColor: '#F36C21',
+    padding: 10,
+    borderRadius: 5,
+    alignItems: 'center',
+    marginTop: 10,
+  },
+  addButtonText: {
+      color: '#FFF',
+      fontSize: 16,
+  },
+
+  dropdownItemContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: 10,
+    paddingHorizontal: 15,
+    width: '100%', 
+  },
+
+  actionButtons: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+
+  editButton: {
+      backgroundColor: '#007AFF',
+      paddingVertical: 5,
+      paddingHorizontal: 10,
+      borderRadius: 5,
+      alignItems: 'center',
+      justifyContent: 'center',
+  },
+
+  deleteButton: {
+      backgroundColor: '#FF3B30',
+      paddingVertical: 5,
+      paddingHorizontal: 10,
+      borderRadius: 5,
+      alignItems: 'center',
+      justifyContent: 'center',
+  },
+
+  saveButton: {
+      backgroundColor: '#28A745', 
+      paddingVertical: 5,
+      paddingHorizontal: 10,
+      borderRadius: 5,
+      alignItems: 'center',
+      justifyContent: 'center',
+  },
+
+  cancelButton: {
+      backgroundColor: '#FF3B30',
+      paddingVertical: 5,
+      paddingHorizontal: 10,
+      borderRadius: 5,
+      alignItems: 'center',
+      justifyContent: 'center',
+  },
+
+  buttonText: {
+      color: '#FFF',
+      fontSize: 14,
+      fontWeight: 'bold',
+  },
+
+  addButton: {
+    backgroundColor: '#F36C21',
+    padding: 10,
+    borderRadius: 5,
+    alignItems: 'center',
+    marginTop: 10,
+  },
+
+  addButtonText: {
+    color: '#FFF',
+    fontSize: 16,
+  },
+
 })
 
 export default Inventory
