@@ -9,10 +9,14 @@ import AntDesign from '@expo/vector-icons/AntDesign';
 
 const Profile = () => {
   const { username, setUsername, email, setEmail, password, setPassword, 
-    fridgeItems, setFridgeItems, favoriteRecipes, setFavoriteRecipes } = useContext(GlobalContext);
+    fridgeItems, setFridgeItems, favoriteRecipes, setFavoriteRecipes, randomRecipes, setRandomRecipes } = useContext(GlobalContext);
 
   const handleGetFavoriteRecipes = async () => {
     console.log(`Favorite recipes are: ${favoriteRecipes}`);
+    if (favoriteRecipes.length === 0) {
+      Alert.alert('No Favorite Recipes', 'You don’t have any favorite recipes yet. Browse and add some!');
+      return 
+    }
     try {
       const response = await fetch('http://127.0.0.1:5001/get_favorite', {
         method: 'POST',
@@ -32,9 +36,6 @@ const Profile = () => {
           pathname: '../(other)/searchRecipe',
           params: { query: 'Profile', recipes: JSON.stringify(data.recipes) },
         });
-      } else if (response.status === 404) {
-        // Handle the case when the resource is not found (404 Not Found)
-        Alert.alert('Not Found', 'Favorite recipes not found.');
       } else {
         // Handle other errors
         Alert.alert('Error', data.message || 'Request failed. Please try again.');
@@ -118,7 +119,7 @@ const Profile = () => {
       </View>
 
       <Text style={styles.username}>{username}</Text>
-      <Text style={styles.email}>nancycui@example.com</Text>
+      <Text style={styles.email}>{email}</Text>
       
       {/* Action Buttons */}
       <View style={styles.actionsContainer}>

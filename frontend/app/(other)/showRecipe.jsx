@@ -7,7 +7,7 @@ import CustomButton from '../../components/CustomButton';
 
 const ShowRecipe = () => {
   const { username, setUsername, email, setEmail, password, setPassword, 
-    fridgeItems, setFridgeItems, favoriteRecipes, setFavoriteRecipes } = useContext(GlobalContext);
+    fridgeItems, setFridgeItems, favoriteRecipes, setFavoriteRecipes, randomRecipes, setRandomRecipes } = useContext(GlobalContext);
 
   const { id, name, image, details } = useLocalSearchParams();
   const { ingredients, directions, readyIn, serves } = JSON.parse(details);

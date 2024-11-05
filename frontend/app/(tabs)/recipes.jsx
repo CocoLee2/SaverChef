@@ -1,4 +1,4 @@
-import { FlatList, TouchableOpacity, View, Text, Image, StyleSheet, StatusBar, Alert } from 'react-native';
+import { FlatList, TouchableOpacity, View, Text, Image, StyleSheet, StatusBar, Alert, ScrollView } from 'react-native';
 import { SearchBar } from 'react-native-elements';
 import { router } from "expo-router";
 import { React, useState, useContext, useEffect} from 'react';
@@ -12,13 +12,18 @@ const Recipes = () => {
   const [search, setSearch] = useState('');
 
   const { username, setUsername, email, setEmail, password, setPassword, 
-    fridgeItems, setFridgeItems, favoriteRecipes, setFavoriteRecipes } = useContext(GlobalContext);
-  
+    fridgeItems, setFridgeItems, favoriteRecipes, setFavoriteRecipes, randomRecipes, setRandomRecipes } = useContext(GlobalContext);
 
-  const handleUseMyIngredients = async () => {
-    const ingredients = fridgeItems.flatMap(fridge => 
-      fridge.fridgeItems.map(item => item.itemName)
-    );
+  // This helper function is used by both handleUseMyIngredients and handleNewButtonPress.
+  // It takes a list of validated strings as ingredients,
+  // sends a request to the backend to fetch recipes, 
+  // and navigates to the searchRecipe page with the retrieved recipes data.
+  const helper = async (ingredients) => {
+    if (ingredients.length === 0) {
+      Alert.alert('Network Error', 'Something went wrong. Please try again later.'); 
+      return 
+    }
+
     try {
       const response = await fetch('http://127.0.0.1:5001/search', {
         method: 'POST',
@@ -48,209 +53,88 @@ const Recipes = () => {
     }
   }
 
-  const recipes = [
-    {
-      id: 1,
-      name: 'Maple Syrup Pancake',
-      image: require('../../assets/images/recipes/recipe1.jpg'),
-      details: {
-        ingredients: [
-          { name: 'Flour', quantity: '2 cups' },
-          { name: 'Milk', quantity: '1 1/2 cups' },
-          { name: 'Eggs', quantity: '2 large' },
-          { name: 'Maple Syrup', quantity: '1/4 cup' },
-          { name: 'Baking Powder', quantity: '2 tsp' },
-          { name: 'Salt', quantity: '1/4 tsp' }
-        ],
-        directions: [
-          'In a large bowl, whisk together flour, baking powder, and salt.',
-          'In another bowl, whisk together milk, eggs, and maple syrup.',
-          'Combine wet and dry ingredients, stirring just until blended.',
-          'Heat a lightly oiled griddle over medium-high heat.',
-          'Pour or scoop batter onto the griddle, using about 1/4 cup for each pancake.',
-          'Cook until bubbles form on the surface, then flip and cook until golden brown.',
-        ],
-        readyIn: '25',
-        serves: '4'
-      }
-    },
-    {
-      id: 2,
-      name: 'Creamy Pumpkin Soup',
-      image: require('../../assets/images/recipes/recipe5.jpg'),
-      details: {
-        ingredients: [
-          { name: 'Pumpkin', quantity: '4 cups (diced)' },
-          { name: 'Onion', quantity: '1 large (chopped)' },
-          { name: 'Garlic', quantity: '3 cloves (minced)' },
-          { name: 'Vegetable Broth', quantity: '4 cups' },
-          { name: 'Coconut Milk', quantity: '1 can (400ml)' },
-          { name: 'Olive Oil', quantity: '2 tbsp' },
-          { name: 'Salt', quantity: 'to taste' },
-          { name: 'Pepper', quantity: 'to taste' }
-        ],
-        directions: [
-          'Heat olive oil in a large pot over medium heat.',
-          'Add onion and garlic, and sauté until soft and fragrant.',
-          'Add diced pumpkin and cook for 5 minutes, stirring occasionally.',
-          'Pour in vegetable broth, bring to a boil, then reduce heat and simmer for 20 minutes.',
-          'Blend the soup until smooth using an immersion blender.',
-          'Stir in coconut milk, season with salt and pepper, and heat through before serving.'
-        ],
-        readyIn: '40',
-        serves: '6'
-      }
-    },
-    {
-      id: 3,
-      name: 'Barbecued Salmon',
-      image: require('../../assets/images/recipes/recipe3.jpg'),
-      details: {
-        ingredients: [
-          { name: 'Salmon Fillets', quantity: '4 (6 oz each)' },
-          { name: 'Soy Sauce', quantity: '1/4 cup' },
-          { name: 'Honey', quantity: '2 tbsp' },
-          { name: 'Garlic', quantity: '2 cloves (minced)' },
-          { name: 'Lemon Juice', quantity: '2 tbsp' },
-          { name: 'Olive Oil', quantity: '2 tbsp' }
-        ],
-        directions: [
-          'In a small bowl, whisk together soy sauce, honey, garlic, lemon juice, and olive oil.',
-          'Place the salmon fillets in a shallow dish and pour the marinade over them.',
-          'Let marinate for 30 minutes.',
-          'Preheat the grill to medium heat and lightly oil the grate.',
-          'Place salmon on the grill, skin-side down, and cook for 4-5 minutes per side or until the salmon flakes easily with a fork.',
-          'Brush with additional marinade while grilling.'
-        ],
-        readyIn: '60',
-        serves: '4'
-      }
-    },
-    {
-      id: 4,
-      name: 'Creamy Tomato Rigatoni',
-      image: require('../../assets/images/recipes/recipe4.jpg'),
-      details: {
-        ingredients: [
-          { name: 'Rigatoni', quantity: '12 oz' },
-          { name: 'Tomatoes', quantity: '4 cups (chopped)' },
-          { name: 'Heavy Cream', quantity: '1/2 cup' },
-          { name: 'Garlic', quantity: '2 cloves (minced)' },
-          { name: 'Olive Oil', quantity: '2 tbsp' },
-          { name: 'Parmesan Cheese', quantity: '1/2 cup (grated)' },
-          { name: 'Salt', quantity: 'to taste' },
-          { name: 'Pepper', quantity: 'to taste' }
-        ],
-        directions: [
-          'Cook rigatoni in salted boiling water until al dente, then drain.',
-          'In a large skillet, heat olive oil over medium heat.',
-          'Add garlic and sauté until fragrant.',
-          'Add chopped tomatoes and cook for 10 minutes, stirring occasionally.',
-          'Stir in heavy cream and cook for another 5 minutes.',
-          'Toss the rigatoni with the tomato-cream sauce and top with grated Parmesan.',
-          'Season with salt and pepper to taste.'
-        ],
-        readyIn: '30',
-        serves: '4'
-      }
-    }
-  ];
+  const handleUseMyIngredients = async () => {
+    const ingredients = fridgeItems.flatMap(fridge => 
+      fridge.fridgeItems.map(item => item.itemName)
+    );
+    helper(ingredients)
+  }
 
-  // const [recipes, setRecipes] = useState([]); // State to store the recipes
+  const handleNewButtonPress = async () => {
+    let ingredients = search.split(",").map(item => item.trim());
+    const validIngredientRegex = /^[a-zA-Z\s]+$/;
+    // do some simple checks on the input strings
+    ingredients = ingredients.filter(item => validIngredientRegex.test(item));
+    helper(ingredients)
+  }
 
-  // // Function to fetch recipes
-  // const get_random_recipes = async () => {
-  //   try {
-  //     const response = await fetch('http://127.0.0.1:5001/get_random', {
-  //       method: 'POST',
-  //       headers: {
-  //         'Content-Type': 'application/json',
-  //       },
-  //       body: JSON.stringify({
-  //         number: 1,
-  //       }),
-  //     });
-
-  //     const data = await response.json();
-
-  //     if (response.ok) {
-  //       console.log(data.recipes)
-  //       setRecipes(data.recipes); // Set the recipes data in state
-  //     } else {
-  //       Alert.alert('Error', data.message || 'Request failed. Please try again.');
-  //     }
-  //   } catch (error) {
-  //     console.error('Error:', error);
-  //     Alert.alert('Network Error', 'Something went wrong. Please try again later.');
-  //   }
-  // };
-
-  // // Use useEffect to fetch recipes on component mount
-  // useEffect(() => {
-  //   get_random_recipes();
-  // }, []);
-
-  // console.log(recipes)
-  // console.log(recipes.id)
-  // console.log(recipes.image)
 
   return (
     <View style={styles.container}>
       <StatusBar barStyle="dark-content" />
-
+      
       {/* User welcome text and image */}
       <View style={styles.headerContainer}>
         <Text style={styles.welcomeText}>What is in your kitchen?</Text>
       </View>
-
-      <SearchBar
-        placeholder="Type your ingredients"
-        onChangeText={setSearch}
-        value={search}
-        containerStyle={styles.searchContainer}
-        inputContainerStyle={styles.searchInput}
-        inputStyle={styles.searchText}
-      />
-
+  
+      <View style={styles.searchRowContainer}>
+        <SearchBar
+          placeholder="Type your ingredients"
+          onChangeText={setSearch}
+          value={search}
+          containerStyle={styles.searchContainer}
+          inputContainerStyle={styles.searchInput}
+          inputStyle={styles.searchText}
+        />
+  
+        <CustomButton
+          title="Search"
+          handlePress={handleNewButtonPress}
+          containerStyles={styles.newButtonContainer} 
+          textStyles={styles.newButtonText}
+        />
+      </View>
+  
       <CustomButton 
         title="Use my ingredients"
         handlePress={handleUseMyIngredients}
         containerStyles={styles.customContainer}
       />
-
+  
       <Text style={styles.subtitle}>Suggested Recipes</Text>
-
+  
       <FlatList
-      data={recipes}
-      renderItem={({ item: recipe }) => (
-        <TouchableOpacity
-          key={recipe.id}
-          style={styles.recipeContainer}
-          onPress={() =>
-            router.push({
-              pathname: '../(other)/showRecipe',
-              params: {
-                id: recipe.id,
-                name: recipe.name,
-                image: Image.resolveAssetSource(recipe.image).uri,
-                details: JSON.stringify(recipe.details),
-                path: 'home',
-              },
-            })
-          }
-        >
+        data={randomRecipes}
+        renderItem={({ item: recipe }) => (
+          <TouchableOpacity
+            key={recipe.id}
+            style={styles.recipeContainer}
+            onPress={() =>
+              router.push({
+                pathname: '../(other)/showRecipe',
+                params: {
+                  id: recipe.id,
+                  name: recipe.name,
+                  image: recipe.image,
+                  details: JSON.stringify(recipe.details),
+                  path: 'home',
+                },
+              })
+            }
+          >
             <View style={styles.imageContainer}>
-              <Image source={recipe.image} style={styles.recipeImage} />
+              <Image source={{ uri: recipe.image }} style={styles.recipeImage} />
               <Text style={styles.recipeText}>{recipe.name}</Text>
             </View>
           </TouchableOpacity>
         )}
-        keyExtractor={recipe => recipe.id.toString()}
+        keyExtractor={(recipe) => recipe.id.toString()}
         numColumns={2} // Makes it a 2-column layout
         columnWrapperStyle={styles.columnWrapper} // Adds some spacing between the columns
       />
     </View>
-  );
+  );  
 }
 
 export default Recipes;
@@ -275,6 +159,9 @@ const styles = StyleSheet.create({
     color: '#F36C21',
     flexGrow: 1,
     marginRight: 10,
+  },
+  scrollContainer: {
+    flexGrow: 1,
   },
   customContainer: {
     width: '100%',
@@ -324,19 +211,39 @@ const styles = StyleSheet.create({
   columnWrapper: {
     justifyContent: 'space-between', 
   },
+  searchRowContainer: {
+    flexDirection: 'row', // Arrange items in a row
+    alignItems: 'center', // Center items vertically
+    marginTop: 10, // Add top margin if needed
+  },
   searchContainer: {
+    flex: 7, // Use 80% of the space
     borderTopWidth: 0,
     backgroundColor: 'transparent',
     borderBottomWidth: 0,
-    marginTop: 10,
+    height: 60, // Set a uniform height
   },
   searchInput: {
     backgroundColor: '#FFF',
     borderRadius: 10,
+    height: 40, // Set the same height for the input
   },
   searchText: {
     fontSize: 14, 
   },
+  newButtonContainer: {
+    flex: 2, 
+    marginLeft: 5, 
+    minHeight: 40, 
+    borderRadius: 10,
+    justifyContent: 'center',
+    backgroundColor: '#FFA500',
+  }, 
+  newButtonText: {
+    color: '#FFFFFF', 
+    fontWeight: '600', 
+    fontSize: 14, 
+  }
 });
 
 

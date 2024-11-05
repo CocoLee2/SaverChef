@@ -13,7 +13,6 @@ bcrypt = Bcrypt()
 @app.route('/login', methods=['POST'])
 def login():
     data = request.json  # Expecting a JSON payload with email and password
-    print(data)
     user = Users.query.filter_by(email=data['email']).first()
     
     if user and bcrypt.check_password_hash(user.password, data['password']):

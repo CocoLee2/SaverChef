@@ -55,6 +55,7 @@ app = Blueprint('recipes', __name__)
 #         return jsonify({"error": "Failed to fetch data from Edamam"}), response.status_code
 
 
+# replace with other API key, since I have run out of access...
 API_KEY = "f67757c32f8740a8aadbe9a628fc18f8"
 
 def get_info(id):
@@ -87,7 +88,7 @@ def get_info(id):
 
         return title, image, serves, readyIn, steps_list, formatted_ingredients
     else:
-        return jsonify({"error": "Failed to fetch data from Edamam"}), response.status_code
+        return None, None, None, None, None, None, response.status_code
 
 @app.route('/search', methods=['GET', 'POST'])
 def search():
@@ -108,7 +109,8 @@ def search():
         for recipe in res:
             if recipe:
                 title, image, serves, readyIn, steps_list, ingredients = get_info(recipe.get('id', ''))
-                if steps_list != []:
+                # skip if there is no steps or response failed
+                if steps_list != [] and title != None:
                     recipe_data = {
                         "id": recipe.get('id', ''),
                         "name": title,
@@ -121,7 +123,6 @@ def search():
                         },
                     }
                     recipes.append(recipe_data)
-        print(recipes)
         return jsonify({"recipes": recipes})
     else:
         return jsonify({"error": "Failed to fetch data from Edamam"}), response.status_code
@@ -134,7 +135,8 @@ def get_favorite():
     recipes = []
     for id in data["favoriet_recipes"]:
       title, image, serves, readyIn, steps_list, ingredients = get_info(id)
-      if steps_list != []:
+      # skip if there is no steps or response failed
+      if steps_list != [] and title != None:
         recipe_data = {
             "id": id, 
             "name": title,
@@ -177,7 +179,6 @@ def get_random():
                         },
                     }
                     recipes.append(recipe_data)
-        print(recipes)
         return jsonify({"recipes": recipes})
     else:
         return jsonify({"error": "Failed to fetch data from Edamam"}), response.status_code

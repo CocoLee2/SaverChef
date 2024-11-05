@@ -1,5 +1,5 @@
 import { React, useState, useRef, useContext } from 'react';
-import { View, Text, Image, ScrollView, TouchableOpacity, StyleSheet, Dimensions } from 'react-native';
+import { View, Text, Image, ScrollView, TouchableOpacity, StyleSheet, Dimensions, Pressable } from 'react-native';
 import { router } from 'expo-router';
 import { GlobalContext } from "../GlobalContext";
 import userImage from '../../assets/images/userImage.webp';
@@ -8,143 +8,7 @@ import images from '../../constants/images';
 
 const Home = () => {
   const { username, setUsername, email, setEmail, password, setPassword, 
-    fridgeItems, setFridgeItems, favoriteRecipes, setFavoriteRecipes } = useContext(GlobalContext);
-  console.log(`Favorite recipes are: ${favoriteRecipes}`);
-
-  // for suggested recipes section
-  const suggestedRecipes = [
-    {
-      id: 1,
-      name: 'Maple Syrup Pancake',
-      image: require('../../assets/images/recipes/recipe1.jpg'),
-      details: {
-        ingredients: [
-          { name: 'Flour', quantity: '2 cups' },
-          { name: 'Milk', quantity: '1 1/2 cups' },
-          { name: 'Eggs', quantity: '2 large' },
-          { name: 'Maple Syrup', quantity: '1/4 cup' },
-          { name: 'Baking Powder', quantity: '2 tsp' },
-          { name: 'Salt', quantity: '1/4 tsp' }
-        ],
-        directions: [
-          'In a large bowl, whisk together flour, baking powder, and salt.',
-          'In another bowl, whisk together milk, eggs, and maple syrup.',
-          'Combine wet and dry ingredients, stirring just until blended.',
-          'Heat a lightly oiled griddle over medium-high heat.',
-          'Pour or scoop batter onto the griddle, using about 1/4 cup for each pancake.',
-          'Cook until bubbles form on the surface, then flip and cook until golden brown.',
-        ],
-        readyIn: '25',
-        serves: '4'
-      }
-    },
-    {
-      id: 2,
-      name: 'Creamy Pumpkin Soup',
-      image: require('../../assets/images/recipes/recipe5.jpg'),
-      details: {
-        ingredients: [
-          { name: 'Pumpkin', quantity: '4 cups (diced)' },
-          { name: 'Onion', quantity: '1 large (chopped)' },
-          { name: 'Garlic', quantity: '3 cloves (minced)' },
-          { name: 'Vegetable Broth', quantity: '4 cups' },
-          { name: 'Coconut Milk', quantity: '1 can (400ml)' },
-          { name: 'Olive Oil', quantity: '2 tbsp' },
-          { name: 'Salt', quantity: 'to taste' },
-          { name: 'Pepper', quantity: 'to taste' }
-        ],
-        directions: [
-          'Heat olive oil in a large pot over medium heat.',
-          'Add onion and garlic, and sauté until soft and fragrant.',
-          'Add diced pumpkin and cook for 5 minutes, stirring occasionally.',
-          'Pour in vegetable broth, bring to a boil, then reduce heat and simmer for 20 minutes.',
-          'Blend the soup until smooth using an immersion blender.',
-          'Stir in coconut milk, season with salt and pepper, and heat through before serving.'
-        ],
-        readyIn: '40',
-        serves: '6'
-      }
-    },
-    {
-      id: 3,
-      name: 'Barbecued Salmon',
-      image: require('../../assets/images/recipes/recipe3.jpg'),
-      details: {
-        ingredients: [
-          { name: 'Salmon Fillets', quantity: '4 (6 oz each)' },
-          { name: 'Soy Sauce', quantity: '1/4 cup' },
-          { name: 'Honey', quantity: '2 tbsp' },
-          { name: 'Garlic', quantity: '2 cloves (minced)' },
-          { name: 'Lemon Juice', quantity: '2 tbsp' },
-          { name: 'Olive Oil', quantity: '2 tbsp' }
-        ],
-        directions: [
-          'In a small bowl, whisk together soy sauce, honey, garlic, lemon juice, and olive oil.',
-          'Place the salmon fillets in a shallow dish and pour the marinade over them.',
-          'Let marinate for 30 minutes.',
-          'Preheat the grill to medium heat and lightly oil the grate.',
-          'Place salmon on the grill, skin-side down, and cook for 4-5 minutes per side or until the salmon flakes easily with a fork.',
-          'Brush with additional marinade while grilling.'
-        ],
-        readyIn: '60',
-        serves: '4'
-      }
-    },
-    {
-      id: 4,
-      name: 'Creamy Tomato Rigatoni',
-      image: require('../../assets/images/recipes/recipe4.jpg'),
-      details: {
-        ingredients: [
-          { name: 'Rigatoni', quantity: '12 oz' },
-          { name: 'Tomatoes', quantity: '4 cups (chopped)' },
-          { name: 'Heavy Cream', quantity: '1/2 cup' },
-          { name: 'Garlic', quantity: '2 cloves (minced)' },
-          { name: 'Olive Oil', quantity: '2 tbsp' },
-          { name: 'Parmesan Cheese', quantity: '1/2 cup (grated)' },
-          { name: 'Salt', quantity: 'to taste' },
-          { name: 'Pepper', quantity: 'to taste' }
-        ],
-        directions: [
-          'Cook rigatoni in salted boiling water until al dente, then drain.',
-          'In a large skillet, heat olive oil over medium heat.',
-          'Add garlic and sauté until fragrant.',
-          'Add chopped tomatoes and cook for 10 minutes, stirring occasionally.',
-          'Stir in heavy cream and cook for another 5 minutes.',
-          'Toss the rigatoni with the tomato-cream sauce and top with grated Parmesan.',
-          'Season with salt and pepper to taste.'
-        ],
-        readyIn: '30',
-        serves: '4'
-      }
-    },
-    {
-      id: 5,
-      name: 'Blue Cheese Salad',
-      image: require('../../assets/images/recipes/recipe2.jpg'),
-      details: {
-        ingredients: [
-          { name: 'Mixed Greens', quantity: '4 cups' },
-          { name: 'Blue Cheese', quantity: '1/2 cup (crumbled)' },
-          { name: 'Walnuts', quantity: '1/4 cup (toasted)' },
-          { name: 'Apple', quantity: '1 (sliced)' },
-          { name: 'Balsamic Vinegar', quantity: '2 tbsp' },
-          { name: 'Olive Oil', quantity: '3 tbsp' },
-          { name: 'Salt', quantity: 'to taste' },
-          { name: 'Pepper', quantity: 'to taste' }
-        ],
-        directions: [
-          'In a large bowl, toss the mixed greens with sliced apple and toasted walnuts.',
-          'In a small bowl, whisk together balsamic vinegar and olive oil.',
-          'Drizzle the dressing over the salad and toss to combine.',
-          'Top with crumbled blue cheese and season with salt and pepper before serving.'
-        ],
-        readyIn: '15',
-        serves: '4'
-      }
-    }
-  ];
-  
+    fridgeItems, setFridgeItems, favoriteRecipes, setFavoriteRecipes, randomRecipes, setRandomRecipes } = useContext(GlobalContext);
 
   const [currentRecipe, setCurrentRecipe] = useState(0);
   const scrollViewRef = useRef(null);
@@ -199,7 +63,9 @@ const Home = () => {
       {/* User welcome text and image */}
       <View style={styles.headerContainer}>
         <Text style={styles.welcomeText}>Welcome, {username}!</Text>
-        <Image source={userImage} style={styles.userImage} />
+        <Pressable onPress={() => (router.push('profile'))}>
+          <Image source={userImage} style={styles.userImage} />
+        </Pressable>
       </View>
 
       {/* Recipe Carousel */}
@@ -212,7 +78,8 @@ const Home = () => {
         scrollEventThrottle={16}
         style={styles.carouselContainer}
       >
-        {suggestedRecipes.map((recipe) => (
+        {/* tidi */}
+        {randomRecipes.map((recipe) => (
           <TouchableOpacity
             key={recipe.id}
             style={styles.recipeContainer}
@@ -229,7 +96,7 @@ const Home = () => {
           >
             {/* Container to overlay text on top of image */}
             <View style={styles.imageContainer}>
-              <Image source={recipe.image} style={styles.recipeImage} />
+              <Image source={{uri: recipe.image}} style={styles.recipeImage} />
               <Text style={styles.recipeText}>{recipe.name}</Text>
             </View>
           </TouchableOpacity>
@@ -238,7 +105,8 @@ const Home = () => {
 
       {/* Pagination Dots */}
       <View style={styles.dotContainer}>
-        {suggestedRecipes.map((_, index) => (
+        {/* tidi */}
+        {randomRecipes.map((_, index) => (
           <TouchableOpacity
             key={index}
             style={[styles.dot, currentRecipe === index && styles.activeDot]}

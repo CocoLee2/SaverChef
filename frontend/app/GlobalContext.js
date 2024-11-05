@@ -30,12 +30,13 @@ export const GlobalProvider = ({ children }) => {
       }
     ]
   );
-  const [favoriteRecipes, setFavoriteRecipes] = useState([100, 101, 102])
+  const [favoriteRecipes, setFavoriteRecipes] = useState([])
+  const [randomRecipes, setRandomRecipes] = useState([])
   
   // Provide the values and update functions
   return (
     <GlobalContext.Provider value={{ username, setUsername, email, setEmail, password, setPassword, 
-      fridgeItems, setFridgeItems, favoriteRecipes, setFavoriteRecipes }}>
+      fridgeItems, setFridgeItems, favoriteRecipes, setFavoriteRecipes, randomRecipes, setRandomRecipes }}>
       {children}
     </GlobalContext.Provider>
   );

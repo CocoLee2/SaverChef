@@ -7,12 +7,40 @@ import FormField from '../../components/FormField';
 
 const LogIn = () => {
   const { username, setUsername, email, setEmail, password, setPassword, 
-    fridgeItems, setFridgeItems, favoriteRecipes, setFavoriteRecipes } = useContext(GlobalContext);
+    fridgeItems, setFridgeItems, favoriteRecipes, setFavoriteRecipes, randomRecipes, setRandomRecipes } = useContext(GlobalContext);
 
   const [form, setForm] = useState({
     email: "",
     password: ""
   });
+
+  const getRandomRecipes = async() => {
+    console.log("getRandomRecipes is called")
+    try {
+      const response = await fetch('http://127.0.0.1:5001/get_random', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          number: 6,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        console.log(data.recipes)
+        setRandomRecipes(data.recipes); 
+      } else {
+        Alert.alert('Error', data.message || 'Request failed. Please try again.');
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      Alert.alert('Network Error', 'Something went wrong. Please try again later.');
+    }
+  }
+
 
   const handleLogin = async() => {
     // Basic validation to check if all fields are filled
@@ -42,6 +70,7 @@ const LogIn = () => {
         setEmail(form.email);
         setPassword(form.password);
         setFavoriteRecipes(data["favoriteRecipes"])
+        await getRandomRecipes();
         router.push("../(tabs)/home");
       } else {
         // Handle error
