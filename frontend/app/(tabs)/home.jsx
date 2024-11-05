@@ -86,9 +86,9 @@ const Home = () => {
             onPress={() => router.push({
               pathname: '../(other)/showRecipe',
               params: {
-                id: recipe.id, 
+                id: recipe.id,
                 name: recipe.name,
-                image: Image.resolveAssetSource(recipe.image).uri,
+                image: recipe.image,
                 details: JSON.stringify(recipe.details),
                 path: '../(tabs)/home'
               },
