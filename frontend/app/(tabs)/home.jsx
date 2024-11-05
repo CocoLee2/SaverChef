@@ -36,7 +36,7 @@ const Home = () => {
   
   // for "expiring inventory section" 
   const foodItems = [
-    { foodName: 'Pasta', daysLeft: 1 },
+    { foodName: 'Apple', daysLeft: 1 },
     { foodName: 'Milk', daysLeft: 1 },
     { foodName: 'Egg', daysLeft: 1 },
     { foodName: 'Carrot', daysLeft: 3 },
