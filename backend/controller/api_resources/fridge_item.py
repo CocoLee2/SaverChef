@@ -7,12 +7,17 @@ from datetime import date
 
 fridge_item_bp = Blueprint('fridge_items', __name__, url_prefix='/fridge_item')
 
-@fridge_item_bp.route("/add")
+@fridge_item_bp.route("/add", methods=["POST"])
 def add_item():
     data = request.json
     fridge_id = int(data['fridge_id'])
     expiration_date = date.fromisoformat(data['expiration_date'])
     name = data['name']
-    description = data['description'] if data['description'] else ""
+    description = data.get('description', "")
     quantity = int(data['quantity'])
-    qualifier = int(data['qualifier'])
+    qualifier = data['qualifier']
+    new_item = FridgeItems(fridge_id, name, description, expiration_date, quantity, qualifier)
+    db.session.add(new_item)
+    db.session.commit()
+
+    return jsonify({"itemId": new_item.id}), 201
