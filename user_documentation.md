@@ -1,17 +1,69 @@
-A high-level description: 
-SaverChef is a smart app that tracks kitchen inventory and suggests recipes based on available ingredients, helping users make the most of what they have and reduce food waste.
-How to install & run the software: 
-Users can go to the GitHub repo and install the app. 
-Open a terminal and run: “git clone https://github.com/CocoLee2/SaverChef.git”. Open the whole folder with the preferred code editor.
-Download Expo Go and create an account
-Follow the instructions in README on GitHub, open 2 terminals, and run frontend and backend separately. 
-Use the phone camera to scan the QRcode showing in the terminal, then the app will be running.
-How to use the software: 
-There are 4 main pages in the app: home, inventory, recipes, and profile. 
-On the home page, it will show the expiring ingredients, and encourage users to use them soon. 
-The inventory page shows all the ingredients the user already has, all the items can be modified, and users are able to add items manually or by scanning the barcode. Users could share the inventory with other users. Users are able to create new inventory or delete existing inventories. 
-The recipes page will generate recipes based on the inventory, and give the suggested recipes with detailed descriptions.
-The profile page includes users’ favorite recipes, changing passwords, logging out, and deleting account actions.
-How to report a bug:
-Users could submit issues through the GitHub repo. We will add an option of reporting problems in the app as well in the near future.
-Known bugs: nothing we have noticed so far.
+# SaverChef
+
+## Overview
+SaverChef is a smart kitchen management app that helps you reduce food waste and make the most of your ingredients. The app tracks your kitchen inventory and suggests recipes based on what you have available, making meal planning easier and more efficient.
+
+## Installation Guide
+
+### Prerequisites
+- A smartphone with a camera
+- Expo Go app installed on your phone
+- An Expo account (free)
+
+### Setup Steps
+1. Clone the repository:
+```bash
+git clone https://github.com/CocoLee2/SaverChef.git
+```
+
+2. Open the project folder in your preferred code editor
+
+3. Download and install Expo Go from your device's app store
+
+4. Create an Expo account
+
+5. Follow the repository's README instructions
+
+6. Open two terminals:
+   - One for the frontend
+   - One for the backend
+
+7. Scan the QR code displayed in the terminal using your phone's camera
+
+## Using SaverChef
+
+### Home Page
+- View ingredients that are about to expire
+- Get reminders to use ingredients before they spoil
+- Quick access to recipe suggestions
+
+### Inventory Management
+- View all your ingredients in one place
+- Add new items:
+  - Manual entry
+  - Barcode scanning
+- Modify existing items
+- Share your inventory with other users
+- Create multiple inventories
+- Delete inventories you no longer need
+
+### Recipe Features
+- Get recipe suggestions based on your available ingredients
+- View detailed recipe descriptions
+- Save favorite recipes for later
+
+### Profile Management
+- Access your favorite recipes
+- Change your password
+- Log out of your account
+- Delete your account if needed
+
+## Bug Reporting
+- Found a bug? Submit an issue through our [GitHub repository](https://github.com/CocoLee2/SaverChef)
+- In-app bug reporting coming soon!
+
+## Known Issues
+Currently, there are no known bugs or issues.
+
+---
+Thank you for using SaverChef! We're committed to helping you reduce food waste and make cooking more enjoyable. If you have any questions or suggestions, please don't hesitate to reach out through our GitHub repository.
