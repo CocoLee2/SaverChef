@@ -8,8 +8,13 @@ The source code is hosted on GitHub: [SaverChef Repository](https://github.com/C
 
 git clone https://github.com/CocoLee2/SaverChef.git
 
-The layout of Backend: 
-There is a file called app.py which is the integration of all submodules, any routes need to be put here. There is a module directory which contains some information about the database. There are three main directories: recipes, user_auth, and inventory(still working on it), which are the main functions of SaverChef containing the API backend routes. Each of these folders have files containing a Blueprint that can be imported into the app.py for it to be available once run. There is a directory called database which contains the db object that can be imported into files that need to interact with the database. The model directory holds the definitions for our tables (Users, fridges, fridge_items) and can be used to interact with the database tables by importing them into a python file (ex. ‘from model.users import Users’). 
+## 1. Backend Layout
+- **`app.py`**: Integrates all submodules; any routes should be added here.
+- **`module` Directory**: Contains information about the database.
+- **Main Directories:**
+  - **`recipes`**, **`user_auth`**, **`inventory`**: These directories contain the primary functions of SaverChef, each holding API backend routes. Each folder contains a Blueprint that can be imported into `app.py` for functionality.
+  - **`database` Directory**: Houses the `db` object, which can be imported into any file that needs to interact with the database.
+  - **`model` Directory**: Contains table definitions (`Users`, `fridges`, `fridge_items`). These models can be imported as needed (e.g., `from model.users import Users`). 
 The layout of frontend:
 ### **1. `app` Directory:**
 This is the main directory where the core application logic and screens are stored.
