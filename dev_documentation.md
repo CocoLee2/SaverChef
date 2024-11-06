@@ -6,7 +6,6 @@ This project is organized into two main directories: `frontend` and `backend`.
 ## Source Code
 The source code is hosted on GitHub: [SaverChef Repository](https://github.com/CocoLee2/SaverChef). To clone the repository, use:
 
-```bash
 git clone https://github.com/CocoLee2/SaverChef.git
 
 The layout of Backend: 
