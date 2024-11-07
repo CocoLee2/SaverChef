@@ -3,8 +3,7 @@ import { SearchBar } from 'react-native-elements';
 import { router } from "expo-router";
 import { React, useState, useContext, useEffect} from 'react';
 import { GlobalContext } from "../GlobalContext";
-
-
+import Spinner from 'react-native-loading-spinner-overlay';
 import CustomButton from '../../components/CustomButton';
 
 
@@ -14,11 +13,14 @@ const Recipes = () => {
   const { username, setUsername, email, setEmail, password, setPassword, 
     fridgeItems, setFridgeItems, favoriteRecipes, setFavoriteRecipes, randomRecipes, setRandomRecipes } = useContext(GlobalContext);
 
+  const [isLoading, setIsLoading] = useState(false);
+
   // This helper function is used by both handleUseMyIngredients and handleNewButtonPress.
   // It takes a list of validated strings as ingredients,
   // sends a request to the backend to fetch recipes, 
   // and navigates to the searchRecipe page with the retrieved recipes data.
   const helper = async (ingredients) => {
+    setIsLoading(true);  //start showing spinner
     if (ingredients.length === 0) {
       Alert.alert('Network Error', 'Something went wrong. Please try again later.'); 
       return 
@@ -43,13 +45,16 @@ const Recipes = () => {
           pathname: '../(other)/searchRecipe',
           params: { query: 'Recipe', recipes: JSON.stringify(data.recipes)},
         });
+        setIsLoading(false);  //end showing spinner
       } else {
         // Handle other errors
         Alert.alert('Error', data.message || 'Request failed. Please try again.');
+        setIsLoading(false);  //end showing spinner
       }
     } catch (error) {
       console.error('Error:', error);
       Alert.alert('Network Error', 'Something went wrong. Please try again later.');
+      setIsLoading(false);  //end showing spinner
     }
   }
 
@@ -72,6 +77,14 @@ const Recipes = () => {
   return (
     <View style={styles.container}>
       <StatusBar barStyle="dark-content" />
+      <Spinner
+        visible={isLoading}
+        textContent={'Loading...'}
+        textStyle={styles.spinnerTextStyle}
+        animation="fade"
+        color="#FFF"
+        overlayColor="rgba(0, 0, 0, 0.5)"
+      />
       
       {/* User welcome text and image */}
       <View style={styles.headerContainer}>
@@ -243,6 +256,11 @@ const styles = StyleSheet.create({
     color: '#FFFFFF', 
     fontWeight: '600', 
     fontSize: 14, 
+  },
+  spinnerTextStyle: {
+    color: '#FFF',
+    fontSize: 16,
+    fontWeight: 'bold',
   }
 });
 
