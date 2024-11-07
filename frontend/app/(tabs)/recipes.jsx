@@ -10,7 +10,7 @@ import CustomButton from '../../components/CustomButton';
 const Recipes = () => {
   const [search, setSearch] = useState('');
 
-  const { username, setUsername, email, setEmail, password, setPassword, 
+  const { userId, setUserId, username, setUsername, email, setEmail, password, setPassword, 
     fridgeItems, setFridgeItems, favoriteRecipes, setFavoriteRecipes, randomRecipes, setRandomRecipes } = useContext(GlobalContext);
 
   const [isLoading, setIsLoading] = useState(false);

@@ -166,7 +166,7 @@ def get_random():
         for recipe in res.get('recipes', ''):
             if recipe:
                 title, image, serves, readyIn, steps_list, ingredients = get_info(recipe.get('id', ''))
-                if steps_list != []:
+                if title != "" and serves != "" and readyIn != "" and steps_list != [] and image != "" and ingredients != []:
                     recipe_data = {
                         "id": recipe.get('id', ''),
                         "name": title,

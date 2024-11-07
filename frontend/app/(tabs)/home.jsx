@@ -8,7 +8,7 @@ import InfoBox from '../../components/InfoBox.jsx';
 import images from '../../constants/images';
 
 const Home = () => {
-  const { username, setUsername, email, setEmail, password, setPassword, 
+  const { userId, setUserId, username, setUsername, email, setEmail, password, setPassword, 
     fridgeItems, setFridgeItems, favoriteRecipes, setFavoriteRecipes, randomRecipes, setRandomRecipes } = useContext(GlobalContext);
 
   const scrollViewRef = useRef(null);

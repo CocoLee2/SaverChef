@@ -7,7 +7,7 @@ import FormField from '../../components/FormField';
 import Spinner from 'react-native-loading-spinner-overlay';
 
 const SignUp = () => {
-  const { username, setUsername, email, setEmail, password, setPassword, 
+  const { userId, setUserId, username, setUsername, email, setEmail, password, setPassword, 
     fridgeItems, setFridgeItems, favoriteRecipes, setFavoriteRecipes, randomRecipes, setRandomRecipes } = useContext(GlobalContext);
   
   const [isLoading, setIsLoading] = useState(false);
@@ -75,6 +75,7 @@ const SignUp = () => {
       
       if (response.ok) {
         // Success: Navigate to the home page or show a success message
+        setUserId(data["user_id"]);
         setUsername(form.username); 
         setEmail(form.email);
         setPassword(form.password);
