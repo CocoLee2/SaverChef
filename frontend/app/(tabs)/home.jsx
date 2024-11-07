@@ -1,6 +1,7 @@
 import { React, useState, useRef, useContext } from 'react';
 import { View, Text, Image, ScrollView, TouchableOpacity, StyleSheet, Dimensions, Pressable } from 'react-native';
 import { router } from 'expo-router';
+import Swiper from 'react-native-swiper';
 import { GlobalContext } from "../GlobalContext";
 import userImage from '../../assets/images/userImage.webp';
 import InfoBox from '../../components/InfoBox.jsx';
@@ -10,23 +11,7 @@ const Home = () => {
   const { username, setUsername, email, setEmail, password, setPassword, 
     fridgeItems, setFridgeItems, favoriteRecipes, setFavoriteRecipes, randomRecipes, setRandomRecipes } = useContext(GlobalContext);
 
-  const [currentRecipe, setCurrentRecipe] = useState(0);
   const scrollViewRef = useRef(null);
-
-  const handleScroll = (event) => {
-    const scrollPosition = event.nativeEvent.contentOffset.x;
-    const screenWidth = Dimensions.get('window').width;
-    const currentIndex = Math.round(scrollPosition / screenWidth);
-    setCurrentRecipe(currentIndex);
-  };
-
-  const handleDotPress = (index) => {
-    setCurrentRecipe(index);
-    if (scrollViewRef.current) {
-      const screenWidth = Dimensions.get('window').width;
-      scrollViewRef.current.scrollTo({ x: index * screenWidth, animated: true });
-    }
-  };
 
   const getImage = (foodName) => {
     const sanitizedFoodName = foodName.replace(/[^a-zA-Z]/g, '').toLowerCase();
@@ -36,7 +21,7 @@ const Home = () => {
   
   // for "expiring inventory section" 
   const foodItems = [
-    { foodName: 'Pasta', daysLeft: 1 },
+    { foodName: 'Apple', daysLeft: 1 },
     { foodName: 'Milk', daysLeft: 1 },
     { foodName: 'Egg', daysLeft: 1 },
     { foodName: 'Carrot', daysLeft: 3 },
@@ -52,7 +37,6 @@ const Home = () => {
         key={index}
         title={item.foodName}
         daysLeft={item.daysLeft.toString()}
-        // image={item.image}
         image={getImage(item.foodName)}
       />
     ));
@@ -68,18 +52,14 @@ const Home = () => {
         </Pressable>
       </View>
 
-      {/* Recipe Carousel */}
-      <ScrollView
-        ref={scrollViewRef}
-        horizontal
-        pagingEnabled
-        showsHorizontalScrollIndicator={false}
-        onScroll={handleScroll}
-        scrollEventThrottle={16}
-        style={styles.carouselContainer}
-      >
-        {/* tidi */}
+      <View style={styles.sliderContainer}>
+        <Swiper
+          autoplay
+          height={200}
+          showsPagination={false}
+        >
         {randomRecipes.map((recipe) => (
+           <View style={styles.slide}>
           <TouchableOpacity
             key={recipe.id}
             style={styles.recipeContainer}
@@ -96,23 +76,13 @@ const Home = () => {
           >
             {/* Container to overlay text on top of image */}
             <View style={styles.imageContainer}>
-              <Image source={{uri: recipe.image}} style={styles.recipeImage} />
+              <Image source={{uri: recipe.image}} style={styles.recipeImage} /> 
               <Text style={styles.recipeText}>{recipe.name}</Text>
             </View>
           </TouchableOpacity>
+          </View>
         ))} 
-        </ScrollView> 
-
-      {/* Pagination Dots */}
-      <View style={styles.dotContainer}>
-        {/* tidi */}
-        {randomRecipes.map((_, index) => (
-          <TouchableOpacity
-            key={index}
-            style={[styles.dot, currentRecipe === index && styles.activeDot]}
-            onPress={() => handleDotPress(index)}
-          />
-        ))}
+        </Swiper>
       </View>
 
       <View style={styles.expiringContainer}>
@@ -154,11 +124,6 @@ const styles = StyleSheet.create({
     marginRight: 10,
     marginLeft: 10,
   },
-  carouselContainer: {
-    marginTop: 20, 
-    flexGrow: 0, 
-    flexShrink: 1, 
-  },
   recipeContainer: {
     width: screenWidth,
     alignItems: 'center',
@@ -185,21 +150,6 @@ const styles = StyleSheet.create({
     textShadowOffset: { width: 1, height: 1 },
     textShadowRadius: 2,
   },
-  dotContainer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    marginTop: 15, 
-  },
-  dot: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-    backgroundColor: '#C4C4C4',
-    marginHorizontal: 8,
-  },
-  activeDot: {
-    backgroundColor: '#A9A9A9',
-  },
   expiringContainer: {
     flex: 1,
     marginTop: 25,
@@ -214,8 +164,50 @@ const styles = StyleSheet.create({
     color: '#F36C21',
     marginBottom: 10,
   },
+  slide: {
+    flex: 1,
+    justifyContent: 'center',
+    backgroundColor: 'transparent',
+    borderRadius: 8,
+  },
+  sliderContainer: {
+    height: 200,
+    width: '100%',
+    marginTop: 10,
+    justifyContent: 'center',
+    alignSelf: 'center',
+    borderRadius: 8,
+  },
 });
 
 
 export default Home;
 
+
+
+
+
+
+// {randomRecipes.map((recipe) => (
+//   <TouchableOpacity
+//     key={recipe.id}
+//     style={styles.recipeContainer}
+//     onPress={() => router.push({
+//       pathname: '../(other)/showRecipe',
+//       params: {
+//         id: recipe.id,
+//         name: recipe.name,
+//         // image: recipe.image,
+//         image: Image.resolveAssetSource(recipe.image).uri,
+//         details: JSON.stringify(recipe.details),
+//         path: '../(tabs)/home',
+//       },
+//     })}
+//   >
+//     <View style={styles.imageContainer}>
+//       {/* <Image source={{ uri: recipe.image }} style={styles.recipeImage} /> */}
+//       <Image source={recipe.image} style={styles.recipeImage} />
+//       <Text style={styles.recipeText}>{recipe.name}</Text>
+//     </View>
+//   </TouchableOpacity>
+// ))}

@@ -1,9 +1,10 @@
-import { StatusBar, Text, View, StyleSheet, ScrollView, Alert } from 'react-native';
-import { React, useState, useContext } from 'react';
+import { StatusBar, Text, View, StyleSheet, ScrollView, Alert, Platform } from 'react-native';
+import { React, useState, useContext, Component } from 'react';
 import { Link, router } from "expo-router";
 import { GlobalContext } from "../GlobalContext";
 import CustomButton from '../../components/CustomButton';
 import FormField from '../../components/FormField';
+import Spinner from 'react-native-loading-spinner-overlay';
 
 const LogIn = () => {
   const { username, setUsername, email, setEmail, password, setPassword, 
@@ -15,7 +16,6 @@ const LogIn = () => {
   });
 
   const getRandomRecipes = async() => {
-    console.log("getRandomRecipes is called")
     try {
       const response = await fetch('http://127.0.0.1:5001/get_random', {
         method: 'POST',
@@ -23,7 +23,7 @@ const LogIn = () => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          number: 6,
+          number: 12,
         }),
       });
 
@@ -31,7 +31,7 @@ const LogIn = () => {
 
       if (response.ok) {
         console.log(data.recipes)
-        setRandomRecipes(data.recipes); 
+        setRandomRecipes(data.recipes.slice(0, 6)); 
       } else {
         Alert.alert('Error', data.message || 'Request failed. Please try again.');
       }
@@ -40,15 +40,27 @@ const LogIn = () => {
       Alert.alert('Network Error', 'Something went wrong. Please try again later.');
     }
   }
+  
+  // this function waits 4 seconds and then resolve a promise without performing any other action
+  // it is used to test the loading animation
+  function doNothingForFourSeconds() {
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        resolve();
+      }, 4000); 
+    });
+  }
+
+  const [isLoading, setIsLoading] = useState(false);
 
 
-  const handleLogin = async() => {
+  const handleLogin = async() => {  
     // Basic validation to check if all fields are filled
     if (!form.email|| !form.password) {
       Alert.alert('Error', 'Please fill in all fields.');
       return;
     }
-
+    
     // connect to backend
     try {
       const response = await fetch('http://127.0.0.1:5001/login', {  
@@ -70,7 +82,9 @@ const LogIn = () => {
         setEmail(form.email);
         setPassword(form.password);
         setFavoriteRecipes(data["favoriteRecipes"])
+        setIsLoading(true);  //start showing spinner
         await getRandomRecipes();
+        setIsLoading(false);  //end showing spinner
         router.push("../(tabs)/home");
       } else {
         // Handle error
@@ -89,6 +103,15 @@ const LogIn = () => {
       />
 
       <ScrollView contentContainerStyle={styles.scrollViewContent}>
+        <Spinner
+          visible={isLoading}
+          textContent={'Loading...'}
+          textStyle={styles.spinnerTextStyle}
+          animation="fade"
+          color="#FFF"
+          overlayColor="rgba(0, 0, 0, 0.5)"
+        />
+  
         <View style={styles.formWrapper}>
           <Text style={styles.Text1}>Welcome back!</Text>
           <Text style={styles.Text2}>Enter your credentials to log in</Text>
@@ -107,13 +130,6 @@ const LogIn = () => {
             handleChangeText={(e) => setForm({ ...form, password: e })}
             otherStyles={{ marginBottom: 20, marginTop: 10 }}
           />
-
-          {/* <Link
-            href="/forgetPassword"
-            style={styles.forgetPasswordLink}
-          >
-            forget password?
-          </Link> */}
 
           <CustomButton 
             title="Log in"
@@ -184,13 +200,11 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#F36C21',
   },
-  // forgetPasswordLink: {
-  //   fontSize: 12,
-  //   fontWeight: '600',
-  //   color: '#F36C21',
-  //   alignSelf: 'flex-end',
-  //   paddingRight: 30,
-  // },
+  spinnerTextStyle: {
+    color: '#FFF',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
 });
 
 export default LogIn;

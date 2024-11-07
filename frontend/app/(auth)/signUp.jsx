@@ -4,10 +4,13 @@ import { Link, router } from "expo-router";
 import { GlobalContext } from "../GlobalContext";
 import CustomButton from '../../components/CustomButton';
 import FormField from '../../components/FormField';
+import Spinner from 'react-native-loading-spinner-overlay';
 
 const SignUp = () => {
   const { username, setUsername, email, setEmail, password, setPassword, 
     fridgeItems, setFridgeItems, favoriteRecipes, setFavoriteRecipes, randomRecipes, setRandomRecipes } = useContext(GlobalContext);
+  
+  const [isLoading, setIsLoading] = useState(false);
 
   const [form, setForm] = useState({
     username: "",
@@ -17,7 +20,6 @@ const SignUp = () => {
   });
 
   const getRandomRecipes = async() => {
-    console.log("getRandomRecipes is called")
     try {
       const response = await fetch('http://127.0.0.1:5001/get_random', {
         method: 'POST',
@@ -25,7 +27,7 @@ const SignUp = () => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          number: 6,
+          number: 12,
         }),
       });
 
@@ -33,7 +35,7 @@ const SignUp = () => {
 
       if (response.ok) {
         console.log(data.recipes)
-        setRandomRecipes(data.recipes); 
+        setRandomRecipes(data.recipes.slice(0, 6)); 
       } else {
         Alert.alert('Error', data.message || 'Request failed. Please try again.');
       }
@@ -77,7 +79,9 @@ const SignUp = () => {
         setEmail(form.email);
         setPassword(form.password);
         setFavoriteRecipes([]);
+        setIsLoading(true);  //start showing spinner
         await getRandomRecipes();
+        setIsLoading(false);  //end showing spinner
         Alert.alert('Success', 'Account created successfully!');
         router.push("../(tabs)/home");
       } else {
@@ -95,6 +99,15 @@ const SignUp = () => {
       <StatusBar barStyle="dark-content" />
       
       <ScrollView contentContainerStyle={styles.scrollViewContent}>
+        <Spinner
+            visible={isLoading}
+            textContent={'Loading...'}
+            textStyle={styles.spinnerTextStyle}
+            animation="fade"
+            color="#FFF"
+            overlayColor="rgba(0, 0, 0, 0.5)"
+          />
+
         <View style={styles.formWrapper}>
           <Text style={styles.Text1}>Sign Up</Text>
           <Text style={styles.Text2}>Create your account</Text>
@@ -194,6 +207,11 @@ const styles = StyleSheet.create({
   errorText: {
     color: 'red',
     marginTop: 10,
+  },
+  spinnerTextStyle: {
+    color: '#FFF',
+    fontSize: 16,
+    fontWeight: 'bold',
   },
 });
 
