@@ -56,7 +56,7 @@ app = Blueprint('recipes', __name__)
 
 
 # replace with other API key, since I have run out of access...
-API_KEY = "f67757c32f8740a8aadbe9a628fc18f8"
+API_KEY = "970f703fdfec480aa59e58a3e9ccec77"
 
 def get_info(id):
     URL = f'https://api.spoonacular.com/recipes/{id}/information'
@@ -85,7 +85,7 @@ def get_info(id):
                 "name": name,
                 "quantity": quantity
             })
-
+        
         return title, image, serves, readyIn, steps_list, formatted_ingredients
     else:
         return None, None, None, None, None, None, response.status_code
@@ -166,7 +166,7 @@ def get_random():
         for recipe in res.get('recipes', ''):
             if recipe:
                 title, image, serves, readyIn, steps_list, ingredients = get_info(recipe.get('id', ''))
-                if steps_list != []:
+                if steps_list != [] and image != "":
                     recipe_data = {
                         "id": recipe.get('id', ''),
                         "name": title,

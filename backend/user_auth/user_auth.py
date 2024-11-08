@@ -79,8 +79,8 @@ def signup():
     )
     db.session.add(new_user)
     db.session.commit()
+    return jsonify({"message": "Login successful", "user_id": new_user.id}), 201
 
-    return jsonify({"message": "Users created successfully"}), 201
 
 @app.route('/mark_favorite', methods=['POST'])
 def mark_favorite():

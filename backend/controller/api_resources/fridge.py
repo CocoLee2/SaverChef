@@ -50,8 +50,9 @@ def create_fridge():
       400, user does not exist or otherwise malformed id
     """
     try:
-        creator_id = int(request.form.get("creator_id"))
-        fridge_name = request.form.get("fridge_name")
+        data = request.json
+        creator_id = int(data["creator_id"])
+        fridge_name = data["fridge_name"]
         if not Users.session.get(creator_id):  # fails if does not exist
             return Response(response=str("creator does not exist"), status=400)
         new_fridge = Fridge(fridge_name, creator_id)
@@ -62,8 +63,8 @@ def create_fridge():
         return Response(response=str(e), status=400)
 
 
-@fridge_bp.route('/delete/<fridge_id>', methods=["POST"])
-def delete_fridge_by_id(fridge_id):
+@fridge_bp.route('/delete/', methods=["POST"])
+def delete_fridge_by_id():
     """Deletes a given fridge by id. TODO: figure out how to have proper permissions for this
 
     Response codes:
@@ -72,6 +73,7 @@ def delete_fridge_by_id(fridge_id):
     403, does not have permissions to delete this fridge
     """
     try:
+        fridge_id = request.json["fridge_id"]
         fridge = Fridge.query.get(fridge_id)
         if not fridge:
             return Response(response=str(

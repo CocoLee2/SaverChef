@@ -6,7 +6,7 @@ import { GlobalContext } from "../GlobalContext";
 import CustomButton from '../../components/CustomButton';
 
 const ShowRecipe = () => {
-  const { username, setUsername, email, setEmail, password, setPassword, 
+  const { userId, setUserId, username, setUsername, email, setEmail, password, setPassword, 
     fridgeItems, setFridgeItems, favoriteRecipes, setFavoriteRecipes, randomRecipes, setRandomRecipes } = useContext(GlobalContext);
 
   const { id, name, image, details } = useLocalSearchParams();

@@ -1,18 +1,22 @@
 import { StatusBar, Text, View, StyleSheet, Alert, Image, TouchableOpacity } from 'react-native';
-import { React, useContext } from 'react';
+import { React, useContext, useState } from 'react';
 import { router } from "expo-router";
 import { GlobalContext } from "../GlobalContext";
 import userImage from '../../assets/images/userImage.webp';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import AntDesign from '@expo/vector-icons/AntDesign';
+import Spinner from 'react-native-loading-spinner-overlay';
 
 
 const Profile = () => {
-  const { username, setUsername, email, setEmail, password, setPassword, 
+  const { userId, setUserId, username, setUsername, email, setEmail, password, setPassword, 
     fridgeItems, setFridgeItems, favoriteRecipes, setFavoriteRecipes, randomRecipes, setRandomRecipes } = useContext(GlobalContext);
+
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleGetFavoriteRecipes = async () => {
     console.log(`Favorite recipes are: ${favoriteRecipes}`);
+    setIsLoading(true);  //start showing spinner
     if (favoriteRecipes.length === 0) {
       Alert.alert('No Favorite Recipes', 'You don’t have any favorite recipes yet. Browse and add some!');
       return 
@@ -29,6 +33,7 @@ const Profile = () => {
       });
   
       const data = await response.json();
+      setIsLoading(false);  //end showing spinner
   
       // Check for response status
       if (response.ok) {
@@ -109,6 +114,14 @@ const Profile = () => {
   return (
     <View style={styles.container}>
       <StatusBar barStyle="dark-content" />
+      <Spinner
+            visible={isLoading}
+            textContent={'Loading...'}
+            textStyle={styles.spinnerTextStyle}
+            animation="fade"
+            color="#FFF"
+            overlayColor="rgba(0, 0, 0, 0.5)"
+          />
 
       <View style={styles.imageWrapper}>
         <Image
@@ -200,5 +213,10 @@ const styles = StyleSheet.create({
   },
   icon: {
     marginRight: 10, 
+  },
+  spinnerTextStyle: {
+    color: '#FFF',
+    fontSize: 16,
+    fontWeight: 'bold',
   },
 });
