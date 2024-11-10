@@ -14,16 +14,18 @@ const Recipes = () => {
     fridgeItems, setFridgeItems, favoriteRecipes, setFavoriteRecipes, randomRecipes, setRandomRecipes } = useContext(GlobalContext);
 
   const [isLoading, setIsLoading] = useState(false);
+  const [recipes, setRecipes] = useState([]); // Store loaded recipes
 
   // This helper function is used by both handleUseMyIngredients and handleNewButtonPress.
   // It takes a list of validated strings as ingredients,
   // sends a request to the backend to fetch recipes, 
   // and navigates to the searchRecipe page with the retrieved recipes data.
-  const helper = async (ingredients) => {
+  const fetchRecipes = async (ingredients) => {
     setIsLoading(true);  //start showing spinner
     if (ingredients.length === 0) {
-      Alert.alert('Network Error', 'Something went wrong. Please try again later.'); 
-      return 
+      Alert.alert('Input Error', 'Please enter ingredients separated by commas, and try again.'); 
+      setIsLoading(false);  
+      return;
     }
 
     try {
@@ -43,7 +45,7 @@ const Recipes = () => {
       if (response.ok) {
         router.push({
           pathname: '../(other)/searchRecipe',
-          params: { query: 'Recipe', recipes: JSON.stringify(data.recipes)},
+          params: { query: 'Recipe', recipes: JSON.stringify(data.recipes), ingredients: ingredients },
         });
         setIsLoading(false);  //end showing spinner
       } else {
@@ -62,7 +64,7 @@ const Recipes = () => {
     const ingredients = fridgeItems.flatMap(fridge => 
       fridge.fridgeItems.map(item => item.itemName)
     );
-    helper(ingredients)
+    fetchRecipes(ingredients)
   }
 
   const handleNewButtonPress = async () => {
@@ -70,7 +72,7 @@ const Recipes = () => {
     const validIngredientRegex = /^[a-zA-Z\s]+$/;
     // do some simple checks on the input strings
     ingredients = ingredients.filter(item => validIngredientRegex.test(item));
-    helper(ingredients)
+    fetchRecipes(ingredients)
   }
 
 
@@ -261,7 +263,12 @@ const styles = StyleSheet.create({
     color: '#FFF',
     fontSize: 16,
     fontWeight: 'bold',
-  }
+  },
+  spinnerTextStyle: {
+    color: '#FFF',
+    fontSize: 16,
+    fontWeight: 'bold',
+  },
 });
 
 

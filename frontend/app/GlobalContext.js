@@ -35,7 +35,6 @@ export const GlobalProvider = ({ children }) => {
   const [randomRecipes, setRandomRecipes] = useState([])
   
   // Provide the values and update functions
-  //tidi
   return (
     <GlobalContext.Provider value={{ userId, setUserId, username, setUsername, email, setEmail, password, setPassword, 
       fridgeItems, setFridgeItems, favoriteRecipes, setFavoriteRecipes, randomRecipes, setRandomRecipes }}>

@@ -39,7 +39,7 @@ const Profile = () => {
       if (response.ok) {
         router.push({
           pathname: '../(other)/searchRecipe',
-          params: { query: 'Profile', recipes: JSON.stringify(data.recipes) },
+          params: { query: 'Profile', recipes: JSON.stringify(data.recipes), ingredients: [] },
         });
       } else {
         // Handle other errors

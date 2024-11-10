@@ -1,14 +1,42 @@
-import { React, useContext} from 'react';
+import { React, useState} from 'react';
 import { View, Text, Image, TouchableOpacity, StyleSheet, StatusBar, FlatList } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, router } from "expo-router";
-import { GlobalContext } from "../GlobalContext";
+import Spinner from 'react-native-loading-spinner-overlay';
 
 
 const SearchRecipe = () => {
   // Use useLocalSearchParams to get both query and recipes
-  const { query, recipes } = useLocalSearchParams();
-  let parsedRecipes = JSON.parse(recipes);
+  const { query, recipes, ingredients} = useLocalSearchParams();
+  let initialRecipes = JSON.parse(recipes);
+  const [parsedRecipes, setParsedRecipes] = useState(initialRecipes);
+  const [isLoading, setIsLoading] = useState(false);
+
+  const loadMoreRecipes = async () => {
+    setIsLoading(true);
+    try {
+      const response = await fetch(`http://127.0.0.1:5001/search`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ ingredients: ingredients }),
+      });
+      const data = await response.json();
+
+      if (response.ok) {
+        setParsedRecipes((prevRecipes) => [...prevRecipes, ...data.recipes]);
+        setIsLoading(false);
+      } else {
+        Alert.alert('Error', data.message || 'Request failed. Please try again.');
+        setIsLoading(false);
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      Alert.alert('Network Error', 'Something went wrong. Please try again later.');
+      setIsLoading(false);
+    }
+  };
 
   const handleRecipePress = (recipe) => {
     router.push({
@@ -26,6 +54,14 @@ const SearchRecipe = () => {
   return (
     <View style={styles.wrapper}>
       <StatusBar barStyle="dark-content" />
+      <Spinner
+        visible={isLoading}
+        textContent={'Loading...'}
+        textStyle={styles.spinnerTextStyle}
+        animation="fade"
+        color="#FFF"
+        overlayColor="rgba(0, 0, 0, 0.5)"
+      />
       
       {/* Header with Back Button */}
       <View style={styles.header}>
@@ -35,14 +71,25 @@ const SearchRecipe = () => {
         </TouchableOpacity>
       </View>
 
-      {/* Recipe Grid (2-column layout) */}
+      {/* Recipe Grid */}
       <FlatList
         data={parsedRecipes}
         renderItem={({ item: recipe }) => (
           <TouchableOpacity
             key={recipe.id}
             style={styles.recipeContainer}
-            onPress={() => handleRecipePress(recipe)}
+            onPress={() =>
+              router.push({
+                pathname: 'showRecipe',
+                params: {
+                  id: recipe.id,
+                  name: recipe.name,
+                  image: recipe.image,
+                  details: JSON.stringify(recipe.details),
+                  path: 'searchRecipe',
+                },
+              })
+            }
           >
             <View style={styles.imageContainer}>
               <Image source={{ uri: recipe.image }} style={styles.recipeImage} />
@@ -54,6 +101,8 @@ const SearchRecipe = () => {
         numColumns={2}
         columnWrapperStyle={styles.columnWrapper}
         contentContainerStyle={styles.recipeList}
+        onEndReached={loadMoreRecipes} // Load more on scroll
+        onEndReachedThreshold={0.1}
       />
     </View>
   );

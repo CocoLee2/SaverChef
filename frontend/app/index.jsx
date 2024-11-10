@@ -2,11 +2,12 @@ import { StatusBar, View, StyleSheet, ScrollView, Image, ImageBackground, Platfo
 import { router } from "expo-router";
 import logo from "../assets/images/logo.png";
 import backgroundImage from "../assets/images/index_bg.png";
+import LottieView from 'lottie-react-native';
 
-import { useState, useEffect } from 'react';
-import * as Device from 'expo-device';
+// import { useState, useEffect } from 'react';
+// import * as Device from 'expo-device';
 // import * as Notifications from 'expo-notifications';
-import Constants from 'expo-constants';
+// import Constants from 'expo-constants';
 
 // Notifications.setNotificationHandler({
 //   handleNotification: async () => ({
@@ -87,9 +88,13 @@ export default function App() {
             
             {/* <Button title="Send push notification" 
             onPress={() => sendNotification("Apple", 3)}/> */}
-
-          </View>
-          
+            <LottieView
+              source={require('./index_animation.json')}
+              autoPlay
+              loop
+              style={{ width: 250, height: 300, marginTop: -40 }}
+            />
+          </View>     
         </ScrollView>
         </ImageBackground>
       </Pressable>
@@ -111,11 +116,11 @@ const styles = StyleSheet.create({
   logoContainer: {
     width: '100%',
     alignItems: 'center', 
-    marginTop: 200, 
+    marginTop: 160, 
   },
   logo: {
-    width: 180,
-    height: 180,
-    borderRadius: 90, 
+    width: 160,
+    height: 160,
+    borderRadius: 80, 
   },
 });
