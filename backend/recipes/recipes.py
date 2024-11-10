@@ -4,58 +4,9 @@ import os
 
 app = Blueprint('recipes', __name__)
 
-# # Use environment variables or store API credentials here
-# EDAMAM_APP_ID = os.getenv("EDAMAM_APP_ID", "2c7b70d9")
-# EDAMAM_APP_KEY = os.getenv("EDAMAM_APP_KEY", "63116b5cc07d35c79baefa1530647068")
-
-# # Define the base URL for the Edamam Recipe Search API
-# EDAMAM_URL = "https://api.edamam.com/search"
-
-# @app.route('/search', methods=['GET', 'POST'])
-# def search():
-#     print("backend recipes, line16")
-#     # query = request.args.get('q')
-#     data = request.json
-#     ingredients = data['ingredients']
-#     print(ingredients)
-#     # Set up the parameters to pass to the API
-#     params = {
-#         "q": ingredients,
-#         "app_id": EDAMAM_APP_ID,
-#         "app_key": EDAMAM_APP_KEY,
-#         "from": 0,
-#         "to": 10,  # Number of results
-#     }
-    
-#     # Send the request to Edamam API
-#     response = requests.get(EDAMAM_URL, params=params)
-    
-#     # Check if the request was successful
-#     if response.status_code == 200:
-#         res = response.json()  # Parse the JSON response
-#         recipes = []
-#         # Get information in JSON
-#         for hit in res.get('hits', []):
-#             recipe = hit.get('recipe', {})
-#             if recipe:
-#                 recipe_data = {
-#                     "uri": recipe.get('uri', ''),
-#                     "name": recipe.get('label', ''),
-#                     "image": recipe.get('image', ''),
-#                     "details": {
-#                         "ingredients": recipe.get('ingredientLines', [])
-#                     },
-#                     "url": recipe.get('url', ''),
-#                     "time": recipe.get('totalTime', '')
-#                 }
-#                 recipes.append(recipe_data)
-        
-#         return jsonify({"recipes": recipes})  # Return the structured JSON response
-#     else:
-#         return jsonify({"error": "Failed to fetch data from Edamam"}), response.status_code
-
-
-# replace with other API key, since I have run out of access...
+# Nancy's API key: "f67757c32f8740a8aadbe9a628fc18f8"
+# Leslie's API key: "970f703fdfec480aa59e58a3e9ccec77"
+# if you get status code 402, replace API_KEY with another one 
 API_KEY = "970f703fdfec480aa59e58a3e9ccec77"
 
 def get_info(id):
@@ -98,6 +49,7 @@ def search():
     params = {
         "ingredients": ingredients,
         "number": 10,
+        # tidi
         "ignorePantry": True,
         "rank": 1,
     }
@@ -110,7 +62,7 @@ def search():
             if recipe:
                 title, image, serves, readyIn, steps_list, ingredients = get_info(recipe.get('id', ''))
                 # skip if there is no steps or response failed
-                if steps_list != [] and title != None:
+                if steps_list != [] and title != None and image != "":
                     recipe_data = {
                         "id": recipe.get('id', ''),
                         "name": title,
@@ -136,7 +88,7 @@ def get_favorite():
     for id in data["favoriet_recipes"]:
       title, image, serves, readyIn, steps_list, ingredients = get_info(id)
       # skip if there is no steps or response failed
-      if steps_list != [] and title != None:
+      if steps_list != [] and title != None and image != "":
         recipe_data = {
             "id": id, 
             "name": title,
@@ -166,7 +118,7 @@ def get_random():
         for recipe in res.get('recipes', ''):
             if recipe:
                 title, image, serves, readyIn, steps_list, ingredients = get_info(recipe.get('id', ''))
-                if steps_list != [] and image != "":
+                if steps_list != [] and title != None and image != "":
                     recipe_data = {
                         "id": recipe.get('id', ''),
                         "name": title,
