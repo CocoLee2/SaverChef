@@ -2,8 +2,7 @@ import { React, useState} from 'react';
 import { View, Text, Image, TouchableOpacity, StyleSheet, StatusBar, FlatList } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, router } from "expo-router";
-import Spinner from 'react-native-loading-spinner-overlay';
-
+import LottieView from 'lottie-react-native';
 
 const SearchRecipe = () => {
   // Use useLocalSearchParams to get both query and recipes
@@ -54,14 +53,17 @@ const SearchRecipe = () => {
   return (
     <View style={styles.wrapper}>
       <StatusBar barStyle="dark-content" />
-      <Spinner
-        visible={isLoading}
-        textContent={'Loading...'}
-        textStyle={styles.spinnerTextStyle}
-        animation="fade"
-        color="#FFF"
-        overlayColor="rgba(0, 0, 0, 0.5)"
-      />
+      {isLoading && (
+        <View style={styles.loadingOverlay}>
+          <LottieView
+            source={require('../loading_animation.json')}
+            autoPlay
+            loop
+            style={{ width: 160, height: 160 }}
+          />
+        </View>
+      )}
+
       
       {/* Header with Back Button */}
       <View style={styles.header}>
@@ -172,5 +174,12 @@ const SearchRecipe = () => {
     },
     columnWrapper: {
       justifyContent: 'space-between', // Ensures even space between columns
+    },
+    loadingOverlay: {
+      ...StyleSheet.absoluteFillObject,
+      backgroundColor: 'rgba(0, 0, 0, 0.2)', // Dim background
+      justifyContent: 'center',
+      alignItems: 'center',
+      zIndex: 10, // Ensures the overlay is above other content
     },
   });

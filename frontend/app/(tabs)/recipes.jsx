@@ -3,9 +3,8 @@ import { SearchBar } from 'react-native-elements';
 import { router } from "expo-router";
 import { React, useState, useContext, useEffect} from 'react';
 import { GlobalContext } from "../GlobalContext";
-import Spinner from 'react-native-loading-spinner-overlay';
 import CustomButton from '../../components/CustomButton';
-
+import LottieView from 'lottie-react-native';
 
 const Recipes = () => {
   const [search, setSearch] = useState('');
@@ -79,14 +78,16 @@ const Recipes = () => {
   return (
     <View style={styles.container}>
       <StatusBar barStyle="dark-content" />
-      <Spinner
-        visible={isLoading}
-        textContent={'Loading...'}
-        textStyle={styles.spinnerTextStyle}
-        animation="fade"
-        color="#FFF"
-        overlayColor="rgba(0, 0, 0, 0.5)"
-      />
+      {isLoading && (
+        <View style={styles.loadingOverlay}>
+          <LottieView
+            source={require('../loading_animation.json')}
+            autoPlay
+            loop
+            style={{ width: 160, height: 160 }}
+          />
+        </View>
+      )}
       
       {/* User welcome text and image */}
       <View style={styles.headerContainer}>
@@ -259,15 +260,12 @@ const styles = StyleSheet.create({
     fontWeight: '600', 
     fontSize: 14, 
   },
-  spinnerTextStyle: {
-    color: '#FFF',
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-  spinnerTextStyle: {
-    color: '#FFF',
-    fontSize: 16,
-    fontWeight: 'bold',
+  loadingOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0, 0, 0, 0.2)', // Dim background
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 10, // Ensures the overlay is above other content
   },
 });
 
