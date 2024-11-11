@@ -1,5 +1,5 @@
 # Welcome to your Expo app 👋
-![pylint](https://img.shields.io/badge/PyLint-5.37-orange?logo=python&logoColor=white)
+![pylint](https://img.shields.io/badge/PyLint-0.00-red?logo=python&logoColor=white)
 This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
 
 ## Get started
