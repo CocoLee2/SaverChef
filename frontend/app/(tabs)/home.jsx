@@ -1,4 +1,4 @@
-import { React, useState, useRef, useContext } from 'react';
+import { React, useState, useRef, useContext, useEffect } from 'react';
 import { View, Text, Image, ScrollView, TouchableOpacity, StyleSheet, Dimensions, Pressable } from 'react-native';
 import { router } from 'expo-router';
 import Swiper from 'react-native-swiper';
@@ -11,7 +11,7 @@ const Home = () => {
   const { userId, setUserId, username, setUsername, email, setEmail, password, setPassword, 
     fridgeItems, setFridgeItems, favoriteRecipes, setFavoriteRecipes, randomRecipes, setRandomRecipes } = useContext(GlobalContext);
 
-  const scrollViewRef = useRef(null);
+  // const scrollViewRef = useRef(null);
 
   const getImage = (foodName) => {
     const sanitizedFoodName = foodName.replace(/[^a-zA-Z]/g, '').toLowerCase();

@@ -4,7 +4,8 @@ import { Link, router } from "expo-router";
 import { GlobalContext } from "../GlobalContext";
 import CustomButton from '../../components/CustomButton';
 import FormField from '../../components/FormField';
-import Spinner from 'react-native-loading-spinner-overlay';
+import LottieView from 'lottie-react-native';
+
 
 const SignUp = () => {
   const { userId, setUserId, username, setUsername, email, setEmail, password, setPassword, 
@@ -27,7 +28,7 @@ const SignUp = () => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          number: 12,
+          number: 8,
         }),
       });
 
@@ -100,14 +101,16 @@ const SignUp = () => {
       <StatusBar barStyle="dark-content" />
       
       <ScrollView contentContainerStyle={styles.scrollViewContent}>
-        <Spinner
-            visible={isLoading}
-            textContent={'Loading...'}
-            textStyle={styles.spinnerTextStyle}
-            animation="fade"
-            color="#FFF"
-            overlayColor="rgba(0, 0, 0, 0.5)"
-          />
+        {isLoading && (
+          <View style={styles.loadingOverlay}>
+            <LottieView
+              source={require('../loading_animation.json')}
+              autoPlay
+              loop
+              style={{ width: 160, height: 160 }}
+            />
+          </View>
+        )}
 
         <View style={styles.formWrapper}>
           <Text style={styles.Text1}>Sign Up</Text>
@@ -209,10 +212,12 @@ const styles = StyleSheet.create({
     color: 'red',
     marginTop: 10,
   },
-  spinnerTextStyle: {
-    color: '#FFF',
-    fontSize: 16,
-    fontWeight: 'bold',
+  loadingOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0, 0, 0, 0.2)', // Dim background
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 10, // Ensures the overlay is above other content
   },
 });
 
