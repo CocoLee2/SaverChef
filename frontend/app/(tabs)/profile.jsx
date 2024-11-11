@@ -5,7 +5,7 @@ import { GlobalContext } from "../GlobalContext";
 import userImage from '../../assets/images/userImage.webp';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import AntDesign from '@expo/vector-icons/AntDesign';
-import Spinner from 'react-native-loading-spinner-overlay';
+import LottieView from 'lottie-react-native';
 
 
 const Profile = () => {
@@ -39,7 +39,7 @@ const Profile = () => {
       if (response.ok) {
         router.push({
           pathname: '../(other)/searchRecipe',
-          params: { query: 'Profile', recipes: JSON.stringify(data.recipes) },
+          params: { query: 'Profile', recipes: JSON.stringify(data.recipes), ingredients: [] },
         });
       } else {
         // Handle other errors
@@ -114,14 +114,16 @@ const Profile = () => {
   return (
     <View style={styles.container}>
       <StatusBar barStyle="dark-content" />
-      <Spinner
-            visible={isLoading}
-            textContent={'Loading...'}
-            textStyle={styles.spinnerTextStyle}
-            animation="fade"
-            color="#FFF"
-            overlayColor="rgba(0, 0, 0, 0.5)"
+      {isLoading && (
+        <View style={styles.loadingOverlay}>
+          <LottieView
+            source={require('../loading_animation.json')}
+            autoPlay
+            loop
+            style={{ width: 160, height: 160 }}
           />
+        </View>
+      )}
 
       <View style={styles.imageWrapper}>
         <Image
@@ -214,9 +216,11 @@ const styles = StyleSheet.create({
   icon: {
     marginRight: 10, 
   },
-  spinnerTextStyle: {
-    color: '#FFF',
-    fontSize: 16,
-    fontWeight: 'bold',
+  loadingOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0, 0, 0, 0.2)', // Dim background
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 10, // Ensures the overlay is above other content
   },
 });

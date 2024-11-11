@@ -1,18 +1,20 @@
-import { Text, View, StyleSheet, ScrollView, Image } from 'react-native'
+import { Text, View, StyleSheet, ScrollView } from 'react-native'
 import { Redirect, router } from "expo-router"
 import React from 'react'
-import splashImage from "../../assets/images/splash_page_image.jpg"
 import CustomButton from '../../components/CustomButton'
+import LottieView from 'lottie-react-native';
 
 const Splash = () => {
   return (
     <View className="bg-primary h-full">
       <ScrollView contentContainerStyle={styles.scrollViewContent}>
         <View style={styles.imageContainer}>
-          <Image
-            source={splashImage}
-            style={styles.image}
-            resizeMode="contain"
+
+          <LottieView
+            source={require('../cooking_animation.json')}
+            autoPlay
+            loop
+            style={{ width: 250, height: 250, marginTop: -30}}
           />
 
           <Text style={styles.Text1}>
@@ -44,32 +46,23 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     justifyContent: 'flex-start',
   },
-  
   imageContainer: {
     width: '100%',
     alignItems: 'center', 
     marginTop: 100, 
   },
-
-  image: {
-    width: 200,
-    height: 200,
-  },
-
   Text1: {
     fontSize: 22,
     color: 'rgba(16, 16, 16, 0.8)',
     marginTop: 40,
     textAlign: 'center',
   },
-
   Text2: {
     fontSize:12,
     color: 'rgba(16, 16, 16, 0.34)',
     marginTop: 10,
     textAlign: 'center',
   },
-
   customContainer: {
     width: '80%',
     marginTop: 40, 

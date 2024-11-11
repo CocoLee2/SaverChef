@@ -3,9 +3,8 @@ import { SearchBar } from 'react-native-elements';
 import { router } from "expo-router";
 import { React, useState, useContext, useEffect} from 'react';
 import { GlobalContext } from "../GlobalContext";
-import Spinner from 'react-native-loading-spinner-overlay';
 import CustomButton from '../../components/CustomButton';
-
+import LottieView from 'lottie-react-native';
 
 const Recipes = () => {
   const [search, setSearch] = useState('');
@@ -14,16 +13,18 @@ const Recipes = () => {
     fridgeItems, setFridgeItems, favoriteRecipes, setFavoriteRecipes, randomRecipes, setRandomRecipes } = useContext(GlobalContext);
 
   const [isLoading, setIsLoading] = useState(false);
+  const [recipes, setRecipes] = useState([]); // Store loaded recipes
 
   // This helper function is used by both handleUseMyIngredients and handleNewButtonPress.
   // It takes a list of validated strings as ingredients,
   // sends a request to the backend to fetch recipes, 
   // and navigates to the searchRecipe page with the retrieved recipes data.
-  const helper = async (ingredients) => {
+  const fetchRecipes = async (ingredients) => {
     setIsLoading(true);  //start showing spinner
     if (ingredients.length === 0) {
-      Alert.alert('Network Error', 'Something went wrong. Please try again later.'); 
-      return 
+      Alert.alert('Input Error', 'Please enter ingredients separated by commas, and try again.'); 
+      setIsLoading(false);  
+      return;
     }
 
     try {
@@ -43,7 +44,7 @@ const Recipes = () => {
       if (response.ok) {
         router.push({
           pathname: '../(other)/searchRecipe',
-          params: { query: 'Recipe', recipes: JSON.stringify(data.recipes)},
+          params: { query: 'Recipe', recipes: JSON.stringify(data.recipes), ingredients: ingredients },
         });
         setIsLoading(false);  //end showing spinner
       } else {
@@ -62,7 +63,7 @@ const Recipes = () => {
     const ingredients = fridgeItems.flatMap(fridge => 
       fridge.fridgeItems.map(item => item.itemName)
     );
-    helper(ingredients)
+    fetchRecipes(ingredients)
   }
 
   const handleNewButtonPress = async () => {
@@ -70,21 +71,23 @@ const Recipes = () => {
     const validIngredientRegex = /^[a-zA-Z\s]+$/;
     // do some simple checks on the input strings
     ingredients = ingredients.filter(item => validIngredientRegex.test(item));
-    helper(ingredients)
+    fetchRecipes(ingredients)
   }
 
 
   return (
     <View style={styles.container}>
       <StatusBar barStyle="dark-content" />
-      <Spinner
-        visible={isLoading}
-        textContent={'Loading...'}
-        textStyle={styles.spinnerTextStyle}
-        animation="fade"
-        color="#FFF"
-        overlayColor="rgba(0, 0, 0, 0.5)"
-      />
+      {isLoading && (
+        <View style={styles.loadingOverlay}>
+          <LottieView
+            source={require('../loading_animation.json')}
+            autoPlay
+            loop
+            style={{ width: 160, height: 160 }}
+          />
+        </View>
+      )}
       
       {/* User welcome text and image */}
       <View style={styles.headerContainer}>
@@ -257,11 +260,13 @@ const styles = StyleSheet.create({
     fontWeight: '600', 
     fontSize: 14, 
   },
-  spinnerTextStyle: {
-    color: '#FFF',
-    fontSize: 16,
-    fontWeight: 'bold',
-  }
+  loadingOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0, 0, 0, 0.2)', // Dim background
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 10, // Ensures the overlay is above other content
+  },
 });
 
 
