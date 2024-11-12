@@ -1,4 +1,6 @@
 import React, { createContext, useState } from 'react';
+import DateTimePicker from '@react-native-community/datetimepicker';
+
 
 // Create the context
 export const GlobalContext = createContext(); // No default values, handled by provider
@@ -16,17 +18,17 @@ export const GlobalProvider = ({ children }) => {
       {fridgeId: 1,
        fridgeName: "Fridge 1",
        fridgeItems: [
-        {itemId: 1, itemName: "Apple", expirationDate: 2024-11-1, quantity: 1, quantifier: "pcs"},
-        {itemId: 3, itemName: "Egg", expirationDate: 2024-11-1, quantity: 1, quantifier: "pcs"},
-        {itemId: 10, itemName: "Flour", expirationDate: 2024-11-1, quantity: 1, quantifier: "lbs"},
+        {id: 1, name: "Apple", quantity: 1, unit: "pcs", bestBefore: new Date(2024, 12, 10)},
+        {id: 3, name: "Egg",  quantity: 3, unit: "pcs", bestBefore: new Date(2024, 11, 17)},
+        {id: 10, name: "Flour", quantity: 1, unit: "lbs", bestBefore: new Date(2024, 11, 20)},
        ]
       },
-      { fridge: 2,
+      { fridgeId: 2,
         fridgeName: "Fridge 2",
         fridgeItems: [
-         {itemId: 11, itemName: "Avocado", expirationDate: 2024-11-1, quantity: 1, quantifier: "pcs"},
-         {itemId: 25, itemName: "Asparagus", expirationDate: 2024-11-1, quantity: 1, quantifier: "lbs"},
-         {itemId: 37, itemName: "Beef", expirationDate: 2024-11-1, quantity: 1, quantifier: "pcs"},
+         {id: 11, name: "Avocado", quantity: 2, unit: "pcs", bestBefore: new Date(2024, 11, 22)},
+         {id: 25, name: "Asparagus", quantity: 1, unit: "lbs", bestBefore: new Date(2024, 11, 16)},
+         {id: 37, name: "Beef", quantity: 2, unit: "pcs", bestBefore: new Date(2024, 11, 23)},
         ]
       }
     ]

@@ -8,6 +8,7 @@ import {
   TouchableOpacity,
   View,
   TextInput,
+  Alert
 } from "react-native";
 import Modal from "react-native-modal";
 import DateTimePicker from "@react-native-community/datetimepicker";
@@ -56,17 +57,16 @@ export default function camera() {
   }
 
   const addItem = () => {
-    const newItem = {
-      ...selectedItem,
-      id: Date.now().toString(),
-      unit: selectedUnit,
-    };
+    if (selectedItem.name === "" || selectedItem.quantity === ""){
+      Alert.alert('Incomplete Information', 'Please enter both the item name and quantity before proceeding.');
+      return
+    }
     const foodItem = {
-        id: Date.now(),
-        itemName: selectedItem.name,
-        expirationDate: selectedItem.bestBefore,
+        id: Date.now(), // todo: this need to be changed by connecting to the backend
+        name: selectedItem.name,
+        bestBefore: selectedItem.bestBefore,
         quantity: Number(selectedItem.quantity),
-        quantifier: selectedItem.unit
+        unit: selectedItem.unit
     }
 
     setFridgeItems((prevFridgeItems) =>
@@ -86,9 +86,6 @@ export default function camera() {
 
 
 //test
-
-
-
   const handleCodeScan = ({ type, data }) => {
     setScanned(true);
     setModalVisible(true);

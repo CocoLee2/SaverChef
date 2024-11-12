@@ -49,7 +49,6 @@ def search():
     params = {
         "ingredients": ingredients,
         "number": 10,
-        # tidi
         "ignorePantry": True,
         "rank": 1,
     }

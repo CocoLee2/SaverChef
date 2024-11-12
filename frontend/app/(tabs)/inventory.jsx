@@ -1,150 +1,156 @@
-import { StatusBar, View, Text, StyleSheet, TouchableOpacity, ScrollView, FlatList, TextInput, Alert, Dimensions } from 'react-native'
-import React, { useState, useEffect, useRef } from 'react'
+import { StatusBar, View, Text, StyleSheet, TouchableOpacity, ScrollView, FlatList, TextInput, Alert, Dimensions, Image} from 'react-native'
+import React, { useState, useEffect, useRef, useContext } from 'react'
 import { ListItem, SearchBar } from "react-native-elements";
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { router, useLocalSearchParams } from "expo-router";
 import Modal from 'react-native-modal';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { Ionicons } from '@expo/vector-icons';
+import images from '../../constants/images';
+import { GlobalContext } from "../GlobalContext";
+
 
 
 const Inventory = () => {
+  const { userId, setUserId, username, setUsername, email, setEmail, password, setPassword, 
+    fridgeItems, setFridgeItems, favoriteRecipes, setFavoriteRecipes, randomRecipes, setRandomRecipes } = useContext(GlobalContext);
+  const [selectedFridge, setSelectedFridge] = useState(fridgeItems.length > 0 ? fridgeItems[0].fridgeId : null);
+  const [fridgeIds, setFridgeIds] = useState(fridgeItems.map(fridge => fridge.fridgeId));
+  const selectedFridgeObj = fridgeItems.find(fridge => fridge.fridgeId === selectedFridge);
+  const getFridgeNameById = (id) => {
+    const fridge = fridgeItems.find((fridge) => fridge.fridgeId === id);
+    return fridge.fridgeName
+  };
+
   const [search, setSearch] = useState('');
   const [isModalVisible, setModalVisible] = useState(false);
-  const [selectedFridge, setSelectedFridge] = useState('Fridge 1');
   const [isDropdownVisible, setDropdownVisible] = useState(false);
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showUnitPicker, setShowUnitPicker] = useState(false);
   const [selectedUnit, setSelectedUnit] = useState('pcs');
   const [selectedItem, setSelectedItem] = useState({ id: '', name: '', quantity: '', unit: 'pcs', bestBefore: new Date() });
   const scrollViewRef = useRef(null);
-  const [fridges, setFridges] = useState(['Fridge 1', 'Fridge 2', 'Fridge 3']);
   const [newFridgeName, setNewFridgeName] = useState('');
   const [isEditingFridge, setIsEditingFridge] = useState(false);
   const [editingFridgeIndex, setEditingFridgeIndex] = useState(null);
   const [editedFridgeName, setEditedFridgeName] = useState('');
 
-
-
-
-  const [itemsByFridge, setItemsByFridge] = useState({
-    'Fridge 1': [
-      { id: '1', name: 'Tomatoes', quantity: '3', unit: 'pcs', icon: '🍅', bestBefore: new Date(2024, 10, 28) },
-      { id: '2', name: 'Potatoes', quantity: '5', unit: 'pcs', icon: '🥔', bestBefore: new Date(2024, 11, 15) },
-    ],
-    'Fridge 2': [
-      { id: '3', name: 'Cabbage', quantity: '2', unit: 'pcs', icon: '🥬', bestBefore: new Date(2024, 11, 4) },
-    ],
-    'Fridge 3': [],
-  });
+ 
+  const getImage = (foodName) => {
+    const sanitizedFoodName = foodName.replace(/[^a-zA-Z]/g, '').toLowerCase();
+    const image = images[sanitizedFoodName];
+    return image ? image : require('../../assets/images/placeHolder.png');
+  };
 
   useEffect(() => {
-    if (!itemsByFridge[selectedFridge]) {
-        const defaultFridge = Object.keys(itemsByFridge)[0];
-        if (defaultFridge) {
-            setSelectedFridge(defaultFridge);
-        }
-    }
-  }, [selectedFridge, itemsByFridge]);
+    const selectedFridgeExists = fridgeItems.some(fridge => fridge.fridgeId === selectedFridge);
 
-  const addNewFridge = () => {
-    if (newFridgeName.trim()) {
-        setFridges([...fridges, newFridgeName.trim()]);
-        setItemsByFridge((prevItemsByFridge) => ({
-            ...prevItemsByFridge,
-            [newFridgeName.trim()]: [],
-        }));
-        setNewFridgeName('');
-        setSelectedFridge(newFridgeName.trim());
-        setDropdownVisible(false);
-    } else {
-        Alert.alert("Invalid Name", "Please enter a valid fridge name.");
-    }
-};
-
-  const editFridgeName = () => {
-    if (editedFridgeName.trim()) {
-        setFridges(fridges.map((fridge) => (fridge === selectedFridge ? editedFridgeName.trim() : fridge)));
-        setItemsByFridge((prevItemsByFridge) => {
-            const updatedItems = { ...prevItemsByFridge };
-            updatedItems[editedFridgeName.trim()] = updatedItems[selectedFridge];
-            delete updatedItems[selectedFridge];
-            return updatedItems;
-        });
-        setSelectedFridge(editedFridgeName.trim());
-        setIsEditingFridge(false);
-    } else {
-        Alert.alert("Invalid Name", "Please enter a valid fridge name.");
-    }
-  };
-
-  // Start editing a specific fridge name
-  const startEditingFridge = (index) => {
-    setEditingFridgeIndex(index);
-    setEditedFridgeName(fridges[index]);
-    setIsEditingFridge(true);
-  };
-
-  // Save the edited fridge name
-  const saveEditedFridgeName = () => {
-    if (editedFridgeName.trim()) {
-        const updatedFridges = [...fridges];
-        const oldFridgeName = updatedFridges[editingFridgeIndex];
-        updatedFridges[editingFridgeIndex] = editedFridgeName.trim();
-        
-        setFridges(updatedFridges);
-
-        // Update itemsByFridge to match the new fridge name
-        setItemsByFridge((prevItemsByFridge) => {
-            const updatedItems = { ...prevItemsByFridge };
-            updatedItems[editedFridgeName.trim()] = updatedItems[oldFridgeName];
-            delete updatedItems[oldFridgeName];
-            return updatedItems;
-        });
-
-        // Update the selected fridge if it was being edited
-        if (selectedFridge === oldFridgeName) {
-            setSelectedFridge(editedFridgeName.trim());
-        }
-
-        setIsEditingFridge(false);
-        setEditingFridgeIndex(null);
-      } else {
-          Alert.alert("Invalid Name", "Please enter a valid fridge name.");
+    if (!selectedFridgeExists) {
+      const defaultFridgeId = fridgeItems.length > 0 ? fridgeItems[0].fridgeId : null;
+      if (defaultFridgeId) {
+        setSelectedFridge(defaultFridgeId);
       }
-    };
+    }
+  }, [selectedFridge, fridgeItems]);
 
-    // Cancel editing the fridge name
-    const cancelEditFridgeName = () => {
-      setIsEditingFridge(false);
-      setEditingFridgeIndex(null);
-      setEditedFridgeName('');
-    };
+  // const addNewFridge = () => {
+  //   if (newFridgeName.trim()) {
+  //       setFridgeIds([...fridgeIds, newFridgeName.trim()]);
+  //       setFridgeItems((prevItemsByFridge) => ({
+  //           ...prevItemsByFridge,
+  //           [newFridgeName.trim()]: [],
+  //       }));
+  //       setNewFridgeName('');
+  //       setSelectedFridge(newFridgeName.trim());
+  //       setDropdownVisible(false);
+  //   } else {
+  //       Alert.alert("Invalid Name", "Please enter a valid fridge name.");
+  //   }
+  // };
 
-    const deleteFridge = (index) => {
-      const fridgeToDelete = fridges[index];
+  // const editFridgeName = () => {
+  //   if (editedFridgeName.trim()) {
+  //       setFridgeIds(fridgeIds.map((fridge) => (fridge === selectedFridge ? editedFridgeName.trim() : fridge)));
+  //       setFridgeItems((prevItemsByFridge) => {
+  //           const updatedItems = { ...prevItemsByFridge };
+  //           updatedItems[editedFridgeName.trim()] = updatedItems[selectedFridge];
+  //           delete updatedItems[selectedFridge];
+  //           return updatedItems;
+  //       });
+  //       setSelectedFridge(editedFridgeName.trim());
+  //       setIsEditingFridge(false);
+  //   } else {
+  //       Alert.alert("Invalid Name", "Please enter a valid fridge name.");
+  //   }
+  // };
+
+  // // Start editing a specific fridge name
+  // const startEditingFridge = (index) => {
+  //   setEditingFridgeIndex(index);
+  //   setEditedFridgeName(fridgeIds[index]);
+  //   setIsEditingFridge(true);
+  // };
+
+  // // Save the edited fridge name
+  // const saveEditedFridgeName = () => {
+  //   if (editedFridgeName.trim()) {
+  //       const updatedFridges = [...fridgeIds];
+  //       const oldFridgeName = updatedFridges[editingFridgeIndex];
+  //       updatedFridges[editingFridgeIndex] = editedFridgeName.trim();
+        
+  //       setFridgeIds(updatedFridges);
+
+  //       // Update fridgeItems to match the new fridge name
+  //       setFridgeItems((prevItemsByFridge) => {
+  //           const updatedItems = { ...prevItemsByFridge };
+  //           updatedItems[editedFridgeName.trim()] = updatedItems[oldFridgeName];
+  //           delete updatedItems[oldFridgeName];
+  //           return updatedItems;
+  //       });
+
+  //       // Update the selected fridge if it was being edited
+  //       if (selectedFridge === oldFridgeName) {
+  //           setSelectedFridge(editedFridgeName.trim());
+  //       }
+
+  //       setIsEditingFridge(false);
+  //       setEditingFridgeIndex(null);
+  //     } else {
+  //         Alert.alert("Invalid Name", "Please enter a valid fridge name.");
+  //     }
+  //   };
+
+    // // Cancel editing the fridge name
+    // const cancelEditFridgeName = () => {
+    //   setIsEditingFridge(false);
+    //   setEditingFridgeIndex(null);
+    //   setEditedFridgeName('');
+    // };
+
+  //   const deleteFridge = (index) => {
+  //     const fridgeToDelete = fridgeIds[index];
       
-      Alert.alert(
-          'Delete Fridge',
-          `Are you sure you want to delete ${fridgeToDelete}?`,
-          [
-              { text: 'Cancel', style: 'cancel' },
-              {
-                  text: 'Delete', style: 'destructive', onPress: () => {
-                      setFridges(fridges.filter((_, i) => i !== index));
-                      setItemsByFridge((prevItemsByFridge) => {
-                          const updatedItems = { ...prevItemsByFridge };
-                          delete updatedItems[fridgeToDelete];
-                          return updatedItems;
-                      });
-                      if (selectedFridge === fridgeToDelete) {
-                          setSelectedFridge(fridges[0] || ''); // Select another fridge if possible
-                      }
-                  }
-              }
-          ]
-      );
-  };
+  //     Alert.alert(
+  //         'Delete Fridge',
+  //         `Are you sure you want to delete ${fridgeToDelete}?`,
+  //         [
+  //             { text: 'Cancel', style: 'cancel' },
+  //             {
+  //                 text: 'Delete', style: 'destructive', onPress: () => {
+  //                     setFridgeIds(fridgeIds.filter((_, i) => i !== index));
+  //                     setFridgeItems((prevItemsByFridge) => {
+  //                         const updatedItems = { ...prevItemsByFridge };
+  //                         delete updatedItems[fridgeToDelete];
+  //                         return updatedItems;
+  //                     });
+  //                     if (selectedFridge === fridgeToDelete) {
+  //                         setSelectedFridge(fridgeIds[0] || ''); // Select another fridge if possible
+  //                     }
+  //                 }
+  //             }
+  //         ]
+  //     );
+  // };
 
 
   const toggleDropdown = () => setDropdownVisible(!isDropdownVisible);
@@ -169,29 +175,45 @@ const Inventory = () => {
   };
 
   const saveChanges = () => {
-    setItemsByFridge((prevItemsByFridge) => ({
-      ...prevItemsByFridge,
-      [selectedFridge]: prevItemsByFridge[selectedFridge].map((item) =>
-        item.id === selectedItem.id ? { ...selectedItem, unit: selectedUnit } : item
-      ),
-    }));
+    setFridgeItems((prevItemsByFridge) =>
+      prevItemsByFridge.map((fridge) =>
+        fridge.fridgeId === selectedFridge
+          ? {
+              ...fridge,
+              fridgeItems: fridge.fridgeItems.map((item) =>
+                item.id === selectedItem.id ? { ...selectedItem, unit: selectedUnit } : item
+              ),
+            }
+          : fridge
+      )
+    );
     setModalVisible(false);
   };
+  
 
   const addItem = () => {
     const newItem = { ...selectedItem, id: Date.now().toString(), unit: selectedUnit };
-    setItemsByFridge((prevItemsByFridge) => ({
-      ...prevItemsByFridge,
-      [selectedFridge]: [...prevItemsByFridge[selectedFridge], newItem],
-    }));
+    setFridgeItems((prevItemsByFridge) =>
+      prevItemsByFridge.map((fridge) =>
+        fridge.fridgeId === selectedFridge
+          ? { ...fridge, fridgeItems: [...fridge.fridgeItems, newItem] }
+          : fridge
+      )
+    );
     setModalVisible(false);
   };
-
+  
   const deleteItem = (itemId) => {
-    setItemsByFridge((prevItemsByFridge) => ({
-      ...prevItemsByFridge,
-      [selectedFridge]: prevItemsByFridge[selectedFridge].filter((item) => item.id !== itemId),
-    }));
+    setFridgeItems((prevItemsByFridge) =>
+      prevItemsByFridge.map((fridge) =>
+        fridge.fridgeId === selectedFridge
+          ? {
+              ...fridge,
+              fridgeItems: fridge.fridgeItems.filter((item) => item.id !== itemId),
+            }
+          : fridge
+      )
+    );
   };
 
   const handleLongPress = (itemId) => {
@@ -214,14 +236,17 @@ const Inventory = () => {
 
   const renderItem = ({ item }) => (
     <TouchableOpacity onPress={() => openEditModal(item)} onLongPress={() => handleLongPress(item.id)} style={styles.foodItem}>
-      <Text style={styles.foodIcon}>{item.icon || '🛒'}</Text>
+      <Image 
+        source={getImage(item.name)} 
+        style={styles.foodImage} 
+      />
       <View style={styles.foodInfo}>
         <Text style={styles.foodName}>{item.name}</Text>
         <Text style={styles.foodDate}>Best before {item.bestBefore.toDateString()}</Text>
       </View>
       <Text>{`${item.quantity} ${item.unit}`}</Text>
     </TouchableOpacity>
-  );
+  );  
 
   return (
     <View style={styles.container}>
@@ -229,7 +254,7 @@ const Inventory = () => {
 
       <View style={styles.headerContainer}>
         <TouchableOpacity onPress={toggleDropdown} style={styles.dropdownTrigger}>
-          <Text style={styles.header}>{selectedFridge}</Text>
+          <Text style={styles.header}>{getFridgeNameById(selectedFridge)}</Text>
           <Ionicons name="caret-down-outline" size={20} color="#F36C21" />
         </TouchableOpacity>
         <TouchableOpacity style={styles.button} onPress={() => { setSelectedItem({ id: '', name: '', quantity: '', unit: 'pcs', bestBefore: new Date() }); toggleModal(); }}>
@@ -251,16 +276,17 @@ const Inventory = () => {
         inputContainerStyle={styles.searchInput}
       />
 
-      {itemsByFridge[selectedFridge] && itemsByFridge[selectedFridge].length > 0 ? (
-          <FlatList
-            data={itemsByFridge[selectedFridge]}
-            renderItem={renderItem}
-            keyExtractor={(item) => item.id}
-            style={styles.list}
-          />
-        ) : (
-          <Text style={styles.emptyMessage}>No ingredients yet</Text>
-        )}
+
+      {selectedFridgeObj && selectedFridgeObj.fridgeItems.length > 0 ? (
+        <FlatList
+          data={selectedFridgeObj.fridgeItems}
+          renderItem={renderItem}
+          keyExtractor={(item) => item.id.toString()}
+          style={styles.list}
+        />
+      ) : (
+        <Text style={styles.emptyMessage}>No ingredients yet</Text>
+      )}
 
 
       <ScrollView
@@ -276,7 +302,7 @@ const Inventory = () => {
       {/* Dropdown Modal */}
       <Modal isVisible={isDropdownVisible} onBackdropPress={toggleDropdown} backdropOpacity={0.3} style={styles.dropdownModal}>
         <View style={styles.dropdown}>
-            {fridges.map((fridge, index) => (
+            {fridgeIds.map((fridge, index) => (
                 <View key={index} style={styles.dropdownItemContainer}>
                     {editingFridgeIndex === index ? (
                         // Render input field for editing fridge name
@@ -295,7 +321,7 @@ const Inventory = () => {
                                 setDropdownVisible(false);
                             }}
                         >
-                            <Text style={styles.dropdownText}>{fridge}</Text>
+                            <Text style={styles.dropdownText}>{getFridgeNameById(fridge)}</Text>
                         </TouchableOpacity>
                     )}
 
@@ -311,12 +337,12 @@ const Inventory = () => {
                         </View>
                     ) : (
                         <View style={styles.actionButtons}>
-                            <TouchableOpacity style={styles.editButton} onPress={() => startEditingFridge(index)}>
+                            {/* <TouchableOpacity style={styles.editButton} onPress={() => startEditingFridge(index)}>
                                 <Text style={styles.buttonText}>Edit</Text>
                             </TouchableOpacity>
                             <TouchableOpacity style={styles.deleteButton} onPress={() => deleteFridge(index)}>
                                 <Text style={styles.buttonText}>Delete</Text>
-                            </TouchableOpacity>
+                            </TouchableOpacity> */}
                         </View>
                     )}
                 </View>
@@ -329,9 +355,9 @@ const Inventory = () => {
                 value={newFridgeName}
                 onChangeText={setNewFridgeName}
             />
-            <TouchableOpacity style={styles.addButton} onPress={addNewFridge}>
+            {/* <TouchableOpacity style={styles.addButton} onPress={addNewFridge}>
                 <Text style={styles.addButtonText}>Create New Fridge</Text>
-            </TouchableOpacity>
+            </TouchableOpacity> */}
         </View>
     </Modal>
 
@@ -348,9 +374,9 @@ const Inventory = () => {
                   value={editedFridgeName}
                   onChangeText={setEditedFridgeName}
               />
-              <TouchableOpacity style={styles.doneButton} onPress={editFridgeName}>
+              {/* <TouchableOpacity style={styles.doneButton} onPress={editFridgeName}>
                   <Text style={styles.doneButtonText}>Save Changes</Text>
-              </TouchableOpacity>
+              </TouchableOpacity> */}
           </View>
       </Modal>
 
@@ -559,10 +585,10 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
 
-  foodIcon: {
-    fontSize: 32,
-    marginRight: 15,
-  },
+  // foodIcon: {
+  //   fontSize: 32,
+  //   marginRight: 15,
+  // },
 
   foodInfo: {
     flex: 1,
@@ -817,6 +843,12 @@ const styles = StyleSheet.create({
   addButtonText: {
     color: '#FFF',
     fontSize: 16,
+  },
+
+  foodImage: {
+    width: 40,  
+    height: 40,  
+    marginRight: 10,
   },
 
 })

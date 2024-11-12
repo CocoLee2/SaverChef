@@ -11,7 +11,9 @@ const Home = () => {
   const { userId, setUserId, username, setUsername, email, setEmail, password, setPassword, 
     fridgeItems, setFridgeItems, favoriteRecipes, setFavoriteRecipes, randomRecipes, setRandomRecipes } = useContext(GlobalContext);
 
-  // const scrollViewRef = useRef(null);
+  // // used for debugging fridgeItems and setFridgeItems
+  // console.log("line15 in home.jsx")
+  // console.log(fridgeItems)
 
   const getImage = (foodName) => {
     const sanitizedFoodName = foodName.replace(/[^a-zA-Z]/g, '').toLowerCase();
@@ -59,9 +61,8 @@ const Home = () => {
           showsPagination={false}
         >
         {randomRecipes.map((recipe) => (
-           <View style={styles.slide}>
+          <View key={recipe.id} style={styles.slide}>
           <TouchableOpacity
-            key={recipe.id}
             style={styles.recipeContainer}
             onPress={() => router.push({
               pathname: '../(other)/showRecipe',

@@ -61,8 +61,11 @@ const Recipes = () => {
 
   const handleUseMyIngredients = async () => {
     const ingredients = fridgeItems.flatMap(fridge => 
-      fridge.fridgeItems.map(item => item.itemName)
+      fridge.fridgeItems.map(item => item.name)
     );
+    
+    // console.log("line66 in inventory.jsx")
+    // console.log(ingredients)
     fetchRecipes(ingredients)
   }
 
