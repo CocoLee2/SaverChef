@@ -8,7 +8,7 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import { Ionicons } from '@expo/vector-icons';
 import images from '../../constants/images';
 import { GlobalContext } from "../GlobalContext";
-
+import { useNavigation } from '@react-navigation/native';
 
 
 const Inventory = () => {
@@ -19,7 +19,7 @@ const Inventory = () => {
   const selectedFridgeObj = fridgeItems.find(fridge => fridge.fridgeId === selectedFridge);
   const getFridgeNameById = (id) => {
     const fridge = fridgeItems.find((fridge) => fridge.fridgeId === id);
-    return fridge.fridgeName
+    return fridge ? fridge.fridgeName : "No Fridge Selected";
   };
 
   const [search, setSearch] = useState('');
@@ -53,20 +53,25 @@ const Inventory = () => {
     }
   }, [selectedFridge, fridgeItems]);
 
-  // const addNewFridge = () => {
-  //   if (newFridgeName.trim()) {
-  //       setFridgeIds([...fridgeIds, newFridgeName.trim()]);
-  //       setFridgeItems((prevItemsByFridge) => ({
-  //           ...prevItemsByFridge,
-  //           [newFridgeName.trim()]: [],
-  //       }));
-  //       setNewFridgeName('');
-  //       setSelectedFridge(newFridgeName.trim());
-  //       setDropdownVisible(false);
-  //   } else {
-  //       Alert.alert("Invalid Name", "Please enter a valid fridge name.");
-  //   }
-  // };
+
+  const addNewFridge = () => {
+    // tidi: connect to backend, this newFridgeId should be get from the returned data
+    const newFridgeId = 12345;
+    if (newFridgeName.trim()) {
+      const newFridge = {
+        fridgeId: newFridgeId,
+        fridgeName: newFridgeName.trim(),
+        fridgeItems: []
+      };
+      setFridgeIds((fridgeIds) => [...fridgeIds, newFridgeId]);
+      setFridgeItems((prevFridgeItems) => [...prevFridgeItems, newFridge]);
+      setNewFridgeName('');
+      setSelectedFridge(newFridgeId);
+      setDropdownVisible(false);
+    } else {
+      Alert.alert("Invalid Name", "Please enter a valid fridge name.");
+    }
+  };
 
   // const editFridgeName = () => {
   //   if (editedFridgeName.trim()) {
@@ -127,30 +132,38 @@ const Inventory = () => {
     //   setEditedFridgeName('');
     // };
 
-  //   const deleteFridge = (index) => {
-  //     const fridgeToDelete = fridgeIds[index];
-      
-  //     Alert.alert(
-  //         'Delete Fridge',
-  //         `Are you sure you want to delete ${fridgeToDelete}?`,
-  //         [
-  //             { text: 'Cancel', style: 'cancel' },
-  //             {
-  //                 text: 'Delete', style: 'destructive', onPress: () => {
-  //                     setFridgeIds(fridgeIds.filter((_, i) => i !== index));
-  //                     setFridgeItems((prevItemsByFridge) => {
-  //                         const updatedItems = { ...prevItemsByFridge };
-  //                         delete updatedItems[fridgeToDelete];
-  //                         return updatedItems;
-  //                     });
-  //                     if (selectedFridge === fridgeToDelete) {
-  //                         setSelectedFridge(fridgeIds[0] || ''); // Select another fridge if possible
-  //                     }
-  //                 }
-  //             }
-  //         ]
-  //     );
-  // };
+
+    const deleteFridge = (index) => {
+      const fridgeToDelete = fridgeItems[index];
+    
+      Alert.alert(
+        'Delete Fridge',
+        `Are you sure you want to delete ${fridgeToDelete.fridgeName}?`,
+        [
+          { text: 'Cancel', style: 'cancel' },
+          {
+            text: 'Delete', style: 'destructive', onPress: () => {
+
+              // Update the selected fridge if the deleted fridge was the selected one
+              if (selectedFridge === fridgeToDelete.fridgeId) {
+                const remainingFridgeIds = fridgeIds.filter(id => id !== fridgeToDelete.fridgeId);
+                const newSelectedFridge = remainingFridgeIds.length > 0 ? remainingFridgeIds[0] : null;
+                setSelectedFridge(newSelectedFridge);
+              }
+
+              // Remove the fridge from fridgeIds and fridgeItems array 
+              setFridgeIds((prevFridgeIds) => prevFridgeIds.filter(id => id !== fridgeToDelete.fridgeId));
+              setFridgeItems((prevFridgeItems) =>
+                prevFridgeItems.filter(fridge => fridge.fridgeId !== fridgeToDelete.fridgeId)
+              );
+
+              // tidi: connect to the backend, the fridgeId i will pass in is fridgeToDelete.fridgeId
+            }
+          }
+        ]
+      );
+    };
+    
 
 
   const toggleDropdown = () => setDropdownVisible(!isDropdownVisible);
@@ -175,6 +188,17 @@ const Inventory = () => {
   };
 
   const saveChanges = () => {
+    // check if the information is valid
+    if (selectedItem.name === "" || selectedItem.quantity === ""){
+      Alert.alert('Incomplete Information', 'Please enter both the item name and quantity before proceeding.');
+      return
+    }
+    if (selectedItem.quantity <= 0){
+      Alert.alert('Invalid Information', 'Please make sure that quantity is positive.');
+      return
+    }
+
+    // tidi: connect to backend (update_item)
     setFridgeItems((prevItemsByFridge) =>
       prevItemsByFridge.map((fridge) =>
         fridge.fridgeId === selectedFridge
@@ -192,6 +216,17 @@ const Inventory = () => {
   
 
   const addItem = () => {
+    // check if the information is valid
+    if (selectedItem.name === "" || selectedItem.quantity === ""){
+      Alert.alert('Incomplete Information', 'Please enter both the item name and quantity before proceeding.');
+      return
+    }
+    if (selectedItem.quantity <= 0){
+      Alert.alert('Invalid Information', 'Please make sure that quantity is positive.');
+      return
+    }
+
+    // tidi: connect to the backend, and change id (add_item)
     const newItem = { ...selectedItem, id: Date.now().toString(), unit: selectedUnit };
     setFridgeItems((prevItemsByFridge) =>
       prevItemsByFridge.map((fridge) =>
@@ -204,6 +239,7 @@ const Inventory = () => {
   };
   
   const deleteItem = (itemId) => {
+    // tidi: connect to backend (delete_item)
     setFridgeItems((prevItemsByFridge) =>
       prevItemsByFridge.map((fridge) =>
         fridge.fridgeId === selectedFridge
@@ -254,7 +290,11 @@ const Inventory = () => {
 
       <View style={styles.headerContainer}>
         <TouchableOpacity onPress={toggleDropdown} style={styles.dropdownTrigger}>
-          <Text style={styles.header}>{getFridgeNameById(selectedFridge)}</Text>
+        {/* tidi */}
+        <Text style={styles.header}>
+          {selectedFridge ? getFridgeNameById(selectedFridge) : "No Fridge Selected"}
+        </Text>
+
           <Ionicons name="caret-down-outline" size={20} color="#F36C21" />
         </TouchableOpacity>
         <TouchableOpacity style={styles.button} onPress={() => { setSelectedItem({ id: '', name: '', quantity: '', unit: 'pcs', bestBefore: new Date() }); toggleModal(); }}>
@@ -321,7 +361,9 @@ const Inventory = () => {
                                 setDropdownVisible(false);
                             }}
                         >
-                            <Text style={styles.dropdownText}>{getFridgeNameById(fridge)}</Text>
+                            <Text style={styles.dropdownText}>
+        {fridge ? getFridgeNameById(fridge) : "Unnamed Fridge"}
+    </Text>
                         </TouchableOpacity>
                     )}
 
@@ -339,10 +381,10 @@ const Inventory = () => {
                         <View style={styles.actionButtons}>
                             {/* <TouchableOpacity style={styles.editButton} onPress={() => startEditingFridge(index)}>
                                 <Text style={styles.buttonText}>Edit</Text>
-                            </TouchableOpacity>
+                            </TouchableOpacity> */}
                             <TouchableOpacity style={styles.deleteButton} onPress={() => deleteFridge(index)}>
                                 <Text style={styles.buttonText}>Delete</Text>
-                            </TouchableOpacity> */}
+                            </TouchableOpacity> 
                         </View>
                     )}
                 </View>
@@ -355,9 +397,9 @@ const Inventory = () => {
                 value={newFridgeName}
                 onChangeText={setNewFridgeName}
             />
-            {/* <TouchableOpacity style={styles.addButton} onPress={addNewFridge}>
+            <TouchableOpacity style={styles.addButton} onPress={addNewFridge}>
                 <Text style={styles.addButtonText}>Create New Fridge</Text>
-            </TouchableOpacity> */}
+            </TouchableOpacity>
         </View>
     </Modal>
 

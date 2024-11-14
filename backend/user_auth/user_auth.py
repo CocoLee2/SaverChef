@@ -45,21 +45,6 @@ def delete_account():
     db.session.delete(user)
     db.session.commit()
     return jsonify({"message": "Account deleted successfully"}), 200
-# Not sure if dashboard is needed.
-# @app.route('/dashboard')
-# def dashboard():
-#     if 'user_id' not in session:
-#         return redirect(url_for('login'))
-#     return render_template("dashboard.html")
-
-# @app.route('/logout', methods=['POST'])
-# def logout():
-#     if 'user_id' in session:
-#         session.pop('user_id', None)
-#         session.pop('username', None)
-#         return jsonify({"message": "Successfully logged out"}), 200
-#     else:
-#         return jsonify({"message": "No user is logged in"}), 400
 
 @app.route('/signup', methods=['POST'])
 def signup():

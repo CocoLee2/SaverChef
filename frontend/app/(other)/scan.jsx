@@ -61,8 +61,12 @@ export default function camera() {
       Alert.alert('Incomplete Information', 'Please enter both the item name and quantity before proceeding.');
       return
     }
+    if (selectedItem.quantity <= 0){
+      Alert.alert('Invalid Information', 'Please make sure that quantity is positive.');
+      return
+    }
     const foodItem = {
-        id: Date.now(), // todo: this need to be changed by connecting to the backend
+        id: Date.now(), // tidi: this need to be changed by connecting to the backend
         name: selectedItem.name,
         bestBefore: selectedItem.bestBefore,
         quantity: Number(selectedItem.quantity),
@@ -71,7 +75,7 @@ export default function camera() {
 
     setFridgeItems((prevFridgeItems) =>
         prevFridgeItems.map((fridge) =>
-          fridge.fridgeId === 1 // hardcoded right now to add to fridge 1
+          fridge.fridgeId === 1 // tidi: change fridgeId as well
             ? {
                 ...fridge,
                 fridgeItems: [...fridge.fridgeItems, foodItem],
