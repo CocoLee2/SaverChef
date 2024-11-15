@@ -12,7 +12,7 @@ fridge_item_bp = Blueprint('fridge_items', __name__, url_prefix='/fridge_item')
 def add_item():
     """
     Add an item to a fridge.
-    Input: 
+    Input:
         Json request with attributes:
             - fridge_id: int, required
             - itemName: string, required
@@ -22,7 +22,7 @@ def add_item():
             - quantifier: string, required
     Output:
         Status code 201 and json response containing the new item's Id
-        {"itemId": int} 
+        {"itemId": int}
     """
     data = request.json
     fridge_id = int(data['fridge_id'])
@@ -43,7 +43,7 @@ def add_item():
 def update_item():
     """
     Updates an existing item's properties.
-    Input: 
+    Input:
         Json request with attributes:
             - itemId: int, required
             - itemName: string, required

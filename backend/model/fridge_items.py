@@ -12,7 +12,14 @@ class FridgeItems(db.Model):
     quantity: int = db.Column(db.Integer, nullable=False)
     quantifier: str = db.Column(db.String(255), nullable=False)
 
-    def __init__(self, fridge_id, name, description, expiration_date, quantity, quantifier):
+    def __init__(
+            self,
+            fridge_id,
+            name,
+            description,
+            expiration_date,
+            quantity,
+            quantifier):
         self.name = name
         self.fridge_id = fridge_id
         self.description = description
