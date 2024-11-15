@@ -16,7 +16,6 @@ def add_item():
         Json request with attributes:
             - fridge_id: int, required
             - itemName: string, required
-            - description: string, not required, defaults to ""
             - expirationDate: string in the format of YYYYMMDD or YYYY-MM-DD, required
             - quantity: int, required
             - quantifier: string, required
@@ -28,10 +27,9 @@ def add_item():
     fridge_id = int(data['fridge_id'])
     expiration_date = date.fromisoformat(data['expirationDate'])
     name = data['itemName']
-    description = data.get('description', "")
     quantity = int(data['quantity'])
     quantifier = data['quantifier']
-    new_item = FridgeItems(fridge_id, name, description,
+    new_item = FridgeItems(fridge_id, name,
                            expiration_date, quantity, quantifier)
     db.session.add(new_item)
     db.session.commit()
@@ -47,7 +45,6 @@ def update_item():
         Json request with attributes:
             - itemId: int, required
             - itemName: string, required
-            - description: string, not required, defaults to ""
             - expirationDate: string in the format of YYYYMMDD or YYYY-MM-DD, required
             - quantity: int, required
             - quantifier: string, required
