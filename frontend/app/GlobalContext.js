@@ -18,8 +18,10 @@ export const GlobalProvider = ({ children }) => {
       {fridgeId: 1,
        fridgeName: "Fridge 1",
        fridgeItems: [
-        {id: 1, name: "Apple", quantity: 1, unit: "pcs", bestBefore: new Date(2024, 12, 10)},
-        {id: 3, name: "Egg",  quantity: 3, unit: "pcs", bestBefore: new Date(2024, 11, 17)},
+        {id: 1, name: "Apple", quantity: 1, unit: "pcs", bestBefore: new Date(2024, 11, 1)},
+        // this item has been expired, is used to test if this will be shown red
+        // on the inventory page
+        {id: 3, name: "Egg",  quantity: 3, unit: "pcs", bestBefore: new Date(2024, 6, 17)},
         {id: 10, name: "Flour", quantity: 1, unit: "lbs", bestBefore: new Date(2024, 11, 20)},
        ]
       },

@@ -270,19 +270,26 @@ const Inventory = () => {
     );
   };
 
-  const renderItem = ({ item }) => (
+
+  const renderItem = (item, isExpired) => (
     <TouchableOpacity onPress={() => openEditModal(item)} onLongPress={() => handleLongPress(item.id)} style={styles.foodItem}>
       <Image 
         source={getImage(item.name)} 
         style={styles.foodImage} 
       />
       <View style={styles.foodInfo}>
-        <Text style={styles.foodName}>{item.name}</Text>
-        <Text style={styles.foodDate}>Best before {item.bestBefore.toDateString()}</Text>
+        {/* Use isExpired parameter to conditionally apply styles */}
+        <Text style={[styles.foodName, isExpired && styles.expiredFoodName]}>
+          {item.name}
+        </Text>
+        <Text style={[styles.foodDate, isExpired && styles.expiredFoodDate]}>Best before {item.bestBefore.toDateString()}</Text>
       </View>
-      <Text>{`${item.quantity} ${item.unit}`}</Text>
+      <Text style={[styles.quantityText, isExpired && styles.expiredFoodDate]}>
+      {`${item.quantity} ${item.unit}`}
+      </Text>
     </TouchableOpacity>
-  );  
+  );
+  
 
   return (
     <View style={styles.container}>
@@ -290,7 +297,6 @@ const Inventory = () => {
 
       <View style={styles.headerContainer}>
         <TouchableOpacity onPress={toggleDropdown} style={styles.dropdownTrigger}>
-        {/* tidi */}
         <Text style={styles.header}>
           {selectedFridge ? getFridgeNameById(selectedFridge) : "No Fridge Selected"}
         </Text>
@@ -320,9 +326,11 @@ const Inventory = () => {
       {selectedFridgeObj && selectedFridgeObj.fridgeItems.length > 0 ? (
         <FlatList
           data={selectedFridgeObj.fridgeItems}
-          renderItem={renderItem}
           keyExtractor={(item) => item.id.toString()}
           style={styles.list}
+          renderItem={({ item }) => (
+            renderItem(item, item.bestBefore < new Date()) // Pass isExpired as a parameter
+          )}
         />
       ) : (
         <Text style={styles.emptyMessage}>No ingredients yet</Text>
@@ -642,8 +650,18 @@ const styles = StyleSheet.create({
     color: '#333',
   },
 
+  expiredFoodName: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#f01e2c',
+  },
+
   foodDate: {
     color: '#888',
+  },
+
+  expiredFoodDate: {
+    color: '#ee6b6e',
   },
 
   foodQuantity: {
