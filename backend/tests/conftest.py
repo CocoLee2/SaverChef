@@ -6,6 +6,7 @@ from model.fridge import Fridge
 from model.users import Users
 from os import getenv
 
+
 @pytest.fixture()
 def app():
     load_dotenv()
@@ -26,11 +27,12 @@ def client(app):
     populate_database()
     return app.test_client()
 
+
 def populate_database():
     new_user = Users(
         username="superchef",
         email="superchef@superchef.com",
-        password="supercoolpassword", 
+        password="supercoolpassword",
         favoriteRecipes=[]
     )
     db.session.add(new_user)

@@ -12,26 +12,24 @@ fridge_item_bp = Blueprint('fridge_items', __name__, url_prefix='/fridge_item')
 def add_item():
     """
     Add an item to a fridge.
-    Input: 
+    Input:
         Json request with attributes:
             - fridge_id: int, required
             - itemName: string, required
-            - description: string, not required, defaults to ""
             - expirationDate: string in the format of YYYYMMDD or YYYY-MM-DD, required
             - quantity: int, required
             - quantifier: string, required
     Output:
         Status code 201 and json response containing the new item's Id
-        {"itemId": int} 
+        {"itemId": int}
     """
     data = request.json
     fridge_id = int(data['fridge_id'])
     expiration_date = date.fromisoformat(data['expirationDate'])
     name = data['itemName']
-    description = data.get('description', "")
     quantity = int(data['quantity'])
     quantifier = data['quantifier']
-    new_item = FridgeItems(fridge_id, name, description,
+    new_item = FridgeItems(fridge_id, name,
                            expiration_date, quantity, quantifier)
     db.session.add(new_item)
     db.session.commit()
@@ -43,11 +41,10 @@ def add_item():
 def update_item():
     """
     Updates an existing item's properties.
-    Input: 
+    Input:
         Json request with attributes:
             - itemId: int, required
             - itemName: string, required
-            - description: string, not required, defaults to ""
             - expirationDate: string in the format of YYYYMMDD or YYYY-MM-DD, required
             - quantity: int, required
             - quantifier: string, required

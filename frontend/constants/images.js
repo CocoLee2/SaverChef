@@ -60,6 +60,7 @@ const images = {
     turkey: require('../assets/images/ingredients/turkey.jpg'),
     pumpkin: require('../assets/images/ingredients/pumpkin.jpg'),
     chickpeas: require('../assets/images/ingredients/chickpeas.jpg'),
+    tomatosauce: require('../assets/images/ingredients/tomatosauce.jpg'),
   };
   
   // Export the images object

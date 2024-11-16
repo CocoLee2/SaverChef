@@ -1,50 +1,42 @@
-# Welcome to your Expo app 👋
-![pylint](https://img.shields.io/badge/PyLint-0.00-red?logo=python&logoColor=white)
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+# SaverChef
 
-## Get started
+This is a react native application with a react native frontend, flask backend, and a PostgreSQL database.
+Requirements: Python 3.11.1, Postgresql, A phone with expo go, Node.js
 
-1. Install dependencies
-
-   ```bash
-   npm install
-   ```
-
-2. Start the app
-
-   ```bash
-    npx expo start
-   ```
-
-In the output, you'll find options to open the app in a
-
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
-
+## Getting started (frontend)
+1. In the frontend directory, Install dependencies
 ```bash
-npm run reset-project
+   cd frontend
+   npm install
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
 
-## Learn more
+## Getting started (backend)
+In the backend directory, create a python virtual environment and install the packages in ```requiremenets.txt```.
 
-To learn more about developing your project with Expo, look at the following resources:
+Create a ```.env``` file with an entry for your ```DATABASE_URI``` set to your postgres database.
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+Format for DATABASE_URI:
+```postgresql://[user]:[password]@localhost:[port]/[database_name]```
 
-## Join the community
 
-Join our community of developers creating universal apps.
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+
+
+
+##
+Once the frontend and backend has been initalized, start frontend and the backend on separate terminals.
+
+1: starting the frontend:
+```bash
+    cd frontend
+    npx expo start
+```
+
+2: starting the backend:
+```bash
+   cd backend
+   python3 app.py
+```
+
+Once both have started, scan the QR code from the front-end.

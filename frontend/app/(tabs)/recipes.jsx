@@ -61,8 +61,9 @@ const Recipes = () => {
 
   const handleUseMyIngredients = async () => {
     const ingredients = fridgeItems.flatMap(fridge => 
-      fridge.fridgeItems.map(item => item.itemName)
+      fridge.fridgeItems.map(item => item.name)
     );
+    
     fetchRecipes(ingredients)
   }
 

@@ -34,8 +34,9 @@ def get_fridges_by_creator():
             db.select(Fridge).filter_by(
                 creator=creator_id)).all()
         if not fridges:
-            return Response(response=str(
-                f'fridges created by user with id {creator_id} do not exist'), status=400)
+            return Response(
+                response=str(f'fridges created by user with id {creator_id} do not exist'),
+                status=400)
         return jsonify([fridge.serialize() for fridge in fridges])
     except Exception as e:
         return Response(response=str(e), status=400)
@@ -83,6 +84,7 @@ def delete_fridge_by_id():
         db.session.delete(fridge)
         db.session.commit()
         return Response(
-            response=f'Successfully deleted fridge with id {fridge_id}', status=200)
+            response=f'Successfully deleted fridge with id {fridge_id}',
+            status=200)
     except Exception as e:
         return Response(response=str(e), status=400)
