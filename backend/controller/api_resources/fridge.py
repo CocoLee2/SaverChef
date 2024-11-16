@@ -35,7 +35,8 @@ def get_fridges_by_creator():
                 creator=creator_id)).all()
         if not fridges:
             return Response(
-                response=str(f'fridges created by user with id {creator_id} do not exist'),
+                response=str(
+                    f'fridges created by user with id {creator_id} do not exist'),
                 status=400)
         return jsonify([fridge.serialize() for fridge in fridges])
     except Exception as e:
@@ -47,7 +48,7 @@ def create_fridge():
     """Creates a fridge for a given user passed through the request's body
 
     Response codes:
-      200, Successful creation of a fridge
+      201, Successful creation of a fridge
       400, user does not exist or otherwise malformed id
     """
     try:
@@ -59,7 +60,7 @@ def create_fridge():
         new_fridge = Fridge(fridge_name, creator_id)
         db.session.add(new_fridge)
         db.session.commit()
-        return "Fridge successfully created."
+        return jsonify({"message": "Fridge successfully created.", "fridgeId": new_fridge.id}), 201
     except Exception as e:
         return Response(response=str(e), status=400)
 
