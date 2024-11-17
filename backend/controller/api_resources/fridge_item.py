@@ -60,7 +60,8 @@ def update_item():
     quantifier = data['quantifier']
     fridge_item = db.session.get(FridgeItems, item_id)
     if not fridge_item:
-        return jsonify({"message": f'fridge item with id {item_id} does not exist'}), 400
+        return jsonify(
+            {"message": f'fridge item with id {item_id} does not exist'}), 400
     fridge_item.name = name
     fridge_item.expiration_date = expiration_date
     fridge_item.quantifier = quantifier
@@ -76,7 +77,8 @@ def delete_item():
     try:
         fridge_item = db.session.get(FridgeItems, item_id)
         if not fridge_item:
-            return jsonify({"message": 'fridge item with id {item_id} does not exist'}), 400
+            return jsonify(
+                {"message": 'fridge item with id {item_id} does not exist'}), 400
         db.session.delete(fridge_item)
         db.session.commit()
         return jsonify({"message": "Successfully deleted fridge item"}), 200

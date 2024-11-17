@@ -60,7 +60,8 @@ def create_fridge():
         new_fridge = Fridge(fridge_name, creator_id)
         db.session.add(new_fridge)
         db.session.commit()
-        return jsonify({"message": "Fridge successfully created.", "fridgeId": new_fridge.id}), 201
+        return jsonify({"message": "Fridge successfully created.",
+                       "fridgeId": new_fridge.id}), 201
     except Exception as e:
         return Response(response=str(e), status=400)
 
@@ -72,7 +73,7 @@ def delete_fridge_by_id():
     Input: {
         user_id: int,
         fridge_id: int
-    } 
+    }
 
     Response codes:
     200, Successful delete
@@ -87,8 +88,9 @@ def delete_fridge_by_id():
             return Response(response=str(
                 f'fridge with id {fridge_id} does not exist'), status=400)
         if fridge.creator != user_id:
-            return Response(response=str(
-                f'fridge\'s creator does not match provided id {user_id}'), status=403)
+            return Response(
+                response=str(f'fridge\'s creator does not match provided id {user_id}'),
+                status=403)
         db.session.delete(fridge)
         db.session.commit()
         return Response(

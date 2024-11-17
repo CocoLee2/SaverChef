@@ -43,8 +43,8 @@ def login():
             for fridge_item in fridge_items:
                 fridge_data["fridgeItems"].append(fridge_item.serialize())
             fridge_results.append(fridge_data)
-        return jsonify({"message": "Login successful", "user_id": user.id,
-                       "username": user.username, "favoriteRecipes": user.favoriteRecipes, "fridgeData": fridge_results}), 200
+        return jsonify({"message": "Login successful", "user_id": user.id, "username": user.username,
+                       "favoriteRecipes": user.favoriteRecipes, "fridgeData": fridge_results}), 200
     else:
         return jsonify({"message": "Invalid email or password"}), 401
 
