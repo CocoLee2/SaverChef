@@ -13,8 +13,8 @@ def test_add_item(client):
         'quantifier': '',
     })
     assert response.status_code == 201
-    assert response.json["itemId"] == 1  # assumes first item's id is 1
-    fridge_item = db.session.get(FridgeItems, 1)
+    assert response.json["itemId"] == 5  # assumes first item's id is 5
+    fridge_item = db.session.get(FridgeItems, 5)
     assert fridge_item.name == "apple"
     assert fridge_item.expiration_date == date(2025, 11, 1)
     assert fridge_item.quantity == 1

@@ -1,6 +1,8 @@
 from flask import Flask, Blueprint, render_template, flash, redirect, url_for, session, request, jsonify
 # from forms import RegisterForm, LoginForm
 from flask_bcrypt import Bcrypt
+from model.fridge import Fridge
+from model.fridge_items import FridgeItems
 from model.users import db, Users
 from dotenv import load_dotenv
 from os import getenv
@@ -23,8 +25,26 @@ def login():
         session['user_id'] = user.id
         session['username'] = user.username
         session['favoriteRecipes'] = user.favoriteRecipes
+
+        # may have to do a slightly different query to grab any fridges that are shared with you
+        # fridges = db.session.scalars(
+        #     db.select(Fridge).filter_by(
+        #         creator=user.id)).all()
+        fridges = db.session.query(Fridge).filter(
+            Fridge.creator == user.id).all()
+        fridge_results = []
+        for fridge in fridges:
+            fridge_data = {}
+            fridge_data["fridgeId"] = fridge.id
+            fridge_data["fridgeName"] = fridge.name
+            fridge_data["fridgeItems"] = []
+            fridge_items = db.session.scalars(
+                db.select(FridgeItems).filter_by(fridge_id=fridge.id)).all()
+            for fridge_item in fridge_items:
+                fridge_data["fridgeItems"].append(fridge_item.serialize())
+            fridge_results.append(fridge_data)
         return jsonify({"message": "Login successful", "user_id": user.id,
-                       "username": user.username, "favoriteRecipes": user.favoriteRecipes}), 200
+                       "username": user.username, "favoriteRecipes": user.favoriteRecipes, "fridgeData": fridge_results}), 200
     else:
         return jsonify({"message": "Invalid email or password"}), 401
 
@@ -76,8 +96,11 @@ def signup():
     )
     db.session.add(new_user)
     db.session.commit()
+    new_fridge = Fridge("My Fridge", new_user.id)
+    db.session.add(new_fridge)
+    db.session.commit()
     return jsonify({"message": "Login successful",
-                   "user_id": new_user.id}), 201
+                   "user_id": new_user.id, "fridge_id": new_fridge.id}), 201
 
 
 @app.route('/mark_favorite', methods=['POST'])

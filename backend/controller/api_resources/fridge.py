@@ -67,21 +67,28 @@ def create_fridge():
 
 @fridge_bp.route('/delete/', methods=["POST"])
 def delete_fridge_by_id():
-    """Deletes a given fridge by id. TODO: figure out how to have proper permissions for this
+    """Deletes a given fridge by id.
+
+    Input: {
+        user_id: int,
+        fridge_id: int
+    } 
 
     Response codes:
     200, Successful delete
     400, fridge does not exist
-    403, does not have permissions to delete this fridge
+    403, does not have permissions to delete this fridge if user_id does not match fridge's creator_id
     """
     try:
         fridge_id = request.json["fridge_id"]
+        user_id = request.json["user_id"]
         fridge = Fridge.query.get(fridge_id)
         if not fridge:
             return Response(response=str(
                 f'fridge with id {fridge_id} does not exist'), status=400)
-        # TODO: figure out some way to allow only users or
-        # someone of privileged access to delete
+        if fridge.creator != user_id:
+            return Response(response=str(
+                f'fridge\'s creator does not match provided id {user_id}'), status=403)
         db.session.delete(fridge)
         db.session.commit()
         return Response(

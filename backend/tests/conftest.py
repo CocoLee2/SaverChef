@@ -1,7 +1,10 @@
+from datetime import date
 import pytest
 from app import create_app
+from model.fridge_items import FridgeItems
 from database.database import db
 from dotenv import load_dotenv
+from flask_bcrypt import Bcrypt
 from model.fridge import Fridge
 from model.users import Users
 from os import getenv
@@ -29,10 +32,12 @@ def client(app):
 
 
 def populate_database():
+    bcrypt = Bcrypt()
     new_user = Users(
         username="superchef",
         email="superchef@superchef.com",
-        password="supercoolpassword",
+        password=bcrypt.generate_password_hash(
+            "supercoolpassword").decode('utf-8'),
         favoriteRecipes=[]
     )
     db.session.add(new_user)
@@ -40,3 +45,8 @@ def populate_database():
     new_fridge = Fridge("superchef's fridge", new_user.id)
     db.session.add(new_fridge)
     db.session.commit()
+    for i in range(1, 5):
+        new_fridge_item = FridgeItems(
+            new_fridge.id, f"lettuce #{i}", date(2025, 11, 4), 1, "lb")
+        db.session.add(new_fridge_item)
+        db.session.commit()
