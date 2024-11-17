@@ -24,4 +24,12 @@ def test_create_user_again(client):
             'password': "bad_password"})
     assert response.status_code != 201
 
+
+def test_login(client):
+    response = client.post(
+        "/login",
+        json={
+            'email': "superchef@superchef.com",
+            'password': "supercoolpassword"})
+    assert len(response.json["fridgeData"][0]["fridgeItems"]) == 4
 # def test_delete_user(client):

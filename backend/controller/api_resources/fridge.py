@@ -35,7 +35,8 @@ def get_fridges_by_creator():
                 creator=creator_id)).all()
         if not fridges:
             return Response(
-                response=str(f'fridges created by user with id {creator_id} do not exist'),
+                response=str(
+                    f'fridges created by user with id {creator_id} do not exist'),
                 status=400)
         return jsonify([fridge.serialize() for fridge in fridges])
     except Exception as e:
@@ -47,7 +48,7 @@ def create_fridge():
     """Creates a fridge for a given user passed through the request's body
 
     Response codes:
-      200, Successful creation of a fridge
+      201, Successful creation of a fridge
       400, user does not exist or otherwise malformed id
     """
     try:
@@ -59,28 +60,37 @@ def create_fridge():
         new_fridge = Fridge(fridge_name, creator_id)
         db.session.add(new_fridge)
         db.session.commit()
-        return "Fridge successfully created."
+        return jsonify({"message": "Fridge successfully created.",
+                       "fridgeId": new_fridge.id}), 201
     except Exception as e:
         return Response(response=str(e), status=400)
 
 
 @fridge_bp.route('/delete/', methods=["POST"])
 def delete_fridge_by_id():
-    """Deletes a given fridge by id. TODO: figure out how to have proper permissions for this
+    """Deletes a given fridge by id.
+
+    Input: {
+        user_id: int,
+        fridge_id: int
+    }
 
     Response codes:
     200, Successful delete
     400, fridge does not exist
-    403, does not have permissions to delete this fridge
+    403, does not have permissions to delete this fridge if user_id does not match fridge's creator_id
     """
     try:
         fridge_id = request.json["fridge_id"]
+        user_id = request.json["user_id"]
         fridge = Fridge.query.get(fridge_id)
         if not fridge:
             return Response(response=str(
                 f'fridge with id {fridge_id} does not exist'), status=400)
-        # TODO: figure out some way to allow only users or
-        # someone of privileged access to delete
+        if fridge.creator != user_id:
+            return Response(
+                response=str(f'fridge\'s creator does not match provided id {user_id}'),
+                status=403)
         db.session.delete(fridge)
         db.session.commit()
         return Response(

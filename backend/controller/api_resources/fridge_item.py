@@ -1,7 +1,7 @@
 from datetime import date
 
 
-from flask import Blueprint, jsonify, request
+from flask import Blueprint, jsonify, request, Response
 from database.database import db
 from model.fridge_items import FridgeItems
 
@@ -50,6 +50,7 @@ def update_item():
             - quantifier: string, required
     Output:
         Status code 200 and json response containing the success message if successful.
+        If item not found, returns status code 404
     """
     data = request.json
     item_id = int(data['itemId'])
@@ -57,10 +58,30 @@ def update_item():
     name = data['itemName']
     quantity = int(data['quantity'])
     quantifier = data['quantifier']
-    fridge_item = FridgeItems.query.get(item_id)
+    fridge_item = db.session.get(FridgeItems, item_id)
+    if not fridge_item:
+        return jsonify(
+            {"message": f'fridge item with id {item_id} does not exist'}), 400
     fridge_item.name = name
     fridge_item.expiration_date = expiration_date
     fridge_item.quantifier = quantifier
     fridge_item.quantity = quantity
     db.session.commit()
     return jsonify({"message": "Updated item successfully"})
+
+
+@fridge_item_bp.route("delete", methods=["POST"])
+def delete_item():
+    data = request.json
+    item_id = int(data['itemId'])
+    try:
+        fridge_item = db.session.get(FridgeItems, item_id)
+        if not fridge_item:
+            return jsonify(
+                {"message": 'fridge item with id {item_id} does not exist'}), 400
+        db.session.delete(fridge_item)
+        db.session.commit()
+        return jsonify({"message": "Successfully deleted fridge item"}), 200
+
+    except Exception as e:
+        return str(e), 400
