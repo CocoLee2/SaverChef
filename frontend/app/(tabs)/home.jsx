@@ -11,9 +11,9 @@ const Home = () => {
   const { userId, setUserId, username, setUsername, email, setEmail, password, setPassword, 
     fridgeItems, setFridgeItems, favoriteRecipes, setFavoriteRecipes, randomRecipes, setRandomRecipes } = useContext(GlobalContext);
 
-  // // used for debugging fridgeItems and setFridgeItems
-  // console.log("line15 in home.jsx")
-  // console.log(fridgeItems)
+  // used for debugging fridgeItems and setFridgeItems
+  console.log("line15 in home.jsx")
+  console.log(fridgeItems)
 
   const getImage = (foodName) => {
     const sanitizedFoodName = foodName.replace(/[^a-zA-Z]/g, '').toLowerCase();

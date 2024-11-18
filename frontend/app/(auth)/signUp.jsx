@@ -20,6 +20,14 @@ const SignUp = () => {
     confirmPassword: ""  
   });
 
+  function doNothingForOneSecond() {
+    return new Promise((resolve) => {
+      setTimeout(() => {
+        resolve();
+      }, 1000); 
+    });
+  }
+
   const getRandomRecipes = async() => {
     try {
       const response = await fetch('http://127.0.0.1:5001/get_random', {
@@ -81,8 +89,14 @@ const SignUp = () => {
         setEmail(form.email);
         setPassword(form.password);
         setFavoriteRecipes([]);
+        setFridgeItems([
+          {fridgeId: data["fridge_id"],
+          fridgeName: "Fridge 1",
+          fridgeItems: []}
+        ]);
         setIsLoading(true);  //start showing spinner
         await getRandomRecipes();
+        // await doNothingForOneSecond(); //used for testing loading animation
         setIsLoading(false);  //end showing spinner
         Alert.alert('Success', 'Account created successfully!');
         router.push("../(tabs)/home");

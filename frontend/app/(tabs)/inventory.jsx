@@ -8,7 +8,8 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import { Ionicons } from '@expo/vector-icons';
 import images from '../../constants/images';
 import { GlobalContext } from "../GlobalContext";
-import { useNavigation } from '@react-navigation/native';
+// import { useNavigation } from '@react-navigation/native';
+import { format } from 'date-fns';
 
 
 const Inventory = () => {
@@ -54,20 +55,42 @@ const Inventory = () => {
   }, [selectedFridge, fridgeItems]);
 
 
-  const addNewFridge = () => {
-    // tidi: connect to backend, this newFridgeId should be get from the returned data
-    const newFridgeId = 12345;
+  const addNewFridge = async() => {
+    // checks if the input fridge name is valid
     if (newFridgeName.trim()) {
-      const newFridge = {
-        fridgeId: newFridgeId,
-        fridgeName: newFridgeName.trim(),
-        fridgeItems: []
-      };
-      setFridgeIds((fridgeIds) => [...fridgeIds, newFridgeId]);
-      setFridgeItems((prevFridgeItems) => [...prevFridgeItems, newFridge]);
-      setNewFridgeName('');
-      setSelectedFridge(newFridgeId);
-      setDropdownVisible(false);
+      try {
+        const response = await fetch('http://127.0.0.1:5001/fridge/create', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            creator_id: userId,  
+            fridge_name: newFridgeName.trim(),
+          }),
+        });
+  
+        const data = await response.json();
+  
+        if (response.ok) {
+          const newFridgeId = data["fridgeId"];
+          const newFridge = {
+            fridgeId: newFridgeId,
+            fridgeName: newFridgeName.trim(),
+            fridgeItems: []
+          };
+          setFridgeIds((fridgeIds) => [...fridgeIds, newFridgeId]);
+          setFridgeItems((prevFridgeItems) => [...prevFridgeItems, newFridge]);
+          setNewFridgeName('');
+          setSelectedFridge(newFridgeId);
+          setDropdownVisible(false);
+        } else {
+          Alert.alert('Error', data.message || 'Request failed. Please try again.');
+        }
+      } catch (error) {
+        console.error('Error:', error);
+        Alert.alert('Network Error', 'Something went wrong. Please try again later.');
+      }
     } else {
       Alert.alert("Invalid Name", "Please enter a valid fridge name.");
     }
@@ -133,7 +156,7 @@ const Inventory = () => {
     // };
 
 
-    const deleteFridge = (index) => {
+    const deleteFridge = async (index) => {
       const fridgeToDelete = fridgeItems[index];
     
       Alert.alert(
@@ -142,30 +165,57 @@ const Inventory = () => {
         [
           { text: 'Cancel', style: 'cancel' },
           {
-            text: 'Delete', style: 'destructive', onPress: () => {
-
-              // Update the selected fridge if the deleted fridge was the selected one
-              if (selectedFridge === fridgeToDelete.fridgeId) {
-                const remainingFridgeIds = fridgeIds.filter(id => id !== fridgeToDelete.fridgeId);
-                const newSelectedFridge = remainingFridgeIds.length > 0 ? remainingFridgeIds[0] : null;
-                setSelectedFridge(newSelectedFridge);
-              }
-
-              // Remove the fridge from fridgeIds and fridgeItems array 
-              setFridgeIds((prevFridgeIds) => prevFridgeIds.filter(id => id !== fridgeToDelete.fridgeId));
-              setFridgeItems((prevFridgeItems) =>
-                prevFridgeItems.filter(fridge => fridge.fridgeId !== fridgeToDelete.fridgeId)
-              );
-
-              // tidi: connect to the backend, the fridgeId i will pass in is fridgeToDelete.fridgeId
-            }
-          }
+            text: 'Delete',
+            style: 'destructive',
+            onPress: () => handleDeleteFridge(fridgeToDelete.fridgeId),
+          },
         ]
       );
     };
     
-
-
+    const handleDeleteFridge = async (deleteId) => {
+      try {
+        const response = await fetch('http://127.0.0.1:5001/fridge/delete', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            user_id: userId,
+            fridge_id: deleteId,
+          }),
+        });
+    
+        console.log("line221 in inventory")
+        console.log(deleteId)
+        const data = await response.json();
+    
+        if (response.ok) {
+          console.log("line226 in inventory")
+          // Update the selected fridge if the deleted fridge was the selected one
+          if (selectedFridge === deleteId) {
+            const remainingFridgeIds = fridgeIds.filter(id => id !== deleteId);
+            const newSelectedFridge = remainingFridgeIds.length > 0 ? remainingFridgeIds[0] : null;
+            setSelectedFridge(newSelectedFridge);
+          }
+    
+          // Remove the fridge from fridgeIds and fridgeItems array
+          setFridgeIds((prevFridgeIds) =>
+            prevFridgeIds.filter(id => id !== deleteId)
+          );
+          setFridgeItems((prevFridgeItems) =>
+            prevFridgeItems.filter(fridge => fridge.fridgeId !== deleteId)
+          );
+        } else {
+          Alert.alert('Error', data.message || 'Request failed. Please try again.');
+        }
+      } catch (error) {
+        console.error('Error:', error);
+        Alert.alert('Network Error', 'Something went wrong. Please try again later.');
+      }
+    };
+    
+    
   const toggleDropdown = () => setDropdownVisible(!isDropdownVisible);
   const toggleModal = () => setModalVisible(!isModalVisible);
 
@@ -181,14 +231,19 @@ const Inventory = () => {
     const currentIndex = Math.round(scrollPosition / screenWidth);
   };
 
-  const handleDateChange = (event, selectedDate) => {
-    const currentDate = selectedDate || selectedItem.bestBefore;
-    setShowDatePicker(false);
-    setSelectedItem({ ...selectedItem, bestBefore: currentDate });
-  };
+  // const handleDateChange = (event, selectedDate) => {
+  //   const currentDate = selectedDate || selectedItem.bestBefore;
+  //   setShowDatePicker(false);
+  //   setSelectedItem({ ...selectedItem, bestBefore: currentDate });
+  // };
 
-  const saveChanges = () => {
-    // check if the information is valid
+  
+  const saveChanges = async() => {
+    if (!selectedFridge) {
+      Alert.alert('No Fridge Selected', 'Please create a fridge before proceeding.');
+      return
+    }
+    // check if all information is valid
     if (selectedItem.name === "" || selectedItem.quantity === ""){
       Alert.alert('Incomplete Information', 'Please enter both the item name and quantity before proceeding.');
       return
@@ -196,27 +251,56 @@ const Inventory = () => {
     if (selectedItem.quantity <= 0){
       Alert.alert('Invalid Information', 'Please make sure that quantity is positive.');
       return
-    }
+    }    
 
-    // tidi: connect to backend (update_item)
-    setFridgeItems((prevItemsByFridge) =>
-      prevItemsByFridge.map((fridge) =>
-        fridge.fridgeId === selectedFridge
-          ? {
-              ...fridge,
-              fridgeItems: fridge.fridgeItems.map((item) =>
-                item.id === selectedItem.id ? { ...selectedItem, unit: selectedUnit } : item
-              ),
-            }
-          : fridge
-      )
-    );
-    setModalVisible(false);
+    try {
+      const response = await fetch('http://127.0.0.1:5001/fridge_item/update_item', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          itemId: selectedItem.id,
+          itemName: selectedItem.name,
+          expirationDate: format(selectedItem.bestBefore, 'yyyy-MM-dd'), 
+          quantity: selectedItem.quantity, 
+          quantifier: selectedUnit,
+        }),
+      });
+
+      console.log("line286 in inventory")
+      const data = await response.json();
+
+      if (response.ok) {
+        setFridgeItems((prevItemsByFridge) =>
+          prevItemsByFridge.map((fridge) =>
+            fridge.fridgeId === selectedFridge
+              ? {
+                  ...fridge,
+                  fridgeItems: fridge.fridgeItems.map((item) =>
+                    item.id === selectedItem.id ? { ...selectedItem, unit: selectedUnit } : item
+                  ),
+                }
+              : fridge
+          )
+        );
+        setModalVisible(false);
+      } else {
+        Alert.alert('Error', data.message || 'Request failed. Please try again.');
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      Alert.alert('Network Error', 'Something went wrong. Please try again later.');
+    }
   };
   
 
-  const addItem = () => {
-    // check if the information is valid
+  const addItem = async() => {
+    if (!selectedFridge) {
+      Alert.alert('No Fridge Selected', 'Please create a fridge before proceeding.');
+      return
+    }
+    // check if all information is valid
     if (selectedItem.name === "" || selectedItem.quantity === ""){
       Alert.alert('Incomplete Information', 'Please enter both the item name and quantity before proceeding.');
       return
@@ -224,32 +308,77 @@ const Inventory = () => {
     if (selectedItem.quantity <= 0){
       Alert.alert('Invalid Information', 'Please make sure that quantity is positive.');
       return
-    }
+    }    
 
-    // tidi: connect to the backend, and change id (add_item)
-    const newItem = { ...selectedItem, id: Date.now().toString(), unit: selectedUnit };
-    setFridgeItems((prevItemsByFridge) =>
-      prevItemsByFridge.map((fridge) =>
-        fridge.fridgeId === selectedFridge
-          ? { ...fridge, fridgeItems: [...fridge.fridgeItems, newItem] }
-          : fridge
-      )
-    );
-    setModalVisible(false);
+    try {
+      const response = await fetch('http://127.0.0.1:5001/fridge_item/add', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          fridge_id: selectedFridge,  
+          itemName: selectedItem.name,
+          expirationDate: format(selectedItem.bestBefore, 'yyyy-MM-dd'), 
+          quantity: selectedItem.quantity, 
+          quantifier: selectedUnit,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        const newItem = { ...selectedItem, id: data["itemId"], unit: selectedUnit };
+        setFridgeItems((prevItemsByFridge) =>
+          prevItemsByFridge.map((fridge) =>
+            fridge.fridgeId === selectedFridge
+              ? { ...fridge, fridgeItems: [...fridge.fridgeItems, newItem] }
+              : fridge
+          )
+        );
+        setModalVisible(false);
+      } else {
+        Alert.alert('Error', data.message || 'Request failed. Please try again.');
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      Alert.alert('Network Error', 'Something went wrong. Please try again later.');
+    }
   };
   
-  const deleteItem = (itemId) => {
-    // tidi: connect to backend (delete_item)
-    setFridgeItems((prevItemsByFridge) =>
-      prevItemsByFridge.map((fridge) =>
-        fridge.fridgeId === selectedFridge
-          ? {
-              ...fridge,
-              fridgeItems: fridge.fridgeItems.filter((item) => item.id !== itemId),
-            }
-          : fridge
-      )
-    );
+
+  const deleteItem = async(itemId) => {
+    try {
+      const response = await fetch('http://127.0.0.1:5001/fridge_item/delete', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          itemId: itemId,  
+        }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        setFridgeItems((prevItemsByFridge) =>
+          prevItemsByFridge.map((fridge) =>
+            fridge.fridgeId === selectedFridge
+              ? {
+                  ...fridge,
+                  fridgeItems: fridge.fridgeItems.filter((item) => item.id !== itemId),
+                }
+              : fridge
+          )
+        );
+      } else {
+        Alert.alert('Error', data.message || 'Request failed. Please try again.');
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      Alert.alert('Network Error', 'Something went wrong. Please try again later.');
+    }
   };
 
   const handleLongPress = (itemId) => {
@@ -329,7 +458,7 @@ const Inventory = () => {
           keyExtractor={(item) => item.id.toString()}
           style={styles.list}
           renderItem={({ item }) => (
-            renderItem(item, item.bestBefore < new Date()) // Pass isExpired as a parameter
+            renderItem(item, item.bestBefore < new Date(new Date().setDate(new Date().getDate() - 1)))
           )}
         />
       ) : (

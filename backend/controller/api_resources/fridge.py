@@ -55,8 +55,14 @@ def create_fridge():
         data = request.json
         creator_id = int(data["creator_id"])
         fridge_name = data["fridge_name"]
-        if not Users.session.get(creator_id):  # fails if does not exist
-            return Response(response=str("creator does not exist"), status=400)
+        # print(creator_id)
+        # print(fridge_name)
+        # if not Users.session.get(creator_id):  # fails if does not exist
+        #     return Response(response=str("creator does not exist"), status=400)
+        user = db.session.get(Users, creator_id) 
+        if not user:
+            return Response(response="Creator does not exist", status=400)
+
         new_fridge = Fridge(fridge_name, creator_id)
         db.session.add(new_fridge)
         db.session.commit()
@@ -66,35 +72,74 @@ def create_fridge():
         return Response(response=str(e), status=400)
 
 
-@fridge_bp.route('/delete/', methods=["POST"])
-def delete_fridge_by_id():
-    """Deletes a given fridge by id.
+# @fridge_bp.route('/delete', methods=["POST"])
+# def delete_fridge_by_id():
+#     """Deletes a given fridge by id.
 
-    Input: {
-        user_id: int,
-        fridge_id: int
+#     Input: {
+#         user_id: int,
+#         fridge_id: int
+#     }
+
+#     Response codes:
+#     200, Successful delete
+#     400, fridge does not exist
+#     403, does not have permissions to delete this fridge if user_id does not match fridge's creator_id
+#     """
+#     try:
+#         fridge_id = request.json["fridge_id"]
+#         user_id = request.json["user_id"]
+#         fridge = Fridge.query.get(fridge_id)
+#         # print(fridge_id)
+#         if not fridge:
+#             return Response(response=str(
+#                 f'fridge with id {fridge_id} does not exist'), status=400)
+#         if fridge.creator != user_id:
+#             return Response(
+#                 response=str(f'fridge\'s creator does not match provided id {user_id}'),
+#                 status=403)
+#         db.session.delete(fridge)
+#         db.session.commit()
+#         return Response(
+#             response=f'Successfully deleted fridge with id {fridge_id}',
+#             status=200)
+#     except Exception as e:
+#         return Response(response=str(e), status=400)
+@fridge_bp.route('/delete', methods=["POST"])
+def delete_fridge_by_id():
+    """Deletes a given fridge by ID.
+
+    Input:
+    {
+        "user_id": int,
+        "fridge_id": int
     }
 
     Response codes:
-    200, Successful delete
-    400, fridge does not exist
-    403, does not have permissions to delete this fridge if user_id does not match fridge's creator_id
+    200 - Successful delete
+    400 - Fridge does not exist or bad request
+    403 - User does not have permission to delete this fridge
     """
     try:
         fridge_id = request.json["fridge_id"]
         user_id = request.json["user_id"]
+
+        print(f"Request to delete fridge: fridge_id={fridge_id}, user_id={user_id}")
+
         fridge = Fridge.query.get(fridge_id)
         if not fridge:
-            return Response(response=str(
-                f'fridge with id {fridge_id} does not exist'), status=400)
-        if fridge.creator != user_id:
-            return Response(
-                response=str(f'fridge\'s creator does not match provided id {user_id}'),
-                status=403)
+            return jsonify({"error": f"Fridge with id {fridge_id} does not exist"}), 400
+
+        if fridge.creator != user_id:  # Ensure you compare to the actual creator ID
+            return jsonify({"error": f"User {user_id} does not have permission to delete this fridge"}), 403
+
         db.session.delete(fridge)
         db.session.commit()
-        return Response(
-            response=f'Successfully deleted fridge with id {fridge_id}',
-            status=200)
+
+        return jsonify({"message": f"Successfully deleted fridge with id {fridge_id}"}), 200
+
+    except KeyError as e:
+        return jsonify({"error": f"Missing key: {str(e)}"}), 400
     except Exception as e:
-        return Response(response=str(e), status=400)
+        print(f"Unhandled exception: {str(e)}")
+        return jsonify({"error": "An unexpected error occurred"}), 500

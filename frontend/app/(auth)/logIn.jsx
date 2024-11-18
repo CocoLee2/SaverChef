@@ -41,18 +41,42 @@ const LogIn = () => {
     }
   }
   
-  // this function waits 4 seconds and then resolve a promise without performing any other action
+  // this function waits 2 seconds and then resolve a promise without performing any other action
   // it is used to test the loading animation
-  function doNothingForFourSeconds() {
+  function doNothingForTwoSeconds() {
     return new Promise((resolve) => {
       setTimeout(() => {
         resolve();
-      }, 4000); 
+      }, 2000); 
     });
   }
 
   const [isLoading, setIsLoading] = useState(false);
 
+  const processFridgeData = (fridgeData) => {
+    return fridgeData.map(fridge => {
+      const processedItems = fridge.fridgeItems.map(item => {
+        const expirationDate = new Date(item.expiration_date);
+        return {
+          id: item.id,
+          name: item.name,
+          quantity: item.quantity,
+          unit: item.quantifier,
+          bestBefore: new Date(
+            expirationDate.getFullYear(),
+            expirationDate.getMonth(),
+            expirationDate.getDate()+1
+          ),
+        };
+      });
+  
+      return {
+        fridgeId: fridge.fridgeId,
+        fridgeName: fridge.fridgeName,
+        fridgeItems: processedItems,
+      };
+    });
+  };
 
   const handleLogin = async() => {  
     // router.push("../(tabs)/home");
@@ -85,9 +109,10 @@ const LogIn = () => {
         setEmail(form.email);
         setPassword(form.password);
         setFavoriteRecipes(data["favoriteRecipes"])
+        setFridgeItems(processFridgeData(data["fridgeData"]));
         setIsLoading(true);  //start showing spinner
         await getRandomRecipes();
-        // await doNothingForFourSeconds(); //used for testing loading animation
+        // await doNothingForTwoSeconds(); //used for testing loading animation
         setIsLoading(false);  //end showing spinner
         router.push("../(tabs)/home");
       } else {

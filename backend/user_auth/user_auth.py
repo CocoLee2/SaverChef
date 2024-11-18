@@ -96,7 +96,7 @@ def signup():
     )
     db.session.add(new_user)
     db.session.commit()
-    new_fridge = Fridge("My Fridge", new_user.id)
+    new_fridge = Fridge("My fridge", new_user.id)
     db.session.add(new_fridge)
     db.session.commit()
     return jsonify({"message": "Login successful",
