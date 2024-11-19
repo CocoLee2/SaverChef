@@ -42,11 +42,6 @@ Use the gathered information to construct your database URI in the following for
 postgresql://[user]:[password]@localhost:[port]/[database_name]
 
 
-
-
-
-
-##
 Once the frontend and backend has been initalized, start frontend and the backend on separate terminals.
 
 1: starting the frontend:
