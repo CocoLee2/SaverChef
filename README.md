@@ -59,8 +59,8 @@ Create your `DATABASE_URI` using this format:
 postgresql://[user]:[password]@localhost:[port]/[database_name]
 ```
 ### 5. To check the contents of the database
-1. Navigate to your_database -> Schemas -> Public -> Tables.
-2. Double-click on the desired table and select View/Edit Data to inspect its contents.
+1. Navigate to **your_database** -> **Schemas** -> **Public** -> **Tables**.
+2. Double-click on the desired table and select **View/Edit Data** to inspect its contents.
 
 ## Running the Application
 
