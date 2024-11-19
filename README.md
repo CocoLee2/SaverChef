@@ -1,126 +1,67 @@
 # SaverChef
 
-This is a react native application with a react native frontend, flask backend, and a PostgreSQL database.
-Requirements: Python 3.11.1, Postgresql, A phone with expo go, Node.js
+A React Native application with a React Native frontend, Flask backend, and PostgreSQL database.
 
-## Getting started (frontend)
-1. In the frontend directory, Install dependencies
-bash
-   cd frontend
-   npm install
+## Prerequisites
+- Python 3.11.1
+- PostgreSQL
+- Phone with Expo Go installed
+- Node.js
 
+## Getting Started
 
-## Getting started (backend)
-In the backend directory, create a python virtual environment and install the packages in 
-requiremenets.txt
-.
+### Frontend Setup
 
-Create a 
-.env
- file with an entry for your 
-DATABASE_URI
- set to your postgres database.
+1. Navigate to the frontend directory and install dependencies:
+```bash
+cd frontend
+npm install
+Backend Setup
 
-Format for DATABASE_URI:
-postgresql://[user]:[password]@localhost:[port]/[database_name]
+In the backend directory:
 
-## Instructions for Setting Up PostgreSQL
-
-### 1. Download PostgreSQL  
-Visit the [official PostgreSQL website](https://www.postgresql.org) and download the latest version.
-
-### 2. Install and Open pgAdmin 4  
-After successfully installing PostgreSQL, open **pgAdmin 4**.
-
-### 3. Set Up a Password  
-Upon first launch, you will be prompted to create a password for the PostgreSQL server. Choose and confirm your password.
-
-### 4. Access Connection Details  
-- In the **pgAdmin 4** interface, locate and double-click on **PostgreSQL 17** in the left-hand toolbar.  
-- Navigate to the **Properties** tab, then select **Connection** to view the **username** and **port** details.
-
-### 5. Create a Database  
-Under **PostgreSQL 17**, create a new database. Assign it a name of your choice.
-
-### 6. Assemble the DATABASE_URI  
-Use the gathered information to construct your database URI in the following format:  
-plaintext
-postgresql://[user]:[password]@localhost:[port]/[database_name]
-
-
-Once the frontend and backend has been initalized, start frontend and the backend on separate terminals.
-
-1: starting the frontend:
-bash
-    cd frontend
-    npx expo start
-2: starting the backend:
-bash
-   cd backend
-   python3 app.py
-Once both have started, scan the QR code from the frontend
-
-**ChatGPT**: Formalize this markdown:
-
-# SaverChef
-
-This is a react native application with a react native frontend, flask backend, and a PostgreSQL database.
-Requirements: Python 3.11.1, Postgresql, A phone with expo go, Node.js
-
-## Getting started (frontend)
-1. In the frontend directory, Install dependencies
-bash
-   cd frontend
-   npm install
+Create a Python virtual environment
+Install packages from requirements.txt
+Create a .env file with your DATABASE_URI
 
 
 
-## Getting started (backend)
-In the backend directory, create a python virtual environment and install the packages in 
-requiremenets.txt
-.
+Database URI format:
+Copypostgresql://[user]:[password]@localhost:[port]/[database_name]
+PostgreSQL and pgAdmin 4 Setup
+1. Install PostgreSQL
 
-Create a 
-.env
- file with an entry for your 
-DATABASE_URI
- set to your postgres database.
+Visit the official PostgreSQL website
+Download and install the latest version
 
-Format for DATABASE_URI:
-postgresql://[user]:[password]@localhost:[port]/[database_name]
+2. Configure pgAdmin 4
 
-# Instructions for Setting Up PostgreSQL and pgAdmin 4
+Open pgAdmin 4 after PostgreSQL installation
+Create a master password when prompted
+Access connection details:
 
-## 1. Download PostgreSQL  
-Visit the [official PostgreSQL website](https://www.postgresql.org) and download the latest version.
-
-## 2. Install and Open pgAdmin 4  
-After successfully installing PostgreSQL, open **pgAdmin 4**.
-
-## 3. Set Up a Password  
-Upon first launch, you will be prompted to create a password for the PostgreSQL server. Choose and confirm your password.
-
-## 4. Access Connection Details  
-- In the **pgAdmin 4** interface, locate and double-click on **PostgreSQL 17** in the left-hand toolbar.  
-- Navigate to the **Properties** tab, then select **Connection** to view the **username** and **port** details.
-
-## 5. Create a Database  
-Under **PostgreSQL 17**, create a new database. Assign it a name of your choice.
-
-## 6. Assemble the DATABASE_URI  
-Use the gathered information to construct your database URI in the following format:  
-plaintext
-postgresql://[user]:[password]@localhost:[port]/[database_name]
+Locate and double-click PostgreSQL 17 in the left sidebar
+Go to Properties → Connection
+Note down the username and port
 
 
-Once the frontend and backend has been initalized, start frontend and the backend on separate terminals.
 
-1: starting the frontend:
-bash
-    cd frontend
-    npx expo start
-2: starting the backend:
-bash
-   cd backend
-   python3 app.py
-Once both have started, scan the QR code from the frontend
+3. Database Creation
+
+In pgAdmin 4, expand PostgreSQL 17
+Right-click on Databases
+Select Create → Database
+Choose a database name
+
+4. Configure Database Connection
+Create your DATABASE_URI using this format:
+Copypostgresql://[user]:[password]@localhost:[port]/[database_name]
+Running the Application
+1. Start the Frontend
+bashCopycd frontend
+npx expo start
+2. Start the Backend
+bashCopycd backend
+python3 app.py
+3. Launch the Application
+Scan the QR code displayed in the frontend terminal using your phone's camera or Expo Go app.
