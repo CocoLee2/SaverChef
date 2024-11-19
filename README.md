@@ -1,6 +1,6 @@
 # SaverChef
 
-SaverChef is a great application for Tracking Food & Inspiring Recipes. A React Native application with a React Native frontend, Flask backend, and PostgreSQL database.
+Our app is a smart inventory manager designed to help users efficiently track the food in their fridge.  It sends alerts when items are approaching their expiration dates to minimize food waste. The app also offers tailored recipe suggestions based on the ingredients currently available to motivate people to cook their own foods with the intention of introducing cooking to beginners in order to save money and eat healthier. The frontend is built with React Native, and the backend uses a Flask RESTful API with a PostgreSQL databse.
 
 ## Prerequisites
 - Python 3.11.1
