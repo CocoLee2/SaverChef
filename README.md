@@ -1,6 +1,6 @@
 # SaverChef
 
-A React Native application with a React Native frontend, Flask backend, and PostgreSQL database.
+SaverChef is a great application for Tracking Food & Inspiring Recipes. A React Native application with a React Native frontend, Flask backend, and PostgreSQL database.
 
 ## Prerequisites
 - Python 3.11.1
