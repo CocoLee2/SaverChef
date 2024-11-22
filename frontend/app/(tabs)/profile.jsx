@@ -133,7 +133,8 @@ const Profile = () => {
         />
       </View>
 
-      <Text style={styles.username}>{username}</Text>
+      {/* only show the first 10 letters in username */}
+      <Text style={styles.username}>{username.slice(0, 10)}</Text>
       <Text style={styles.email}>{email}</Text>
       
       {/* Action Buttons */}

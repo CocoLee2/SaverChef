@@ -26,10 +26,6 @@ def login():
         session['username'] = user.username
         session['favoriteRecipes'] = user.favoriteRecipes
 
-        # may have to do a slightly different query to grab any fridges that are shared with you
-        # fridges = db.session.scalars(
-        #     db.select(Fridge).filter_by(
-        #         creator=user.id)).all()
         fridges = db.session.query(Fridge).filter(
             Fridge.creator == user.id).all()
         fridge_results = []
@@ -47,6 +43,28 @@ def login():
                        "favoriteRecipes": user.favoriteRecipes, "fridgeData": fridge_results}), 200
     else:
         return jsonify({"message": "Invalid email or password"}), 401
+
+@app.route('/refresh', methods=['POST'])
+def refresh():
+    data = request.json  # Expecting a JSON payload with email and password
+    user = Users.query.filter_by(id=data['userId']).first()
+    
+    fridges = db.session.query(Fridge).filter(
+        Fridge.creator == user.id).all()
+    fridge_results = []
+    for fridge in fridges:
+        fridge_data = {}
+        fridge_data["fridgeId"] = fridge.id
+        fridge_data["fridgeName"] = fridge.name
+        fridge_data["fridgeItems"] = []
+        fridge_items = db.session.scalars(
+            db.select(FridgeItems).filter_by(fridge_id=fridge.id)).all()
+        for fridge_item in fridge_items:
+            fridge_data["fridgeItems"].append(fridge_item.serialize())
+        fridge_results.append(fridge_data)
+    return jsonify({"fridgeData": fridge_results}), 200
+
+
 
 # New route for changing password
 

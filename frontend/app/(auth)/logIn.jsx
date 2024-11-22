@@ -80,7 +80,6 @@ const LogIn = () => {
 
   const handleLogin = async() => {  
     // router.push("../(tabs)/home");
-    // tidi
     // Basic validation to check if all fields are filled
     if (!form.email|| !form.password) {
       Alert.alert('Error', 'Please fill in all fields.');

@@ -11,9 +11,9 @@ const Home = () => {
   const { userId, setUserId, username, setUsername, email, setEmail, password, setPassword, 
     fridgeItems, setFridgeItems, favoriteRecipes, setFavoriteRecipes, randomRecipes, setRandomRecipes } = useContext(GlobalContext);
 
-  // used for debugging fridgeItems and setFridgeItems
-  console.log("line15 in home.jsx")
-  console.log(fridgeItems)
+  // // used for debugging fridgeItems and setFridgeItems
+  // console.log("line15 in home.jsx")
+  // console.log(fridgeItems)
 
   const getImage = (foodName) => {
     const sanitizedFoodName = foodName.replace(/[^a-zA-Z]/g, '').toLowerCase();
@@ -48,7 +48,8 @@ const Home = () => {
     <View style={styles.container}>
       {/* User welcome text and image */}
       <View style={styles.headerContainer}>
-        <Text style={styles.welcomeText}>Welcome, {username}!</Text>
+        {/* currently only showing the first six letters in username */}
+        <Text style={styles.welcomeText}>Welcome, {username.slice(0,6)}!</Text>
         <Pressable onPress={() => (router.push('profile'))}>
           <Image source={userImage} style={styles.userImage} />
         </Pressable>
