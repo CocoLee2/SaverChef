@@ -19,6 +19,7 @@ const Profile = () => {
     setIsLoading(true);  //start showing spinner
     if (favoriteRecipes.length === 0) {
       Alert.alert('No Favorite Recipes', 'You don’t have any favorite recipes yet. Browse and add some!');
+      setIsLoading(false);
       return 
     }
     try {
