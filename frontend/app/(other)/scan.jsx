@@ -13,19 +13,14 @@ import {
 import Modal from "react-native-modal";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { GlobalContext } from "../GlobalContext";
-import { router } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
+import { format } from 'date-fns';
 
-/**
- * 
- * TODO: make sure to implement addFridge (blocked because the fridge information is stored in inventory.jsx, but should be global)
- * 
- * 
- * 
- * 
- */
 
 export default function camera() {
-    const { userId, setUserId, username, setUsername, email, setEmail, password, setPassword, 
+  const { fridgeId } = useLocalSearchParams();
+  console.log(fridgeId);
+  const { userId, setUserId, username, setUsername, email, setEmail, password, setPassword, 
         fridgeItems, setFridgeItems, favoriteRecipes, setFavoriteRecipes, randomRecipes, setRandomRecipes } = useContext(GlobalContext);
   const [permission, requestPermission] = useCameraPermissions();
   const [scanned, setScanned] = useState(false);
@@ -40,6 +35,7 @@ export default function camera() {
   });
   const [selectedUnit, setSelectedUnit] = useState("pcs");
   const [showUnitPicker, setShowUnitPicker] = useState(false);
+  const [alertShown, setAlertShown] = useState(false);
 
   if (!permission) {
     return <View />;
@@ -56,7 +52,12 @@ export default function camera() {
     );
   }
 
-  const addItem = () => {
+  const addItem = async() => {
+    if (!fridgeId) {
+      Alert.alert('No Fridge Selected', 'Please create a fridge before proceeding.');
+      return
+    }
+    // check if all information is valid
     if (selectedItem.name === "" || selectedItem.quantity === ""){
       Alert.alert('Incomplete Information', 'Please enter both the item name and quantity before proceeding.');
       return
@@ -64,28 +65,54 @@ export default function camera() {
     if (selectedItem.quantity <= 0){
       Alert.alert('Invalid Information', 'Please make sure that quantity is positive.');
       return
-    }
-    const foodItem = {
-        id: Date.now(), // tidi: this need to be changed by connecting to the backend
-        name: selectedItem.name,
-        bestBefore: selectedItem.bestBefore,
-        quantity: Number(selectedItem.quantity),
-        unit: selectedItem.unit
-    }
+    }    
 
-    setFridgeItems((prevFridgeItems) =>
-        prevFridgeItems.map((fridge) =>
-          fridge.fridgeId === 1 // tidi: change fridgeId as well
-            ? {
-                ...fridge,
-                fridgeItems: [...fridge.fridgeItems, foodItem],
-              }
-            : fridge
-        )
-      );
-    
-    setModalVisible(false);
-    router.push("/inventory")
+    try {
+      const response = await fetch('http://127.0.0.1:5001/fridge_item/add', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          fridge_id: fridgeId,  
+          itemName: selectedItem.name,
+          expirationDate: format(selectedItem.bestBefore, 'yyyy-MM-dd'), 
+          quantity: selectedItem.quantity, 
+          quantifier: selectedUnit,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        const foodItem = {
+            id: data["itemId"], 
+            name: selectedItem.name,
+            bestBefore: selectedItem.bestBefore,
+            quantity: selectedItem.quantity,
+            unit: selectedUnit
+        }
+
+        setFridgeItems((prevFridgeItems) =>
+          prevFridgeItems.map((fridge) =>
+            fridge.fridgeId === Number(fridgeId)
+              ? {
+                  ...fridge,
+                  fridgeItems: [...fridge.fridgeItems, foodItem],
+                }
+              : fridge
+          )
+        );
+      
+        setModalVisible(false);
+        router.push("/inventory")
+      } else {
+        Alert.alert('Error', data.message || 'Request failed. Please try again.');
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      Alert.alert('Network Error', 'Something went wrong. Please try again later.');
+    }
   };
 
 
@@ -95,12 +122,8 @@ export default function camera() {
     setModalVisible(true);
     setText(data);
     getBarcodeInfo(data);
-    
   };
 
-  const handleNotFound = () =>{
-    alert("Couldn't find food with barcode. Please enter manually.")
-  }
 
   const getBarcodeInfo = async (text) => {
     try {
@@ -115,17 +138,19 @@ export default function camera() {
   
       // Check for HTTP errors
       if (!response.ok) {
-        // console.log(response)
-        handleNotFound();
+        console.log(response)
+        // make sure that the alert is only shown once
+        console.log("alertShown is ", alertShown);
+        if (!alertShown) {
+          setAlertShown(true); 
+          console.log("alertShown is set to true")
+          alert("Couldn't find food with barcode. Please enter manually.");
+        }
         return
       }
-  
       const data = await response.json();
-      console.log(data); // Use or return the data as needed
     
       setSelectedItem({ ...selectedItem, name: data.foods[0].food_name })
-
-
       return data;
     } catch (error) {
       console.error('Error fetching barcode info:', error);

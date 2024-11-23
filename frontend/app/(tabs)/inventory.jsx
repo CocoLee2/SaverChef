@@ -474,7 +474,12 @@ const Inventory = () => {
         <TouchableOpacity style={styles.button} onPress={() => { setSelectedItem({ id: '', name: '', quantity: '', unit: 'pcs', bestBefore: new Date() }); toggleModal(); }}>
           <Ionicons name="add-circle-outline" size={30} color="#F36C21" />
         </TouchableOpacity>
-        <TouchableOpacity style={styles.button} onPress={() => router.push({ pathname: '../(other)/scan' })}>
+        <TouchableOpacity style={styles.button} onPress={() =>
+          router.push({
+            pathname: '../(other)/scan',
+            params: { fridgeId: selectedFridge }, // Pass the fridgeId dynamically
+          })
+        }>
           <MaterialIcons name="qr-code-scanner" size={30} color="#F36C21" />
         </TouchableOpacity>
         <TouchableOpacity style={styles.button} onPress={() =>
