@@ -1,6 +1,8 @@
 from flask import Blueprint, request, jsonify, Response
 from model.fridge import Fridge
 from model.users import Users
+from model.fridge_members import FridgeMembers
+from user_auth.user_auth import get_fridge_data
 from database.database import db
 
 fridge_bp = Blueprint('fridge', __name__, url_prefix='/fridge')
@@ -144,3 +146,41 @@ def delete_fridge_by_id():
     except Exception as e:
         print(f"Unhandled exception: {str(e)}")
         return jsonify({"error": "An unexpected error occurred"}), 500
+
+
+@fridge_bp.route("/share", methods=["POST"])
+def share_fridge():
+    """Gives the given user access to a fridge given that the corresponding passcode is given
+
+    Input: {
+        fridgePasscode: str,
+        userId: int (the user who is to be added as a fridge member)
+    }
+
+    Output:
+        return all of user's accessible fridges in the format:
+            fridgeData: [
+                {
+                    fridgeId: int,
+                    fridgeName: str,
+                    fridgePasscode: str, 
+                    fridgeItems: [...]
+                }, ...
+            ]
+        with a status code of 200 if successful.
+        If the userId already has access to the given fridge or is the creator, return error code 409
+        If the passcode does not correspond to any fridge, return error code 404
+    """
+
+    fridge_passcode = request.json["fridgePasscode"]
+    user_id = request.json["userId"]
+
+    fridge = Fridge.query.filter_by(passcode=fridge_passcode).first()
+    if not fridge:
+        return jsonify({"error": f"Fridge with passcode {fridge_passcode} does not exist"}), 404
+    if FridgeMembers.query.filter_by(fridge_id=fridge.id, member_id=user_id).first() is not None or fridge.creator == user_id:
+        return jsonify({"error": "You already have access to this fridge"}), 409
+    new_member = FridgeMembers(fridge.id, user_id)
+    db.session.add(new_member)
+    db.session.commit()
+    return jsonify({"fridgeData": get_fridge_data(user_id)})
