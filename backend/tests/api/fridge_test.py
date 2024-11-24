@@ -44,4 +44,5 @@ Need tests for:
 - deleting fridge
 - attempting to delete fridge with wrong user_id
 - getting fridges
+- trying to share the same fridge twice (checking for error)
 """
