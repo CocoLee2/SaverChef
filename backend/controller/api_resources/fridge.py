@@ -61,7 +61,7 @@ def create_fridge():
         # print(creator_id)
         # print(fridge_name)
         # if not Users.session.get(creator_id):  # fails if does not exist
-        #     return Response(response=str("creator does not exist"), status=400)
+        # return Response(response=str("creator does not exist"), status=400)
         user = db.session.get(Users, creator_id)
         if not user:
             return Response(response="Creator does not exist", status=400)
@@ -93,14 +93,16 @@ def edit_name():
         if not fridge:
             return jsonify({"message": "Fridge not found."}), 404
         if fridge.creator != user_id:  # Ensure you compare to the actual creator ID
-            return jsonify({"error": f"User {user_id} does not have permission to delete this fridge"}), 403
+            return jsonify(
+                {"error": f"User {user_id} does not have permission to delete this fridge"}), 403
         # Update the fridge's name
-        fridge.name = name  
-        db.session.commit() 
-        return jsonify({"message": "Fridge name successfully updated.", "fridgeId": fridge.id}), 200
+        fridge.name = name
+        db.session.commit()
+        return jsonify(
+            {"message": "Fridge name successfully updated.", "fridgeId": fridge.id}), 200
     except Exception as e:
         return Response(response=str(e), status=400)
-    
+
 
 @fridge_bp.route('/delete', methods=["POST"])
 def delete_fridge_by_id():
@@ -126,15 +128,18 @@ def delete_fridge_by_id():
 
         fridge = Fridge.query.get(fridge_id)
         if not fridge:
-            return jsonify({"error": f"Fridge with id {fridge_id} does not exist"}), 400
+            return jsonify(
+                {"error": f"Fridge with id {fridge_id} does not exist"}), 400
 
         if fridge.creator != user_id:  # Ensure you compare to the actual creator ID
-            return jsonify({"error": f"User {user_id} does not have permission to delete this fridge"}), 403
+            return jsonify(
+                {"error": f"User {user_id} does not have permission to delete this fridge"}), 403
 
         db.session.delete(fridge)
         db.session.commit()
 
-        return jsonify({"message": f"Successfully deleted fridge with id {fridge_id}"}), 200
+        return jsonify(
+            {"message": f"Successfully deleted fridge with id {fridge_id}"}), 200
 
     except KeyError as e:
         return jsonify({"error": f"Missing key: {str(e)}"}), 400
@@ -158,7 +163,7 @@ def share_fridge():
                 {
                     fridgeId: int,
                     fridgeName: str,
-                    fridgePasscode: str, 
+                    fridgePasscode: str,
                     fridgeItems: [...]
                 }, ...
             ]
@@ -172,9 +177,13 @@ def share_fridge():
 
     fridge = Fridge.query.filter_by(passcode=fridge_passcode).first()
     if not fridge:
-        return jsonify({"error": f"Fridge with passcode {fridge_passcode} does not exist"}), 404
-    if FridgeMembers.query.filter_by(fridge_id=fridge.id, member_id=user_id).first() is not None or fridge.creator == user_id:
-        return jsonify({"error": "You already have access to this fridge"}), 409
+        return jsonify(
+            {"error": f"Fridge with passcode {fridge_passcode} does not exist"}), 404
+    if FridgeMembers.query.filter_by(
+            fridge_id=fridge.id,
+            member_id=user_id).first() is not None or fridge.creator == user_id:
+        return jsonify(
+            {"error": "You already have access to this fridge"}), 409
     new_member = FridgeMembers(fridge.id, user_id)
     db.session.add(new_member)
     db.session.commit()

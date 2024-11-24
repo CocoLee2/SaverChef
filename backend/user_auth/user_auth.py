@@ -104,8 +104,8 @@ def signup():
     new_fridge = Fridge("My fridge", new_user.id)
     db.session.add(new_fridge)
     db.session.commit()
-    return jsonify({"message": "Login successful",
-                   "user_id": new_user.id, "fridge_id": new_fridge.id, "fridge_passcode": new_fridge.passcode}), 201
+    return jsonify({"message": "Login successful", "user_id": new_user.id,
+                   "fridge_id": new_fridge.id, "fridge_passcode": new_fridge.passcode}), 201
 
 
 @app.route('/mark_favorite', methods=['POST'])
@@ -136,8 +136,10 @@ def mark_favorite():
 
 def get_fridge_data(user_id):
     "Returns all user's fridges with corresponding data"
-    fridges = db.session.query(Fridge).outerjoin(FridgeMembers, Fridge.id == FridgeMembers.fridge_id).filter(
-        (Fridge.creator == user_id) | (FridgeMembers.member_id == user_id)).distinct().all()
+    fridges = db.session.query(Fridge).outerjoin(
+        FridgeMembers, Fridge.id == FridgeMembers.fridge_id).filter(
+        (Fridge.creator == user_id) | (
+            FridgeMembers.member_id == user_id)).distinct().all()
     fridge_results = []
     for fridge in fridges:
         fridge_data = {}
