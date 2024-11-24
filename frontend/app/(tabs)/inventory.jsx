@@ -10,6 +10,7 @@ import images from '../../constants/images';
 import { GlobalContext } from "../GlobalContext";
 // import { useNavigation } from '@react-navigation/native';
 import { format } from 'date-fns';
+import CustomButton from '../../components/CustomButton';
 
 
 const Inventory = () => {
@@ -35,6 +36,11 @@ const Inventory = () => {
   const [isEditingFridge, setIsEditingFridge] = useState(false);
   const [editingFridgeIndex, setEditingFridgeIndex] = useState(null);
   const [editedFridgeName, setEditedFridgeName] = useState('');
+
+  const filteredFridgeItems = selectedFridgeObj ? selectedFridgeObj.fridgeItems.filter(item => 
+    item.name.toLowerCase().includes(search.toLowerCase())
+  ) : [];
+  
 
  
   const getImage = (foodName) => {
@@ -164,6 +170,14 @@ const Inventory = () => {
       ]
     );
   };
+
+  const handleNewButtonPress = async () => {
+    let ingredients = search.split(",").map(item => item.trim());
+    const validIngredientRegex = /^[a-zA-Z\s]+$/;
+    // do some simple checks on the input strings
+    ingredients = ingredients.filter(item => validIngredientRegex.test(item));
+    fetchRecipes(ingredients)
+  }
     
   const handleDeleteFridge = async (deleteId) => {
     try {
@@ -493,23 +507,34 @@ const Inventory = () => {
         </TouchableOpacity>
       </View>
 
-      <SearchBar
-        placeholder="Type your ingredients"
-        onChangeText={setSearch}
-        value={search}
-        containerStyle={styles.searchContainer}
-        inputContainerStyle={styles.searchInput}
-      />
+      <View style={styles.searchRowContainer}>
+        <SearchBar
+          placeholder="Type your ingredients"
+          onChangeText={setSearch}
+          value={search}
+          containerStyle={styles.searchContainer}
+          inputContainerStyle={styles.searchInput}
+          inputStyle={styles.searchText}
+        />
+  
+        <CustomButton
+          title="Search"
+          handlePress={handleNewButtonPress}
+          containerStyles={styles.newButtonContainer} 
+          textStyles={styles.newButtonText}
+        />
+      </View>
 
 
       {selectedFridgeObj && selectedFridgeObj.fridgeItems.length > 0 ? (
         <FlatList
-          data={selectedFridgeObj.fridgeItems}
+          data={filteredFridgeItems}
           keyExtractor={(item) => item.id.toString()}
           style={styles.list}
           renderItem={({ item }) => (
             renderItem(item, item.bestBefore < new Date(new Date().setDate(new Date().getDate() - 1)))
           )}
+          ListEmptyComponent={<Text style={styles.emptyMessage}>No ingredients found</Text>}
         />
       ) : (
         <Text style={styles.emptyMessage}>No ingredients yet</Text>
@@ -723,17 +748,43 @@ const styles = StyleSheet.create({
     marginRight: 5,
   },
 
+  searchRowContainer: {
+    flexDirection: 'row', // Arrange items in a row
+    alignItems: 'center', // Center items vertically
+    marginTop: 10, // Add top margin if needed
+  },
+
   searchContainer: {
-    width: '100%',
+    flex: 7, // Use 80% of the space
     borderTopWidth: 0,
     backgroundColor: 'transparent',
     borderBottomWidth: 0,
-    marginVertical: 20,
+    height: 60, // Set a uniform height
   },
 
   searchInput: {
     backgroundColor: '#FFF',
     borderRadius: 10,
+    height: 40, // Set the same height for the input
+  },
+
+  searchText: {
+    fontSize: 14, 
+  },
+
+  newButtonContainer: {
+    flex: 2, 
+    marginLeft: 5, 
+    minHeight: 40, 
+    borderRadius: 10,
+    justifyContent: 'center',
+    backgroundColor: '#FFA500',
+  }, 
+
+  newButtonText: {
+    color: '#FFFFFF', 
+    fontWeight: '600', 
+    fontSize: 14, 
   },
 
   buttonContainer: {
