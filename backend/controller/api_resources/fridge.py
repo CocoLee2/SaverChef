@@ -59,7 +59,7 @@ def create_fridge():
         # print(fridge_name)
         # if not Users.session.get(creator_id):  # fails if does not exist
         #     return Response(response=str("creator does not exist"), status=400)
-        user = db.session.get(Users, creator_id) 
+        user = db.session.get(Users, creator_id)
         if not user:
             return Response(response="Creator does not exist", status=400)
 
@@ -67,7 +67,7 @@ def create_fridge():
         db.session.add(new_fridge)
         db.session.commit()
         return jsonify({"message": "Fridge successfully created.",
-                       "fridgeId": new_fridge.id}), 201
+                       "fridgeId": new_fridge.id, "fridgePasscode": new_fridge.passcode}), 201
     except Exception as e:
         return Response(response=str(e), status=400)
 
@@ -124,7 +124,8 @@ def delete_fridge_by_id():
         fridge_id = request.json["fridge_id"]
         user_id = request.json["user_id"]
 
-        print(f"Request to delete fridge: fridge_id={fridge_id}, user_id={user_id}")
+        print(
+            f"Request to delete fridge: fridge_id={fridge_id}, user_id={user_id}")
 
         fridge = Fridge.query.get(fridge_id)
         if not fridge:

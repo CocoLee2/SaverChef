@@ -37,6 +37,7 @@ def login():
             fridge_data = {}
             fridge_data["fridgeId"] = fridge.id
             fridge_data["fridgeName"] = fridge.name
+            fridge_data["fridgePasscode"] = fridge.passcode
             fridge_data["fridgeItems"] = []
             fridge_items = db.session.scalars(
                 db.select(FridgeItems).filter_by(fridge_id=fridge.id)).all()
@@ -100,7 +101,7 @@ def signup():
     db.session.add(new_fridge)
     db.session.commit()
     return jsonify({"message": "Login successful",
-                   "user_id": new_user.id, "fridge_id": new_fridge.id}), 201
+                   "user_id": new_user.id, "fridge_id": new_fridge.id, "fridge_passcode": new_fridge.passcode}), 201
 
 
 @app.route('/mark_favorite', methods=['POST'])

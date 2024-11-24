@@ -1,3 +1,8 @@
+from database.database import db
+from model.fridge import Fridge
+from model.users import Users
+
+
 def test_create_user(client):
     response = client.post(
         "/signup",
@@ -5,8 +10,10 @@ def test_create_user(client):
             'username': "testperson",
             'email': "testemail@email.com",
             'password': "bad_password"})
-    print(response)
     assert response.status_code == 201
+    assert len(response.json["fridge_passcode"]) == 6
+    assert db.session.query(Fridge).join(Users).where(
+        Users.email == "testemail@email.com").one().passcode == response.json["fridge_passcode"]
 
 
 def test_create_user_again(client):
@@ -32,4 +39,8 @@ def test_login(client):
             'email': "superchef@superchef.com",
             'password': "supercoolpassword"})
     assert len(response.json["fridgeData"][0]["fridgeItems"]) == 4
+    assert len(response.json["fridgeData"][0]["fridgePasscode"]) == 6
+    assert db.session.query(Fridge).join(Users).where(
+        Users.email == "superchef@superchef.com").one().passcode == response.json["fridgeData"][0]["fridgePasscode"]
+
 # def test_delete_user(client):
