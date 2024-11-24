@@ -48,6 +48,13 @@ const AuthLayout = () => {
           }}
         />
 
+        <Stack.Screen
+          name="updateInventory"
+          options={{
+            headerShown: false,
+          }}
+        />
+
       </Stack>
 
       {/* <Loader isLoading={loading} /> */}

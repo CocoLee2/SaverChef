@@ -4,6 +4,7 @@ from model.users import Users
 from model.fridge_members import FridgeMembers
 from user_auth.user_auth import get_fridge_data
 from database.database import db
+from sqlalchemy.orm.attributes import flag_modified
 
 fridge_bp = Blueprint('fridge', __name__, url_prefix='/fridge')
 
@@ -74,39 +75,33 @@ def create_fridge():
         return Response(response=str(e), status=400)
 
 
-# @fridge_bp.route('/delete', methods=["POST"])
-# def delete_fridge_by_id():
-#     """Deletes a given fridge by id.
+@fridge_bp.route('/edit_name', methods=["POST"])
+def edit_name():
+    """Edits the name of an existing fridge.
 
-#     Input: {
-#         user_id: int,
-#         fridge_id: int
-#     }
+    Response codes:
+      200, Successful edited the fridge name
+      400, Invalid input or error during the process.
+    """
+    try:
+        data = request.json
+        fridge_id = int(data["fridge_id"])
+        name = data["name"]
+        user_id = data["userId"]
+        # Query the fridge by ID
+        fridge = Fridge.query.get(fridge_id)
+        if not fridge:
+            return jsonify({"message": "Fridge not found."}), 404
+        if fridge.creator != user_id:  # Ensure you compare to the actual creator ID
+            return jsonify({"error": f"User {user_id} does not have permission to delete this fridge"}), 403
+        # Update the fridge's name
+        fridge.name = name  
+        db.session.commit() 
+        return jsonify({"message": "Fridge name successfully updated.", "fridgeId": fridge.id}), 200
+    except Exception as e:
+        return Response(response=str(e), status=400)
+    
 
-#     Response codes:
-#     200, Successful delete
-#     400, fridge does not exist
-#     403, does not have permissions to delete this fridge if user_id does not match fridge's creator_id
-#     """
-#     try:
-#         fridge_id = request.json["fridge_id"]
-#         user_id = request.json["user_id"]
-#         fridge = Fridge.query.get(fridge_id)
-#         # print(fridge_id)
-#         if not fridge:
-#             return Response(response=str(
-#                 f'fridge with id {fridge_id} does not exist'), status=400)
-#         if fridge.creator != user_id:
-#             return Response(
-#                 response=str(f'fridge\'s creator does not match provided id {user_id}'),
-#                 status=403)
-#         db.session.delete(fridge)
-#         db.session.commit()
-#         return Response(
-#             response=f'Successfully deleted fridge with id {fridge_id}',
-#             status=200)
-#     except Exception as e:
-#         return Response(response=str(e), status=400)
 @fridge_bp.route('/delete', methods=["POST"])
 def delete_fridge_by_id():
     """Deletes a given fridge by ID.
