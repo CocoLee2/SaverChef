@@ -5,6 +5,7 @@ import string
 
 
 def passcode_unique(passcode):
+    print(passcode)
     return not bool(
         db.session.query(Fridge).filter_by(
             passcode=passcode).first())
