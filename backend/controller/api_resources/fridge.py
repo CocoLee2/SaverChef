@@ -58,12 +58,9 @@ def create_fridge():
         data = request.json
         creator_id = int(data["creator_id"])
         fridge_name = data["fridge_name"]
-        # print(creator_id)
-        # print(fridge_name)
-        # if not Users.session.get(creator_id):  # fails if does not exist
-        # return Response(response=str("creator does not exist"), status=400)
         user = db.session.get(Users, creator_id)
         if not user:
+            print("line63")
             return Response(response="Creator does not exist", status=400)
 
         new_fridge = Fridge(fridge_name, creator_id)

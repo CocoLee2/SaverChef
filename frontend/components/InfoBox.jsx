@@ -8,7 +8,7 @@ const InfoBox = ({ title, daysLeft, image }) => {
       <Image source={image} style={styles.image} />
       <View style={styles.textContainer}>
         <Text style={styles.title}>{title}</Text>
-        <Text style={styles.subtitle}>Expire in {daysLeft} days</Text> 
+        <Text style={styles.subtitle}>Expire {daysLeft}</Text> 
       </View>
     </TouchableOpacity>
   );

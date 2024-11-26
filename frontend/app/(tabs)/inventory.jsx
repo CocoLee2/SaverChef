@@ -8,7 +8,6 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import { Ionicons } from '@expo/vector-icons';
 import images from '../../constants/images';
 import { GlobalContext } from "../GlobalContext";
-// import { useNavigation } from '@react-navigation/native';
 import { format } from 'date-fns';
 
 
@@ -45,10 +44,24 @@ const Inventory = () => {
 
  
   const getImage = (foodName) => {
-    const sanitizedFoodName = foodName.replace(/[^a-zA-Z]/g, '').toLowerCase();
-    const image = images[sanitizedFoodName];
+    const normalizeName = (name) => {
+      let lowerName = name.toLowerCase();
+      if (lowerName.endsWith("es")) {
+        return lowerName.slice(0, -2); // Remove "es"
+      } else if (lowerName.endsWith("s")) {
+        return lowerName.slice(0, -1); // Remove "s"
+      }
+      return lowerName;
+    };
+     const sanitizedFoodName = foodName.replace(/[^a-zA-Z]/g, '').toLowerCase();
+    let image = images[sanitizedFoodName];
+    if (!image) {
+      const normalizedFoodName = normalizeName(sanitizedFoodName);
+      image = images[normalizedFoodName];
+    }
     return image ? image : require('../../assets/images/placeHolder.png');
   };
+ 
 
   useEffect(() => {
     const selectedFridgeExists = fridgeItems.some(fridge => fridge.fridgeId === selectedFridge);
@@ -78,6 +91,7 @@ const Inventory = () => {
         });
   
         const data = await response.json();
+        console.log(data);
   
         if (response.ok) {
           const newFridgeId = data["fridgeId"];
@@ -807,10 +821,6 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
 
-  foodList: {
-    paddingTop: 10,
-  },
-
   foodItem: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -825,11 +835,6 @@ const styles = StyleSheet.create({
     shadowRadius: 5,
     elevation: 2,
   },
-
-  // foodIcon: {
-  //   fontSize: 32,
-  //   marginRight: 15,
-  // },
 
   foodInfo: {
     flex: 1,
@@ -893,19 +898,19 @@ const styles = StyleSheet.create({
   },
 
   doneButton: {
-      backgroundColor: '#F36C21',
-      paddingVertical: 12,
-      paddingHorizontal: 20,
-      borderRadius: 10,
-      alignItems: 'center',
-      marginTop: 20,
-      width: '100%',
+    backgroundColor: '#F36C21',
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 10,
+    alignItems: 'center',
+    marginTop: 20,
+    width: '100%',
   },
 
   doneButtonText: {
-      color: '#FFF',
-      fontSize: 18,
-      fontWeight: 'bold',
+    color: '#FFF',
+    fontSize: 18,
+    fontWeight: 'bold',
   },
 
 
