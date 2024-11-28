@@ -44,11 +44,12 @@ def login():
     else:
         return jsonify({"message": "Invalid email or password"}), 401
 
+
 @app.route('/refresh', methods=['POST'])
 def refresh():
     data = request.json  # Expecting a JSON payload with email and password
     user = Users.query.filter_by(id=data['userId']).first()
-    
+
     fridges = db.session.query(Fridge).filter(
         Fridge.creator == user.id).all()
     fridge_results = []
@@ -63,7 +64,6 @@ def refresh():
             fridge_data["fridgeItems"].append(fridge_item.serialize())
         fridge_results.append(fridge_data)
     return jsonify({"fridgeData": fridge_results}), 200
-
 
 
 # New route for changing password
