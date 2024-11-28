@@ -37,7 +37,6 @@ def refresh():
     data = request.json  # Expecting a JSON payload with email and password
     return jsonify({"fridgeData": get_fridge_data(data['userId'])}), 200
 
-
 # New route for changing password
 
 
