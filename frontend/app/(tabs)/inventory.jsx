@@ -8,7 +8,6 @@ import DateTimePicker from '@react-native-community/datetimepicker';
 import { Ionicons } from '@expo/vector-icons';
 import images from '../../constants/images';
 import { GlobalContext } from "../GlobalContext";
-// import { useNavigation } from '@react-navigation/native';
 import { format } from 'date-fns';
 import CustomButton from '../../components/CustomButton';
 
@@ -17,7 +16,14 @@ const Inventory = () => {
   const { userId, setUserId, username, setUsername, email, setEmail, password, setPassword, 
     fridgeItems, setFridgeItems, favoriteRecipes, setFavoriteRecipes, randomRecipes, setRandomRecipes } = useContext(GlobalContext);
   const [selectedFridge, setSelectedFridge] = useState(fridgeItems.length > 0 ? fridgeItems[0].fridgeId : null);
-  const [fridgeIds, setFridgeIds] = useState(fridgeItems.map(fridge => fridge.fridgeId));
+  const [fridgeIds, setFridgeIds] = useState([]); // Initialize as an empty array
+  useEffect(() => {
+    if (Array.isArray(fridgeItems)) {
+      const ids = fridgeItems.map(fridge => fridge.fridgeId);
+      setFridgeIds(ids); // Update fridgeIds whenever fridgeItems changes
+    }
+  }, [fridgeItems]); // Dependency array ensures this runs whenever fridgeItems changes
+
   const selectedFridgeObj = fridgeItems.find(fridge => fridge.fridgeId === selectedFridge);
   const getFridgeNameById = (id) => {
     const fridge = fridgeItems.find((fridge) => fridge.fridgeId === id);
@@ -44,10 +50,24 @@ const Inventory = () => {
 
  
   const getImage = (foodName) => {
-    const sanitizedFoodName = foodName.replace(/[^a-zA-Z]/g, '').toLowerCase();
-    const image = images[sanitizedFoodName];
+    const normalizeName = (name) => {
+      let lowerName = name.toLowerCase();
+      if (lowerName.endsWith("es")) {
+        return lowerName.slice(0, -2); // Remove "es"
+      } else if (lowerName.endsWith("s")) {
+        return lowerName.slice(0, -1); // Remove "s"
+      }
+      return lowerName;
+    };
+     const sanitizedFoodName = foodName.replace(/[^a-zA-Z]/g, '').toLowerCase();
+    let image = images[sanitizedFoodName];
+    if (!image) {
+      const normalizedFoodName = normalizeName(sanitizedFoodName);
+      image = images[normalizedFoodName];
+    }
     return image ? image : require('../../assets/images/placeHolder.png');
   };
+ 
 
   useEffect(() => {
     const selectedFridgeExists = fridgeItems.some(fridge => fridge.fridgeId === selectedFridge);
@@ -77,13 +97,15 @@ const Inventory = () => {
         });
   
         const data = await response.json();
+        console.log(data);
   
         if (response.ok) {
           const newFridgeId = data["fridgeId"];
           const newFridge = {
             fridgeId: newFridgeId,
             fridgeName: newFridgeName.trim(),
-            fridgeItems: []
+            fridgeItems: [], 
+            fridgePasscode: data["fridgePasscode"]
           };
           setFridgeIds((fridgeIds) => [...fridgeIds, newFridgeId]);
           setFridgeItems((prevFridgeItems) => [...prevFridgeItems, newFridge]);
@@ -103,49 +125,59 @@ const Inventory = () => {
   };
 
 
-  const editFridgeName = async() => {
+  const editFridgeName = async () => {
     const fridgeToEdit = fridgeIds[editingFridgeIndex];
+  
+    if (!editedFridgeName.trim()) {
+      Alert.alert("Invalid Name", "Please enter a valid fridge name.");
+      return;
+    }
+  
+    try {
+      const response = await fetch('http://127.0.0.1:5001/fridge/edit_name', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          fridge_id: fridgeToEdit,
+          name: editedFridgeName.trim(),
+          userId: userId,
+        }),
+      });
+  
+      const data = await response.json();
 
-    if (editedFridgeName.trim()) {
-        // connect to the backend 
-        try {
-          const response = await fetch('http://127.0.0.1:5001/fridge/edit_name', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              fridge_id: fridgeToEdit,  
-              name: editedFridgeName.trim(),
-              userId: userId,
-            }),
-          });
-    
-          const data = await response.json();
-    
-          if (response.ok) {
-            setFridgeItems((prevItemsByFridge) => {        
-              return prevItemsByFridge.map((fridge) =>
-                fridge.fridgeId === fridgeToEdit
-                  ? { ...fridge, fridgeName: editedFridgeName.trim() }
-                  : fridge
-              );
-            });        
-    
-            setEditedFridgeName('');
-            setIsEditingFridge(false);
-            setEditingFridgeIndex(null);
-          } else {
-            Alert.alert('Error', data.message || 'Request failed. Please try again.');
-          }
-        } catch (error) {
-          console.error('Error:', error);
-          Alert.alert('Network Error', 'Something went wrong. Please try again later.');
-        }
-    } else {
-        Alert.alert("Invalid Name", "Please enter a valid fridge name.");
+      setEditedFridgeName('');
+      setIsEditingFridge(false);
+      setEditingFridgeIndex(null);
+
+      if (response.ok) {
+        setFridgeItems((prevItemsByFridge) =>
+          prevItemsByFridge.map((fridge) =>
+            fridge.fridgeId === fridgeToEdit
+              ? { ...fridge, fridgeName: editedFridgeName.trim() }
+              : fridge
+          )
+        );
+  
+        Alert.alert('Success', 'Fridge name updated successfully.');
+      } else if (response.status === 400) {
+        Alert.alert('Error', `Fridge does not exist.`);
+      } else if (response.status === 403) {
+        Alert.alert(
+          'Permission Denied',
+          `You do not have permission to edit this fridge's name.`
+        );
+      } else {
+        Alert.alert('Error', data.message || 'Request failed. Please try again.');
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      Alert.alert('Network Error', 'Something went wrong. Please try again later.');
     }
   };
+  
 
   // Start editing a specific fridge name
   const startEditingFridge = (index) => {
@@ -165,7 +197,7 @@ const Inventory = () => {
         {
           text: 'Delete',
           style: 'destructive',
-          onPress: () => handleDeleteFridge(fridgeToDelete.fridgeId),
+          onPress: () => handleDeleteFridge(fridgeToDelete.fridgeId, fridgeToDelete.fridgeName),
         },
       ]
     );
@@ -179,7 +211,7 @@ const Inventory = () => {
     fetchRecipes(ingredients)
   }
     
-  const handleDeleteFridge = async (deleteId) => {
+  const handleDeleteFridge = async (deleteId, deleteName) => {
     try {
       const response = await fetch('http://127.0.0.1:5001/fridge/delete', {
         method: 'POST',
@@ -208,6 +240,13 @@ const Inventory = () => {
         );
         setFridgeItems((prevFridgeItems) =>
           prevFridgeItems.filter(fridge => fridge.fridgeId !== deleteId)
+        );
+      } else if (response.status === 400) {
+        Alert.alert('Error', `${deleteName} does not exist.`);
+      } else if (response.status === 403) {
+        Alert.alert(
+          'Permission Denied',
+          `You do not have permission to delete ${deleteName}.`
         );
       } else {
         Alert.alert('Error', data.message || 'Request failed. Please try again.');
@@ -436,12 +475,12 @@ const Inventory = () => {
         fridgeId: fridge.fridgeId,
         fridgeName: fridge.fridgeName,
         fridgeItems: processedItems,
+        fridgePasscode: fridge.fridgePasscode
       };
     });
   };
 
   const refresh = async() => {
-    console.log("refresh is called");
     try {
       const response = await fetch('http://127.0.0.1:5001/refresh', {
         method: 'POST',
@@ -454,11 +493,13 @@ const Inventory = () => {
       });
 
       const data = await response.json();
-      console.log("line441 in inventory");
-      console.log(data["fridgeData"]);
 
       if (response.ok) {
-        setFridgeItems(processFridgeData(data["fridgeData"]));
+        if (fridgeItems.length === 0) {
+          setFridgeItems((prevFridgeItems) => [...prevFridgeItems, processFridgeData(data["fridgeData"])]);
+        } else {
+          setFridgeItems(processFridgeData(data["fridgeData"]));
+        }
         router.push('./inventory')
       } else {
         Alert.alert('Error', data.message || 'Request failed. Please try again.');
@@ -468,6 +509,7 @@ const Inventory = () => {
       Alert.alert('Network Error', 'Something went wrong. Please try again later.');
     }
   }
+  
 
   return (
     <View style={styles.container}>
@@ -499,8 +541,7 @@ const Inventory = () => {
         <TouchableOpacity style={styles.button} onPress={() =>
           router.push({
             pathname: '../(other)/share',
-            // tidi: replace with real passcode later
-            params: { passcode: 'QWE12' }, 
+            params: { passcode: selectedFridgeObj ? selectedFridgeObj["fridgePasscode"] : "no selected fridge"}, 
           })
         }>
         <MaterialIcons name="share" size={30} color="#F36C21" />
@@ -831,10 +872,6 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
 
-  foodList: {
-    paddingTop: 10,
-  },
-
   foodItem: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -849,11 +886,6 @@ const styles = StyleSheet.create({
     shadowRadius: 5,
     elevation: 2,
   },
-
-  // foodIcon: {
-  //   fontSize: 32,
-  //   marginRight: 15,
-  // },
 
   foodInfo: {
     flex: 1,
@@ -917,19 +949,19 @@ const styles = StyleSheet.create({
   },
 
   doneButton: {
-      backgroundColor: '#F36C21',
-      paddingVertical: 12,
-      paddingHorizontal: 20,
-      borderRadius: 10,
-      alignItems: 'center',
-      marginTop: 20,
-      width: '100%',
+    backgroundColor: '#F36C21',
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 10,
+    alignItems: 'center',
+    marginTop: 20,
+    width: '100%',
   },
 
   doneButtonText: {
-      color: '#FFF',
-      fontSize: 18,
-      fontWeight: 'bold',
+    color: '#FFF',
+    fontSize: 18,
+    fontWeight: 'bold',
   },
 
 

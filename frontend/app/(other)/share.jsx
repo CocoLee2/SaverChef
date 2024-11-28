@@ -38,16 +38,16 @@ const Share = () => {
         fridgeId: fridge.fridgeId,
         fridgeName: fridge.fridgeName,
         fridgeItems: processedItems,
+        fridgePasscode: fridge.fridgePasscode
       };
     });
   };
 
-  // tidi: test and debug after backend is implemented
   const joinFridge = async() => {
     // checks if the input fridge passcode is empty
     if (inputPasscode.trim()) {
       try {
-        const response = await fetch('http://127.0.0.1:5001/fridge/add_member', {
+        const response = await fetch('http://127.0.0.1:5001/fridge/share', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -59,28 +59,31 @@ const Share = () => {
         });
   
         const data = await response.json();
-        console.log("line 42 in share.jsx");
-        console.log(data); //dependes on what backend will return, there is likely a bug here
-  
         if (response.ok) {
           // Update the fridge items with the data returned from the server
-          setFridgeItems((prevFridgeItems) => [...prevFridgeItems, processFridgeData(data["fridgeItems"])]);
+          if (fridgeItems.length === 0) {
+            setFridgeItems((prevFridgeItems) => [...prevFridgeItems, processFridgeData(data["fridgeData"])]);
+          } else {
+            setFridgeItems(processFridgeData(data["fridgeData"]));
+          }
           Alert.alert('Success', 'You have joined the fridge successfully!');
+          router.push("../(tabs)/inventory");
+          return;
         } else {
           // Handle specific error cases based on response status
           switch (response.status) {
             case 409:
               Alert.alert('Error', data.message || 'You already have access to this fridge.');
-              break;
+              return;
             case 404:
               Alert.alert('Error', data.message || 'The fridge passcode is invalid.');
-              break;
+              return;
             default:
               Alert.alert('Error', data.message || 'Request failed. Please try again.');
-              break;
+              return;
           }
           // Navigate the user to the inventory page if needed
-          router.push("../(tabs)/inventory");
+          // router.push("../(tabs)/inventory");
         }
       } catch (error) {
         console.error('Error:', error);
@@ -103,9 +106,11 @@ const Share = () => {
         <Text style={styles.sectionTitle}>Shareable passcode</Text>
         <View style={styles.linkContainer}>
           <Text style={styles.linkText}>{passcode}</Text>
-          <TouchableOpacity onPress={copyToClipboard}>
-            <Ionicons name="copy-outline" size={24} color="#F36C21" />
-          </TouchableOpacity>
+          {passcode !== "no selected fridge" && (
+            <TouchableOpacity onPress={copyToClipboard}>
+              <Ionicons name="copy-outline" size={24} color="#F36C21" />
+            </TouchableOpacity>
+          )}
         </View>
       </View>
 

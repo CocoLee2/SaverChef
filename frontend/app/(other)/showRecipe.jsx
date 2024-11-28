@@ -73,29 +73,29 @@ const ShowRecipe = () => {
     };
   
     // Initialize the results list
-    const matchedItems = [];
+    const matchedFridges = [];
   
-    // Iterate through each ingredient
-    ingredients.forEach((ingredient) => {
-      const normalizedIngredientName = normalizeName(ingredient.name);
-  
-      // Check each fridge
-      fridgeItems.forEach((fridge) => {
-        // Find matching items in the current fridge
-        const matchesInFridge = fridge.fridgeItems.filter(
-          (item) => normalizeName(item.name) === normalizedIngredientName
+    // Iterate through each fridge
+    fridgeItems.forEach((fridge) => {
+      // Find all matching items in the current fridge
+      const matchedItems = fridge.fridgeItems.filter((item) => {
+        return ingredients.some(
+          (ingredient) => normalizeName(ingredient.name) === normalizeName(item.name)
         );
-  
-        // Add all matches to the result list
-        matchedItems.push(...matchesInFridge);
       });
+  
+      // If there are matched items, add them to the result
+      if (matchedItems.length > 0) {
+        matchedFridges.push({
+          fridgeName: fridge.fridgeName,
+          items: matchedItems,
+        });
+      }
     });
   
-    return matchedItems;
-  };  
+    return matchedFridges;
+  };
   const matchedItems = matchIngredientsWithFridgeItems(ingredients, fridgeItems);
-  console.log("line97 in showRecipe, ingredients names are ", ingredients.map((ingredient) => ingredient.name));
-  console.log("line99 in showRecipe, matched items are ", matchedItems);
 
   const handleUpdateInventory = () => {
     if (matchedItems.length === 0) {

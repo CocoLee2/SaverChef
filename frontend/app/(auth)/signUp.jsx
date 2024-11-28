@@ -91,10 +91,12 @@ const SignUp = () => {
         setFavoriteRecipes([]);
         setFridgeItems([
           {fridgeId: data["fridge_id"],
-          fridgeName: "Fridge 1",
-          fridgeItems: []}
+          fridgeName: "My fridge",
+          fridgeItems: [],
+          fridge_passcode: data["fridge_passcode"]}
         ]);
         setIsLoading(true);  //start showing spinner
+        // tidi
         await getRandomRecipes();
         // await doNothingForOneSecond(); //used for testing loading animation
         setIsLoading(false);  //end showing spinner

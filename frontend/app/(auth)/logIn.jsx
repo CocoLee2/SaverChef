@@ -74,6 +74,7 @@ const LogIn = () => {
         fridgeId: fridge.fridgeId,
         fridgeName: fridge.fridgeName,
         fridgeItems: processedItems,
+        fridgePasscode: fridge.fridgePasscode
       };
     });
   };
@@ -107,10 +108,11 @@ const LogIn = () => {
         setUsername(data["username"]); 
         setEmail(form.email);
         setPassword(form.password);
-        setFavoriteRecipes(data["favoriteRecipes"])
+        setFavoriteRecipes(data["favoriteRecipes"]);
         setFridgeItems(processFridgeData(data["fridgeData"]));
         setIsLoading(true);  //start showing spinner
         await getRandomRecipes();
+        // tidi
         // await doNothingForTwoSeconds(); //used for testing loading animation
         setIsLoading(false);  //end showing spinner
         router.push("../(tabs)/home");
