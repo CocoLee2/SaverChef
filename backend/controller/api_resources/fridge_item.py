@@ -87,7 +87,6 @@ def delete_item():
         return str(e), 400
 
 
-
 @fridge_item_bp.route("update_or_delete_item", methods=["POST"])
 def update_or_delete_item():
     """
@@ -101,11 +100,12 @@ def update_or_delete_item():
         if not fridge_item:
             return jsonify(
                 {"message": 'fridge item with id {item_id} does not exist'}), 400
-        if fridge_item.quantity < quantity :
+        if fridge_item.quantity < quantity:
             db.session.delete(fridge_item)
             db.session.commit()
-            return jsonify({"message": "Successfully deleted fridge item"}), 200
-        else :
+            return jsonify(
+                {"message": "Successfully deleted fridge item"}), 200
+        else:
             fridge_item.quantity = fridge_item.quantity - quantity
             db.session.commit()
             return jsonify({"message": "Updated item successfully"}), 200
