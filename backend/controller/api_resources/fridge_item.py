@@ -85,3 +85,29 @@ def delete_item():
 
     except Exception as e:
         return str(e), 400
+
+
+
+@fridge_item_bp.route("update_or_delete_item", methods=["POST"])
+def update_or_delete_item():
+    """
+    Updates the quantity of a fridge item or deletes it if the quantity becomes insufficient.
+    """
+    data = request.json
+    item_id = int(data['itemId'])
+    quantity = int(data['quantity'])
+    try:
+        fridge_item = db.session.get(FridgeItems, item_id)
+        if not fridge_item:
+            return jsonify(
+                {"message": 'fridge item with id {item_id} does not exist'}), 400
+        if fridge_item.quantity < quantity :
+            db.session.delete(fridge_item)
+            db.session.commit()
+            return jsonify({"message": "Successfully deleted fridge item"}), 200
+        else :
+            fridge_item.quantity = fridge_item.quantity - quantity
+            db.session.commit()
+            return jsonify({"message": "Updated item successfully"}), 200
+    except Exception as e:
+        return str(e), 400
