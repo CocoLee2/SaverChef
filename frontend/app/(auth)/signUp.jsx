@@ -93,8 +93,9 @@ const SignUp = () => {
           {fridgeId: data["fridge_id"],
           fridgeName: "My fridge",
           fridgeItems: [],
-          fridge_passcode: data["fridge_passcode"]}
+          fridgePasscode: data["fridge_passcode"]}
         ]);
+        console.log(data["fridge_passcode"]);
         setIsLoading(true);  //start showing spinner
         // tidi
         await getRandomRecipes();
