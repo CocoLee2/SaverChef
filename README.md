@@ -62,6 +62,11 @@ postgresql://[user]:[password]@localhost:[port]/[database_name]
 1. Navigate to **your_database** -> **Schemas** -> **Public** -> **Tables**.
 2. Double-click on the desired table and select **View/Edit Data** to inspect its contents.
 
+### 6. get an API key for the barcode scanner
+1. Create an account and get an api key and an app key from https://developer.nutritionix.com/admin.
+2. Create an `X_APP_ID` entry in your `.env` file and add the application ID.
+3. Create an `X_APP_KEY` entry in your `.env` file and add the API key.
+
 ## Running the Application
 
 ### 1. Start the Frontend
