@@ -8,20 +8,32 @@ import {
   TouchableOpacity,
   View,
   TextInput,
-  Alert
+  Alert,
 } from "react-native";
 import Modal from "react-native-modal";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import { GlobalContext } from "../GlobalContext";
 import { router, useLocalSearchParams } from "expo-router";
-import { format } from 'date-fns';
-
+import { format, set } from "date-fns";
 
 export default function camera() {
   const { fridgeId } = useLocalSearchParams();
-  console.log(fridgeId);
-  const { userId, setUserId, username, setUsername, email, setEmail, password, setPassword, 
-        fridgeItems, setFridgeItems, favoriteRecipes, setFavoriteRecipes, randomRecipes, setRandomRecipes } = useContext(GlobalContext);
+  const {
+    userId,
+    setUserId,
+    username,
+    setUsername,
+    email,
+    setEmail,
+    password,
+    setPassword,
+    fridgeItems,
+    setFridgeItems,
+    favoriteRecipes,
+    setFavoriteRecipes,
+    randomRecipes,
+    setRandomRecipes,
+  } = useContext(GlobalContext);
   const [permission, requestPermission] = useCameraPermissions();
   const [scanned, setScanned] = useState(false);
   const [isModalVisible, setModalVisible] = useState(false);
@@ -36,6 +48,8 @@ export default function camera() {
   const [selectedUnit, setSelectedUnit] = useState("pcs");
   const [showUnitPicker, setShowUnitPicker] = useState(false);
   const [alertShown, setAlertShown] = useState(false);
+
+  const lastScannedTimeStampRef = useRef(0);
 
   if (!permission) {
     return <View />;
@@ -52,46 +66,58 @@ export default function camera() {
     );
   }
 
-  const addItem = async() => {
+  const addItem = async () => {
     if (!fridgeId) {
-      Alert.alert('No Fridge Selected', 'Please create a fridge before proceeding.');
-      return
+      Alert.alert(
+        "No Fridge Selected",
+        "Please create a fridge before proceeding."
+      );
+      return;
     }
     // check if all information is valid
-    if (selectedItem.name === "" || selectedItem.quantity === ""){
-      Alert.alert('Incomplete Information', 'Please enter both the item name and quantity before proceeding.');
-      return
+    if (selectedItem.name === "" || selectedItem.quantity === "") {
+      Alert.alert(
+        "Incomplete Information",
+        "Please enter both the item name and quantity before proceeding."
+      );
+      return;
     }
-    if (selectedItem.quantity <= 0){
-      Alert.alert('Invalid Information', 'Please make sure that quantity is positive.');
-      return
-    }    
+    if (selectedItem.quantity <= 0) {
+      Alert.alert(
+        "Invalid Information",
+        "Please make sure that quantity is positive."
+      );
+      return;
+    }
 
     try {
-      const response = await fetch('http://127.0.0.1:5001/fridge_item/add', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          fridge_id: fridgeId,  
-          itemName: selectedItem.name,
-          expirationDate: format(selectedItem.bestBefore, 'yyyy-MM-dd'), 
-          quantity: selectedItem.quantity, 
-          quantifier: selectedUnit,
-        }),
-      });
+      const response = await fetch(
+        "http://192.168.12.203:5001/fridge_item/add",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            fridge_id: fridgeId,
+            itemName: selectedItem.name,
+            expirationDate: format(selectedItem.bestBefore, "yyyy-MM-dd"),
+            quantity: selectedItem.quantity,
+            quantifier: selectedUnit,
+          }),
+        }
+      );
 
       const data = await response.json();
 
       if (response.ok) {
         const foodItem = {
-            id: data["itemId"], 
-            name: selectedItem.name,
-            bestBefore: selectedItem.bestBefore,
-            quantity: selectedItem.quantity,
-            unit: selectedUnit
-        }
+          id: data["itemId"],
+          name: selectedItem.name,
+          bestBefore: selectedItem.bestBefore,
+          quantity: selectedItem.quantity,
+          unit: selectedUnit,
+        };
 
         setFridgeItems((prevFridgeItems) =>
           prevFridgeItems.map((fridge) =>
@@ -103,83 +129,161 @@ export default function camera() {
               : fridge
           )
         );
-      
+
         setModalVisible(false);
-        router.push("/inventory")
+        router.push("/inventory");
       } else {
-        Alert.alert('Error', data.message || 'Request failed. Please try again.');
+        Alert.alert(
+          "Error",
+          data.message || "Request failed. Please try again."
+        );
       }
     } catch (error) {
-      console.error('Error:', error);
-      Alert.alert('Network Error', 'Something went wrong. Please try again later.');
+      console.error("Error:", error);
+      Alert.alert(
+        "Network Error",
+        "Something went wrong. Please try again later."
+      );
     }
   };
 
-
-//test
   const handleCodeScan = ({ type, data }) => {
+    console.log("handling code scan")
+    if (!scanned){
+      console.log("scanned is false")
+    } 
+    //data
+    setScanned(true);
+    setModalVisible(true); //want to keep these 
+    setText(data);
+
+    setTimeout(() => {}, 2000); // Allow scanning again after 2 seconds
+
+    // getBarcodeInfoHelper(data);
+
+  };
+
+  const getBarcodeInfoHelper = async (barcode) => {
+    try {
+      const response = await fetch(
+        "http://192.168.12.203:5001/fridge_item/search_barcode",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ upc: barcode }),
+        }
+      );
+      if ( !response.ok) {
+        console.log(response);
+        // make sure that the alert is only shown once
+        // console.log("alertShown is ", alertShown);
+        if (!alertShown) {
+          setAlertShown(true);
+          console.log("alertShown is set to true");
+          alert("Couldn't find food with barcode. Please enter manually.");
+        }
+        return;
+      }
+
+      const data = await response.json();
+      if (response.status != 200){
+        throw error 
+      }
+      console.log(data.message);
+      setSelectedItem({ ...selectedItem, name: data.message });
+      
+    } 
+    catch (error){
+      console.log("failed");
+      return "failed";
+    }
+
+
+  };
+
+
+//deprecated
+  // const getBarcodeInfo = async (text) => {
+  //   try {
+  //     const response = await fetch(
+  //       "https://trackapi.nutritionix.com/v2/search/item/?upc=" + text,
+  //       {
+  //         method: "GET",
+  //         headers: {
+  //           "Content-Type": "application/json",
+  //           "x-app-id": "578e0517",
+  //           "x-app-key": "70d98d604caa0d1679183563f7bfb7b1",
+  //         },
+  //       }
+  //     );
+
+  //     // Check for HTTP errors
+  //     if (!response.ok) {
+  //       console.log(response);
+  //       // make sure that the alert is only shown once
+  //       console.log("alertShown is ", alertShown);
+  //       if (!alertShown) {
+  //         setAlertShown(true);
+  //         console.log("alertShown is set to true");
+  //         alert("Couldn't find food with barcode. Please enter manually.");
+  //       }
+  //       return;
+  //     }
+  //     const data = await response.json();
+
+  //     setSelectedItem({ ...selectedItem, name: data.foods[0].food_name });
+  //     return data;
+  //   } catch (error) {
+  //     console.error("Error fetching barcode info:", error);
+  //     throw error; // Optionally re-throw the error
+  //   }
+  // };
+
+
+  const handleBarCodeScanned = ({ type, data }) => {
+    const timestamp = Date.now();
+    if (scanned || timestamp - lastScannedTimeStampRef.current < 2000 ){
+      return
+    }
+    
+    lastScannedTimeStampRef.current = timestamp;
     setScanned(true);
     setModalVisible(true);
     setText(data);
-    getBarcodeInfo(data);
+    getBarcodeInfoHelper(data);
+
   };
 
-
-  const getBarcodeInfo = async (text) => {
-    try {
-      const response = await fetch('https://trackapi.nutritionix.com/v2/search/item/?upc=' + text, {
-        method: 'GET',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-app-id': '578e0517',
-          'x-app-key': '70d98d604caa0d1679183563f7bfb7b1',
-        },
-      });
-  
-      // Check for HTTP errors
-      if (!response.ok) {
-        console.log(response)
-        // make sure that the alert is only shown once
-        console.log("alertShown is ", alertShown);
-        if (!alertShown) {
-          setAlertShown(true); 
-          console.log("alertShown is set to true")
-          alert("Couldn't find food with barcode. Please enter manually.");
-        }
-        return
-      }
-      const data = await response.json();
-    
-      setSelectedItem({ ...selectedItem, name: data.foods[0].food_name })
-      return data;
-    } catch (error) {
-      console.error('Error fetching barcode info:', error);
-      throw error; // Optionally re-throw the error
-    }
-  };
-  
-    
+  const handleBackdropPress = () => {
+    setModalVisible(false);
+    setScanned(false);
+    setText("");
+  }
 
 
 
   return (
     <View style={styles.container}>
+
+      
       <CameraView
         style={styles.camera}
         facing={"back"}
-        onBarcodeScanned={scanned ? undefined : handleCodeScan}
+        onBarcodeScanned={scanned ? undefined :  handleBarCodeScanned}
         barcodeScannerSettings={{
           barcodeTypes: ["upc_e", "upc_a"],
         }}
-      ></CameraView>
+      />
 
       {/* Modal for editing item */}
       <Modal
         isVisible={isModalVisible}
-        onBackdropPress={() => {
-          setModalVisible(false);
-          setScanned(false);
-        }}
+
+        onBackdropPress={
+          handleBackdropPress
+        }
         style={styles2.modal}
       >
         <View style={styles2.modalContent}>
@@ -259,8 +363,6 @@ export default function camera() {
           </TouchableOpacity>
         </View>
       </Modal>
-
-      
     </View>
   );
 }
