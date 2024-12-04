@@ -1,7 +1,7 @@
 from datetime import date
-
-
+import os
 from flask import Blueprint, jsonify, request, Response
+import requests
 from database.database import db
 from model.fridge_items import FridgeItems
 
@@ -85,3 +85,60 @@ def delete_item():
 
     except Exception as e:
         return str(e), 400
+
+
+@fridge_item_bp.route("update_or_delete_item", methods=["POST"])
+def update_or_delete_item():
+    """
+    Updates the quantity of a fridge item or deletes it if the quantity becomes insufficient.
+    """
+    data = request.json
+    item_id = int(data['itemId'])
+    quantity = int(data['quantity'])
+    try:
+        fridge_item = db.session.get(FridgeItems, item_id)
+        if not fridge_item:
+            return jsonify(
+                {"message": 'fridge item with id {item_id} does not exist'}), 400
+        if fridge_item.quantity < quantity:
+            db.session.delete(fridge_item)
+            db.session.commit()
+            return jsonify(
+                {"message": "Successfully deleted fridge item"}), 200
+        else:
+            fridge_item.quantity = fridge_item.quantity - quantity
+            db.session.commit()
+            return jsonify({"message": "Updated item successfully"}), 200
+    except Exception as e:
+        return str(e), 400
+
+
+@fridge_item_bp.route("/search_barcode", methods=["POST"])
+def food_api():
+    data = request.json
+    upc = data['upc']  # will be in string format
+
+    appId = os.getenv('X_APP_ID', '1')
+    appKey = os.getenv('X_APP_KEY', '1')
+
+    # Call to API
+    url = 'https://trackapi.nutritionix.com/v2/search/item/?upc=' + upc
+    headers = {
+        'Content-Type': 'application/json',
+        "x-app-id": appId,
+        "x-app-key": appKey}
+    try:
+        response = requests.get(url, headers=headers)
+        print(response.json)
+        if response.status_code == 200:
+            foods = response.json()
+            food_name = foods['foods'][0]['food_name']  # grabs first food item
+            return jsonify({"message": food_name}), 200
+        elif response.status_code == 404:
+            return jsonify({"message": "Barcode not found"}), 555
+        elif response.status_code == 401:
+            return jsonify({"message": "invalid api key"}), 777
+    except BaseException:
+        return jsonify({"message": "error"}), 408
+
+    return jsonify({"message": "error"}), 404

@@ -1,47 +1,73 @@
 import { StatusBar, View, Text, StyleSheet, TouchableOpacity, ScrollView, FlatList, TextInput, Alert, Dimensions, Image} from 'react-native'
-import React, { useState, useEffect, useRef, useContext } from 'react'
-import { ListItem, SearchBar } from "react-native-elements";
+import { React, useState, useEffect, useRef, useContext } from 'react'
+import { SearchBar } from 'react-native-elements';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
-import { router, useLocalSearchParams } from "expo-router";
+import { router } from "expo-router";
 import Modal from 'react-native-modal';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { Ionicons } from '@expo/vector-icons';
 import images from '../../constants/images';
 import { GlobalContext } from "../GlobalContext";
-// import { useNavigation } from '@react-navigation/native';
 import { format } from 'date-fns';
+import CustomButton from '../../components/CustomButton';
 
 
 const Inventory = () => {
+  const [search2, setSearch2] = useState('');
+
   const { userId, setUserId, username, setUsername, email, setEmail, password, setPassword, 
     fridgeItems, setFridgeItems, favoriteRecipes, setFavoriteRecipes, randomRecipes, setRandomRecipes } = useContext(GlobalContext);
   const [selectedFridge, setSelectedFridge] = useState(fridgeItems.length > 0 ? fridgeItems[0].fridgeId : null);
-  const [fridgeIds, setFridgeIds] = useState(fridgeItems.map(fridge => fridge.fridgeId));
+  const [fridgeIds, setFridgeIds] = useState([]); // Initialize as an empty array
+  useEffect(() => {
+    if (Array.isArray(fridgeItems)) {
+      const ids = fridgeItems.map(fridge => fridge.fridgeId);
+      setFridgeIds(ids); // Update fridgeIds whenever fridgeItems changes
+    }
+  }, [fridgeItems]); // Dependency array ensures this runs whenever fridgeItems changes
+
   const selectedFridgeObj = fridgeItems.find(fridge => fridge.fridgeId === selectedFridge);
   const getFridgeNameById = (id) => {
     const fridge = fridgeItems.find((fridge) => fridge.fridgeId === id);
-    return fridge ? fridge.fridgeName : "No Fridge Selected";
+    // only show the first 10 letters of a fridge name
+    return fridge ? fridge.fridgeName.slice(0, 10) : "No Fridge Selected";
   };
 
-  const [search, setSearch] = useState('');
   const [isModalVisible, setModalVisible] = useState(false);
   const [isDropdownVisible, setDropdownVisible] = useState(false);
-  const [showDatePicker, setShowDatePicker] = useState(false);
   const [showUnitPicker, setShowUnitPicker] = useState(false);
   const [selectedUnit, setSelectedUnit] = useState('pcs');
-  const [selectedItem, setSelectedItem] = useState({ id: '', name: '', quantity: '', unit: 'pcs', bestBefore: new Date() });
+  const [selectedItem, setSelectedItem] = useState({ id: '', name: '', quantity: '', unit: 'pcs', bestBefore: new Date()});
   const scrollViewRef = useRef(null);
   const [newFridgeName, setNewFridgeName] = useState('');
   const [isEditingFridge, setIsEditingFridge] = useState(false);
   const [editingFridgeIndex, setEditingFridgeIndex] = useState(null);
   const [editedFridgeName, setEditedFridgeName] = useState('');
 
+  const filteredFridgeItems = selectedFridgeObj ? selectedFridgeObj.fridgeItems.filter(item => 
+    item.name.toLowerCase().includes(search2.toLowerCase())
+  ) : [];
+
  
   const getImage = (foodName) => {
-    const sanitizedFoodName = foodName.replace(/[^a-zA-Z]/g, '').toLowerCase();
-    const image = images[sanitizedFoodName];
+    const normalizeName = (name) => {
+      let lowerName = name.toLowerCase();
+      if (lowerName.endsWith("es")) {
+        return lowerName.slice(0, -2); // Remove "es"
+      } else if (lowerName.endsWith("s")) {
+        return lowerName.slice(0, -1); // Remove "s"
+      }
+      return lowerName;
+    };
+     const sanitizedFoodName = foodName.replace(/[^a-zA-Z]/g, '').toLowerCase();
+    let image = images[sanitizedFoodName];
+    if (!image) {
+      const normalizedFoodName = normalizeName(sanitizedFoodName);
+      image = images[normalizedFoodName];
+    }
     return image ? image : require('../../assets/images/placeHolder.png');
   };
+ 
 
   useEffect(() => {
     const selectedFridgeExists = fridgeItems.some(fridge => fridge.fridgeId === selectedFridge);
@@ -71,13 +97,15 @@ const Inventory = () => {
         });
   
         const data = await response.json();
+        console.log(data);
   
         if (response.ok) {
           const newFridgeId = data["fridgeId"];
           const newFridge = {
             fridgeId: newFridgeId,
             fridgeName: newFridgeName.trim(),
-            fridgeItems: []
+            fridgeItems: [], 
+            fridgePasscode: data["fridgePasscode"]
           };
           setFridgeIds((fridgeIds) => [...fridgeIds, newFridgeId]);
           setFridgeItems((prevFridgeItems) => [...prevFridgeItems, newFridge]);
@@ -96,124 +124,138 @@ const Inventory = () => {
     }
   };
 
-  // const editFridgeName = () => {
-  //   if (editedFridgeName.trim()) {
-  //       setFridgeIds(fridgeIds.map((fridge) => (fridge === selectedFridge ? editedFridgeName.trim() : fridge)));
-  //       setFridgeItems((prevItemsByFridge) => {
-  //           const updatedItems = { ...prevItemsByFridge };
-  //           updatedItems[editedFridgeName.trim()] = updatedItems[selectedFridge];
-  //           delete updatedItems[selectedFridge];
-  //           return updatedItems;
-  //       });
-  //       setSelectedFridge(editedFridgeName.trim());
-  //       setIsEditingFridge(false);
-  //   } else {
-  //       Alert.alert("Invalid Name", "Please enter a valid fridge name.");
-  //   }
-  // };
 
-  // // Start editing a specific fridge name
-  // const startEditingFridge = (index) => {
-  //   setEditingFridgeIndex(index);
-  //   setEditedFridgeName(fridgeIds[index]);
-  //   setIsEditingFridge(true);
-  // };
+  const editFridgeName = async () => {
+    const fridgeToEdit = fridgeIds[editingFridgeIndex];
+  
+    if (!editedFridgeName.trim()) {
+      Alert.alert("Invalid Name", "Please enter a valid fridge name.");
+      return;
+    }
+  
+    try {
+      const response = await fetch('http://127.0.0.1:5001/fridge/edit_name', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          fridge_id: fridgeToEdit,
+          name: editedFridgeName.trim(),
+          userId: userId,
+        }),
+      });
+  
+      const data = await response.json();
 
-  // // Save the edited fridge name
-  // const saveEditedFridgeName = () => {
-  //   if (editedFridgeName.trim()) {
-  //       const updatedFridges = [...fridgeIds];
-  //       const oldFridgeName = updatedFridges[editingFridgeIndex];
-  //       updatedFridges[editingFridgeIndex] = editedFridgeName.trim();
-        
-  //       setFridgeIds(updatedFridges);
+      setEditedFridgeName('');
+      setIsEditingFridge(false);
+      setEditingFridgeIndex(null);
 
-  //       // Update fridgeItems to match the new fridge name
-  //       setFridgeItems((prevItemsByFridge) => {
-  //           const updatedItems = { ...prevItemsByFridge };
-  //           updatedItems[editedFridgeName.trim()] = updatedItems[oldFridgeName];
-  //           delete updatedItems[oldFridgeName];
-  //           return updatedItems;
-  //       });
-
-  //       // Update the selected fridge if it was being edited
-  //       if (selectedFridge === oldFridgeName) {
-  //           setSelectedFridge(editedFridgeName.trim());
-  //       }
-
-  //       setIsEditingFridge(false);
-  //       setEditingFridgeIndex(null);
-  //     } else {
-  //         Alert.alert("Invalid Name", "Please enter a valid fridge name.");
-  //     }
-  //   };
-
-    // // Cancel editing the fridge name
-    // const cancelEditFridgeName = () => {
-    //   setIsEditingFridge(false);
-    //   setEditingFridgeIndex(null);
-    //   setEditedFridgeName('');
-    // };
-
-
-    const deleteFridge = async (index) => {
-      const fridgeToDelete = fridgeItems[index];
-    
-      Alert.alert(
-        'Delete Fridge',
-        `Are you sure you want to delete ${fridgeToDelete.fridgeName}?`,
-        [
-          { text: 'Cancel', style: 'cancel' },
-          {
-            text: 'Delete',
-            style: 'destructive',
-            onPress: () => handleDeleteFridge(fridgeToDelete.fridgeId),
-          },
-        ]
-      );
-    };
-    
-    const handleDeleteFridge = async (deleteId) => {
-      try {
-        const response = await fetch('http://127.0.0.1:5001/fridge/delete', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            user_id: userId,
-            fridge_id: deleteId,
-          }),
-        });
-    
-        console.log("line221 in inventory")
-        console.log(deleteId)
-        const data = await response.json();
-    
-        if (response.ok) {
-          console.log("line226 in inventory")
-          // Update the selected fridge if the deleted fridge was the selected one
-          if (selectedFridge === deleteId) {
-            const remainingFridgeIds = fridgeIds.filter(id => id !== deleteId);
-            const newSelectedFridge = remainingFridgeIds.length > 0 ? remainingFridgeIds[0] : null;
-            setSelectedFridge(newSelectedFridge);
-          }
-    
-          // Remove the fridge from fridgeIds and fridgeItems array
-          setFridgeIds((prevFridgeIds) =>
-            prevFridgeIds.filter(id => id !== deleteId)
-          );
-          setFridgeItems((prevFridgeItems) =>
-            prevFridgeItems.filter(fridge => fridge.fridgeId !== deleteId)
-          );
-        } else {
-          Alert.alert('Error', data.message || 'Request failed. Please try again.');
-        }
-      } catch (error) {
-        console.error('Error:', error);
-        Alert.alert('Network Error', 'Something went wrong. Please try again later.');
+      if (response.ok) {
+        setFridgeItems((prevItemsByFridge) =>
+          prevItemsByFridge.map((fridge) =>
+            fridge.fridgeId === fridgeToEdit
+              ? { ...fridge, fridgeName: editedFridgeName.trim() }
+              : fridge
+          )
+        );
+  
+        Alert.alert('Success', 'Fridge name updated successfully.');
+      } else if (response.status === 400) {
+        Alert.alert('Error', `Fridge does not exist.`);
+      } else if (response.status === 403) {
+        Alert.alert(
+          'Permission Denied',
+          `You do not have permission to edit this fridge's name.`
+        );
+      } else {
+        Alert.alert('Error', data.message || 'Request failed. Please try again.');
       }
-    };
+    } catch (error) {
+      console.error('Error:', error);
+      Alert.alert('Network Error', 'Something went wrong. Please try again later.');
+    }
+  };
+  
+
+  // Start editing a specific fridge name
+  const startEditingFridge = (index) => {
+    setEditingFridgeIndex(index);
+    // setEditedFridgeName(fridgeIds[index]);
+    setIsEditingFridge(true);
+  };
+
+  const deleteFridge = async (index) => {
+    const fridgeToDelete = fridgeItems[index];
+  
+    Alert.alert(
+      'Delete Fridge',
+      `Are you sure you want to delete ${fridgeToDelete.fridgeName}?`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: () => handleDeleteFridge(fridgeToDelete.fridgeId, fridgeToDelete.fridgeName),
+        },
+      ]
+    );
+  };
+
+  const handleNewButtonPress = async () => {
+    let ingredients = search2.split(",").map(item => item.trim());
+    const validIngredientRegex = /^[a-zA-Z\s]+$/;
+    // do some simple checks on the input strings
+    ingredients = ingredients.filter(item => validIngredientRegex.test(item));
+    fetchRecipes(ingredients)
+  }
+    
+  const handleDeleteFridge = async (deleteId, deleteName) => {
+    try {
+      const response = await fetch('http://127.0.0.1:5001/fridge/delete', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          user_id: userId,
+          fridge_id: deleteId,
+        }),
+      });
+  
+      const data = await response.json();
+  
+      if (response.ok) {
+        // Update the selected fridge if the deleted fridge was the selected one
+        if (selectedFridge === deleteId) {
+          const remainingFridgeIds = fridgeIds.filter(id => id !== deleteId);
+          const newSelectedFridge = remainingFridgeIds.length > 0 ? remainingFridgeIds[0] : null;
+          setSelectedFridge(newSelectedFridge);
+        }
+  
+        // Remove the fridge from fridgeIds and fridgeItems array
+        setFridgeIds((prevFridgeIds) =>
+          prevFridgeIds.filter(id => id !== deleteId)
+        );
+        setFridgeItems((prevFridgeItems) =>
+          prevFridgeItems.filter(fridge => fridge.fridgeId !== deleteId)
+        );
+      } else if (response.status === 400) {
+        Alert.alert('Error', `${deleteName} does not exist.`);
+      } else if (response.status === 403) {
+        Alert.alert(
+          'Permission Denied',
+          `You do not have permission to delete ${deleteName}.`
+        );
+      } else {
+        Alert.alert('Error', data.message || 'Request failed. Please try again.');
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      Alert.alert('Network Error', 'Something went wrong. Please try again later.');
+    }
+  };
     
     
   const toggleDropdown = () => setDropdownVisible(!isDropdownVisible);
@@ -231,13 +273,6 @@ const Inventory = () => {
     const currentIndex = Math.round(scrollPosition / screenWidth);
   };
 
-  // const handleDateChange = (event, selectedDate) => {
-  //   const currentDate = selectedDate || selectedItem.bestBefore;
-  //   setShowDatePicker(false);
-  //   setSelectedItem({ ...selectedItem, bestBefore: currentDate });
-  // };
-
-  
   const saveChanges = async() => {
     if (!selectedFridge) {
       Alert.alert('No Fridge Selected', 'Please create a fridge before proceeding.');
@@ -268,7 +303,6 @@ const Inventory = () => {
         }),
       });
 
-      console.log("line286 in inventory")
       const data = await response.json();
 
       if (response.ok) {
@@ -420,6 +454,63 @@ const Inventory = () => {
   );
   
 
+  const processFridgeData = (fridgeData) => {
+    return fridgeData.map(fridge => {
+      const processedItems = fridge.fridgeItems.map(item => {
+        const expirationDate = new Date(item.expiration_date);
+        return {
+          id: item.id,
+          name: item.name,
+          quantity: item.quantity,
+          unit: item.quantifier,
+          bestBefore: new Date(
+            expirationDate.getFullYear(),
+            expirationDate.getMonth(),
+            expirationDate.getDate()+1
+          ),
+        };
+      });
+  
+      return {
+        fridgeId: fridge.fridgeId,
+        fridgeName: fridge.fridgeName,
+        fridgeItems: processedItems,
+        fridgePasscode: fridge.fridgePasscode
+      };
+    });
+  };
+
+  const refresh = async() => {
+    try {
+      const response = await fetch('http://127.0.0.1:5001/refresh', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userId: userId,  
+        }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        if (fridgeItems.length === 0) {
+          setFridgeItems((prevFridgeItems) => [...prevFridgeItems, processFridgeData(data["fridgeData"])]);
+        } else {
+          setFridgeItems(processFridgeData(data["fridgeData"]));
+        }
+        router.push('./inventory')
+      } else {
+        Alert.alert('Error', data.message || 'Request failed. Please try again.');
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      Alert.alert('Network Error', 'Something went wrong. Please try again later.');
+    }
+  }
+  
+
   return (
     <View style={styles.container}>
       <StatusBar barStyle="dark-content" />
@@ -432,34 +523,59 @@ const Inventory = () => {
 
           <Ionicons name="caret-down-outline" size={20} color="#F36C21" />
         </TouchableOpacity>
+
+        <TouchableOpacity style={styles.button} onPress={refresh}>
+          <MaterialIcons name="refresh" size={30} color="#F36C21" />
+        </TouchableOpacity>
         <TouchableOpacity style={styles.button} onPress={() => { setSelectedItem({ id: '', name: '', quantity: '', unit: 'pcs', bestBefore: new Date() }); toggleModal(); }}>
           <Ionicons name="add-circle-outline" size={30} color="#F36C21" />
         </TouchableOpacity>
-        <TouchableOpacity style={styles.button} onPress={() => router.push({ pathname: '../(other)/scan' })}>
+        <TouchableOpacity style={styles.button} onPress={() =>
+          router.push({
+            pathname: '../(other)/scan',
+            params: { fridgeId: selectedFridge }, // Pass the fridgeId dynamically
+          })
+        }>
           <MaterialIcons name="qr-code-scanner" size={30} color="#F36C21" />
         </TouchableOpacity>
-        <TouchableOpacity style={styles.button} onPress={() => router.push({ pathname: '../(other)/share' })}>
-          <MaterialIcons name="share" size={30} color="#F36C21" />
+        <TouchableOpacity style={styles.button} onPress={() =>
+          router.push({
+            pathname: '../(other)/share',
+            params: { passcode: selectedFridgeObj ? selectedFridgeObj["fridgePasscode"] : "no selected fridge"}, 
+          })
+        }>
+        <MaterialIcons name="share" size={30} color="#F36C21" />
         </TouchableOpacity>
       </View>
 
-      <SearchBar
-        placeholder="Type your ingredients"
-        onChangeText={setSearch}
-        value={search}
-        containerStyle={styles.searchContainer}
-        inputContainerStyle={styles.searchInput}
-      />
+      <View style={styles.searchRowContainer}>
+        <SearchBar
+          placeholder="Type your ingredients"
+          onChangeText={(text) => setSearch2(text)}
+          value={search2}
+          containerStyle={styles.searchContainer}
+          inputContainerStyle={styles.searchInput}
+          inputStyle={styles.searchText}
+        />
+
+        <CustomButton
+          title="Search"
+          handlePress={handleNewButtonPress}
+          containerStyles={styles.newButtonContainer} 
+          textStyles={styles.newButtonText}
+        />
+      </View>
 
 
       {selectedFridgeObj && selectedFridgeObj.fridgeItems.length > 0 ? (
         <FlatList
-          data={selectedFridgeObj.fridgeItems}
+          data={filteredFridgeItems}
           keyExtractor={(item) => item.id.toString()}
           style={styles.list}
           renderItem={({ item }) => (
             renderItem(item, item.bestBefore < new Date(new Date().setDate(new Date().getDate() - 1)))
           )}
+          ListEmptyComponent={<Text style={styles.emptyMessage}>No ingredients found</Text>}
         />
       ) : (
         <Text style={styles.emptyMessage}>No ingredients yet</Text>
@@ -504,26 +620,14 @@ const Inventory = () => {
                         </TouchableOpacity>
                     )}
 
-                    {/* Action Buttons: Edit and Delete or Save and Cancel */}
-                    {editingFridgeIndex === index ? (
-                        <View style={styles.actionButtons}>
-                            <TouchableOpacity style={styles.saveButton} onPress={saveEditedFridgeName}>
-                                <Text style={styles.buttonText}>Save</Text>
-                            </TouchableOpacity>
-                            <TouchableOpacity style={styles.cancelButton} onPress={cancelEditFridgeName}>
-                                <Text style={styles.buttonText}>Cancel</Text>
-                            </TouchableOpacity>
-                        </View>
-                    ) : (
-                        <View style={styles.actionButtons}>
-                            {/* <TouchableOpacity style={styles.editButton} onPress={() => startEditingFridge(index)}>
-                                <Text style={styles.buttonText}>Edit</Text>
-                            </TouchableOpacity> */}
-                            <TouchableOpacity style={styles.deleteButton} onPress={() => deleteFridge(index)}>
-                                <Text style={styles.buttonText}>Delete</Text>
-                            </TouchableOpacity> 
-                        </View>
-                    )}
+                    <View style={styles.actionButtons}>
+                        <TouchableOpacity style={styles.editButton} onPress={() => startEditingFridge(index)}>
+                            <Text style={styles.buttonText}>Edit</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity style={styles.deleteButton} onPress={() => deleteFridge(index)}>
+                            <Text style={styles.buttonText}>Delete</Text>
+                        </TouchableOpacity> 
+                    </View>
                 </View>
             ))}
 
@@ -541,8 +645,6 @@ const Inventory = () => {
     </Modal>
 
 
-
-
       {/* Modal for Editing Fridge Name */}
       <Modal isVisible={isEditingFridge} onBackdropPress={() => setIsEditingFridge(false)} style={styles.modal}>
           <View style={styles.modalContent}>
@@ -553,9 +655,9 @@ const Inventory = () => {
                   value={editedFridgeName}
                   onChangeText={setEditedFridgeName}
               />
-              {/* <TouchableOpacity style={styles.doneButton} onPress={editFridgeName}>
+              <TouchableOpacity style={styles.doneButton} onPress={editFridgeName}>
                   <Text style={styles.doneButtonText}>Save Changes</Text>
-              </TouchableOpacity> */}
+              </TouchableOpacity>
           </View>
       </Modal>
 
@@ -624,7 +726,6 @@ const Inventory = () => {
 };
 
 
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -688,17 +789,43 @@ const styles = StyleSheet.create({
     marginRight: 5,
   },
 
+  searchRowContainer: {
+    flexDirection: 'row', // Arrange items in a row
+    alignItems: 'center', // Center items vertically
+    marginTop: 10, // Add top margin if needed
+  },
+
   searchContainer: {
-    width: '100%',
+    flex: 7, // Use 80% of the space
     borderTopWidth: 0,
     backgroundColor: 'transparent',
     borderBottomWidth: 0,
-    marginVertical: 20,
+    height: 60, // Set a uniform height
   },
 
   searchInput: {
     backgroundColor: '#FFF',
     borderRadius: 10,
+    height: 40, // Set the same height for the input
+  },
+
+  searchText: {
+    fontSize: 14, 
+  },
+
+  newButtonContainer: {
+    flex: 2, 
+    marginLeft: 5, 
+    minHeight: 40, 
+    borderRadius: 10,
+    justifyContent: 'center',
+    backgroundColor: '#FFA500',
+  }, 
+
+  newButtonText: {
+    color: '#FFFFFF', 
+    fontWeight: '600', 
+    fontSize: 14, 
   },
 
   buttonContainer: {
@@ -745,10 +872,6 @@ const styles = StyleSheet.create({
     textAlign: 'center',
   },
 
-  foodList: {
-    paddingTop: 10,
-  },
-
   foodItem: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -763,11 +886,6 @@ const styles = StyleSheet.create({
     shadowRadius: 5,
     elevation: 2,
   },
-
-  // foodIcon: {
-  //   fontSize: 32,
-  //   marginRight: 15,
-  // },
 
   foodInfo: {
     flex: 1,
@@ -831,19 +949,19 @@ const styles = StyleSheet.create({
   },
 
   doneButton: {
-      backgroundColor: '#F36C21',
-      paddingVertical: 12,
-      paddingHorizontal: 20,
-      borderRadius: 10,
-      alignItems: 'center',
-      marginTop: 20,
-      width: '100%',
+    backgroundColor: '#F36C21',
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    borderRadius: 10,
+    alignItems: 'center',
+    marginTop: 20,
+    width: '100%',
   },
 
   doneButtonText: {
-      color: '#FFF',
-      fontSize: 18,
-      fontWeight: 'bold',
+    color: '#FFF',
+    fontSize: 18,
+    fontWeight: 'bold',
   },
 
 

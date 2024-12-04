@@ -11,44 +11,77 @@ const Home = () => {
   const { userId, setUserId, username, setUsername, email, setEmail, password, setPassword, 
     fridgeItems, setFridgeItems, favoriteRecipes, setFavoriteRecipes, randomRecipes, setRandomRecipes } = useContext(GlobalContext);
 
-  // used for debugging fridgeItems and setFridgeItems
-  console.log("line15 in home.jsx")
-  console.log(fridgeItems)
+  // // used for debugging fridgeItems and setFridgeItems
+  // console.log("line15 in home.jsx")
+  // console.log(fridgeItems)
 
   const getImage = (foodName) => {
-    const sanitizedFoodName = foodName.replace(/[^a-zA-Z]/g, '').toLowerCase();
-    const image = images[sanitizedFoodName];
+    const normalizeName = (name) => {
+      let lowerName = name.toLowerCase();
+      if (lowerName.endsWith("es")) {
+        return lowerName.slice(0, -2); // Remove "es"
+      } else if (lowerName.endsWith("s")) {
+        return lowerName.slice(0, -1); // Remove "s"
+      }
+      return lowerName;
+    };
+     const sanitizedFoodName = foodName.replace(/[^a-zA-Z]/g, '').toLowerCase();
+    let image = images[sanitizedFoodName];
+    if (!image) {
+      const normalizedFoodName = normalizeName(sanitizedFoodName);
+      image = images[normalizedFoodName];
+    }
     return image ? image : require('../../assets/images/placeHolder.png');
   };
+ 
   
-  // for "expiring inventory section" 
-  const foodItems = [
-    { foodName: 'Apple', daysLeft: 1 },
-    { foodName: 'Milk', daysLeft: 1 },
-    { foodName: 'Egg', daysLeft: 1 },
-    { foodName: 'Carrot', daysLeft: 3 },
-    { foodName: 'Cheese', daysLeft: 4 },
-    { foodName: 'Chicken', daysLeft: 5 },
-    { foodName: 'Flour', daysLeft: 7 }
-  ];
+  function getExpiringItems(fridgeItems) {
+    const expiringItems = [];
+    fridgeItems.forEach((fridge) => {
+      // Correctly access the fridgeItems array
+      fridge.fridgeItems.forEach((item) => {
+        const currentDate = new Date();
+        const bestBeforeDate = new Date(item.bestBefore);
+        const daysLeft = Math.ceil((bestBeforeDate - currentDate) / (1000 * 60 * 60 * 24)) + 1; 
+        if (daysLeft >= 0 && daysLeft <= 7) {
+          expiringItems.push({ foodName: item.name, daysLeft: daysLeft});
+        }
+      });
+    });
+    return expiringItems;
+  }
+  const expiringItems = getExpiringItems(fridgeItems);
+  console.log("expiring items are ", expiringItems);
 
   // Function to generate list of InfoBox components
   const renderExpiringItems = (items) => {
-    return items.map((item, index) => (
-      <InfoBox
-        key={index}
-        title={item.foodName}
-        daysLeft={item.daysLeft.toString()}
-        image={getImage(item.foodName)}
-      />
-    ));
+    if (items.length === 0) {
+      return (
+        <Text style={styles.placeholderText}>
+          No items are expiring soon!
+        </Text>
+      );
+    }
+
+    return items.map((item, index) => {
+      const daysLeftText = item.daysLeft === 0 ? "Today" : `in ${item.daysLeft} days`;
+      return (
+        <InfoBox
+          key={index}
+          title={item.foodName}
+          daysLeft={daysLeftText}
+          image={getImage(item.foodName)}
+        />
+      );
+    });
   };
 
   return (
     <View style={styles.container}>
       {/* User welcome text and image */}
       <View style={styles.headerContainer}>
-        <Text style={styles.welcomeText}>Welcome, {username}!</Text>
+        {/* currently only showing the first six letters in username */}
+        <Text style={styles.welcomeText}>Welcome, {username.slice(0,6)}!</Text>
         <Pressable onPress={() => (router.push('profile'))}>
           <Image source={userImage} style={styles.userImage} />
         </Pressable>
@@ -90,7 +123,7 @@ const Home = () => {
         <Text style={styles.subtitle}>Expiring Soon</Text>
         {/* Vertical Scroll for Expiring Items */}
         <ScrollView style={styles.expiringScroll}>
-          {renderExpiringItems(foodItems)}
+          {renderExpiringItems(expiringItems)}
         </ScrollView>
       </View>
     </View>
@@ -103,7 +136,7 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#FEF9ED',
-    paddingTop: 60,
+    paddingTop: '20%',
   },
   headerContainer: {
     flexDirection: 'row',
@@ -179,36 +212,12 @@ const styles = StyleSheet.create({
     alignSelf: 'center',
     borderRadius: 8,
   },
+  placeholderText: {
+    marginTop: 10,
+    fontSize: 18,
+    color: '#888',
+  },
 });
 
 
 export default Home;
-
-
-
-
-
-
-// {randomRecipes.map((recipe) => (
-//   <TouchableOpacity
-//     key={recipe.id}
-//     style={styles.recipeContainer}
-//     onPress={() => router.push({
-//       pathname: '../(other)/showRecipe',
-//       params: {
-//         id: recipe.id,
-//         name: recipe.name,
-//         // image: recipe.image,
-//         image: Image.resolveAssetSource(recipe.image).uri,
-//         details: JSON.stringify(recipe.details),
-//         path: '../(tabs)/home',
-//       },
-//     })}
-//   >
-//     <View style={styles.imageContainer}>
-//       {/* <Image source={{ uri: recipe.image }} style={styles.recipeImage} /> */}
-//       <Image source={recipe.image} style={styles.recipeImage} />
-//       <Text style={styles.recipeText}>{recipe.name}</Text>
-//     </View>
-//   </TouchableOpacity>
-// ))}

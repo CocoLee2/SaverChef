@@ -1,5 +1,5 @@
 import { React, useState, useContext } from 'react';
-import { View, Text, Image, ScrollView, TouchableOpacity, StyleSheet, Dimensions } from 'react-native';
+import { View, Text, Image, ScrollView, TouchableOpacity, StyleSheet, Dimensions, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useLocalSearchParams, useRouter } from 'expo-router';
 import { GlobalContext } from "../GlobalContext";
@@ -51,10 +51,63 @@ const ShowRecipe = () => {
     }
   };
 
-  const handleCookRecipe = () => {
-    // todo
-    console.log("User wants to cook this recipe, router push update ingredient page");
+  /**
+   * Matches ingredients with fridge items across all fridges, returning all matching items.
+   * For each ingredient, checks all fridges for items with the same name (case-insensitive).
+   */
+  const matchIngredientsWithFridgeItems = (ingredients, fridgeItems) => {
+    if (!Array.isArray(ingredients) || !Array.isArray(fridgeItems)) {
+      console.error("Invalid input: ingredients and fridgeItems must both be arrays.");
+      return [];
+    }
+  
+    // Helper function to normalize names (case-insensitive, removes trailing "s" or "es")
+    const normalizeName = (name) => {
+      let lowerName = name.toLowerCase();
+      if (lowerName.endsWith("es")) {
+        return lowerName.slice(0, -2); // Remove "es"
+      } else if (lowerName.endsWith("s")) {
+        return lowerName.slice(0, -1); // Remove "s"
+      }
+      return lowerName;
+    };
+  
+    // Initialize the results list
+    const matchedFridges = [];
+  
+    // Iterate through each fridge
+    fridgeItems.forEach((fridge) => {
+      // Find all matching items in the current fridge
+      const matchedItems = fridge.fridgeItems.filter((item) => {
+        return ingredients.some(
+          (ingredient) => normalizeName(ingredient.name) === normalizeName(item.name)
+        );
+      });
+  
+      // If there are matched items, add them to the result
+      if (matchedItems.length > 0) {
+        matchedFridges.push({
+          fridgeName: fridge.fridgeName,
+          items: matchedItems,
+        });
+      }
+    });
+  
+    return matchedFridges;
   };
+  const matchedItems = matchIngredientsWithFridgeItems(ingredients, fridgeItems);
+
+  const handleUpdateInventory = () => {
+    if (matchedItems.length === 0) {
+      Alert.alert(
+        "No Items Found",
+        "No matching items were found in your fridge for the selected ingredients.",
+        [{ text: "OK" }]
+      );
+    } else {
+      router.push({pathname:'./updateInventory', params:{matchedItemsString: JSON.stringify(matchedItems)}})
+    }
+  }
 
   return (
     <View style={styles.wrapper}>
@@ -105,7 +158,8 @@ const ShowRecipe = () => {
 
           <CustomButton 
             title="Cook This Recipe"
-            handlePress={handleCookRecipe}
+            handlePress={handleUpdateInventory
+            }
             containerStyles={styles.customContainer}
           />
         </View>

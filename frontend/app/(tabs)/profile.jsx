@@ -19,6 +19,7 @@ const Profile = () => {
     setIsLoading(true);  //start showing spinner
     if (favoriteRecipes.length === 0) {
       Alert.alert('No Favorite Recipes', 'You don’t have any favorite recipes yet. Browse and add some!');
+      setIsLoading(false);
       return 
     }
     try {
@@ -133,7 +134,8 @@ const Profile = () => {
         />
       </View>
 
-      <Text style={styles.username}>{username}</Text>
+      {/* only show the first 10 letters in username */}
+      <Text style={styles.username}>{username.slice(0, 10)}</Text>
       <Text style={styles.email}>{email}</Text>
       
       {/* Action Buttons */}
@@ -174,7 +176,7 @@ const styles = StyleSheet.create({
     width: 110,
     height: 110,
     borderRadius: 50,
-    marginTop: 60,
+    marginTop: '35%',
     marginBottom: 10,
   },
   username: {

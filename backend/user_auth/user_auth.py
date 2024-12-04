@@ -1,6 +1,7 @@
 from flask import Flask, Blueprint, render_template, flash, redirect, url_for, session, request, jsonify
 # from forms import RegisterForm, LoginForm
 from flask_bcrypt import Bcrypt
+from model.fridge_members import FridgeMembers
 from model.fridge import Fridge
 from model.fridge_items import FridgeItems
 from model.users import db, Users
@@ -25,28 +26,16 @@ def login():
         session['user_id'] = user.id
         session['username'] = user.username
         session['favoriteRecipes'] = user.favoriteRecipes
-
-        # may have to do a slightly different query to grab any fridges that are shared with you
-        # fridges = db.session.scalars(
-        #     db.select(Fridge).filter_by(
-        #         creator=user.id)).all()
-        fridges = db.session.query(Fridge).filter(
-            Fridge.creator == user.id).all()
-        fridge_results = []
-        for fridge in fridges:
-            fridge_data = {}
-            fridge_data["fridgeId"] = fridge.id
-            fridge_data["fridgeName"] = fridge.name
-            fridge_data["fridgeItems"] = []
-            fridge_items = db.session.scalars(
-                db.select(FridgeItems).filter_by(fridge_id=fridge.id)).all()
-            for fridge_item in fridge_items:
-                fridge_data["fridgeItems"].append(fridge_item.serialize())
-            fridge_results.append(fridge_data)
         return jsonify({"message": "Login successful", "user_id": user.id, "username": user.username,
-                       "favoriteRecipes": user.favoriteRecipes, "fridgeData": fridge_results}), 200
+                       "favoriteRecipes": user.favoriteRecipes, "fridgeData": get_fridge_data(user.id)}), 200
     else:
         return jsonify({"message": "Invalid email or password"}), 401
+
+
+@app.route('/refresh', methods=['POST'])
+def refresh():
+    data = request.json  # Expecting a JSON payload with email and password
+    return jsonify({"fridgeData": get_fridge_data(data['userId'])}), 200
 
 # New route for changing password
 
@@ -99,8 +88,8 @@ def signup():
     new_fridge = Fridge("My fridge", new_user.id)
     db.session.add(new_fridge)
     db.session.commit()
-    return jsonify({"message": "Login successful",
-                   "user_id": new_user.id, "fridge_id": new_fridge.id}), 201
+    return jsonify({"message": "Login successful", "user_id": new_user.id,
+                   "fridge_id": new_fridge.id, "fridge_passcode": new_fridge.passcode}), 201
 
 
 @app.route('/mark_favorite', methods=['POST'])
@@ -127,3 +116,24 @@ def mark_favorite():
     flag_modified(user, 'favoriteRecipes')
     db.session.commit()
     return jsonify({"message": "Updated successfully"}), 201
+
+
+def get_fridge_data(user_id):
+    "Returns all user's fridges with corresponding data"
+    fridges = db.session.query(Fridge).outerjoin(
+        FridgeMembers, Fridge.id == FridgeMembers.fridge_id).filter(
+        (Fridge.creator == user_id) | (
+            FridgeMembers.member_id == user_id)).distinct().all()
+    fridge_results = []
+    for fridge in fridges:
+        fridge_data = {}
+        fridge_data["fridgeId"] = fridge.id
+        fridge_data["fridgeName"] = fridge.name
+        fridge_data["fridgePasscode"] = fridge.passcode
+        fridge_data["fridgeItems"] = []
+        fridge_items = db.session.scalars(
+            db.select(FridgeItems).filter_by(fridge_id=fridge.id)).all()
+        for fridge_item in fridge_items:
+            fridge_data["fridgeItems"].append(fridge_item.serialize())
+        fridge_results.append(fridge_data)
+    return fridge_results

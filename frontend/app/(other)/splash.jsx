@@ -49,7 +49,7 @@ const styles = StyleSheet.create({
   imageContainer: {
     width: '100%',
     alignItems: 'center', 
-    marginTop: 100, 
+    marginTop: '40%', 
   },
   Text1: {
     fontSize: 22,
