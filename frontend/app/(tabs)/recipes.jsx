@@ -19,13 +19,6 @@ const Recipes = () => {
   // sends a request to the backend to fetch recipes, 
   // and navigates to the searchRecipe page with the retrieved recipes data.
   const fetchRecipes = async (ingredients) => {
-    setIsLoading(true);  //start showing spinner
-    if (ingredients.length === 0) {
-      Alert.alert('Input Error', 'Please enter ingredients separated by commas, and try again.'); 
-      setIsLoading(false);  
-      return;
-    }
-
     try {
       const response = await fetch('http://127.0.0.1:5001/search', {
         method: 'POST',
@@ -63,6 +56,12 @@ const Recipes = () => {
       fridge.fridgeItems.map(item => item.name)
     );
     
+    setIsLoading(true);  //start showing spinner
+    if (ingredients.length === 0) {
+      Alert.alert('No Ingredients Found', 'Please add some ingredients to your inventory to search for recipes.', );
+      setIsLoading(false);  
+      return;
+    }
     fetchRecipes(ingredients)
   }
 
@@ -71,6 +70,12 @@ const Recipes = () => {
     const validIngredientRegex = /^[a-zA-Z\s]+$/;
     // do some simple checks on the input strings
     ingredients = ingredients.filter(item => validIngredientRegex.test(item));
+    setIsLoading(true);  //start showing spinner
+    if (ingredients.length === 0) {
+      Alert.alert('Input Error', 'Please enter ingredients separated by commas, and try again.'); 
+      setIsLoading(false);  
+      return;
+    }
     fetchRecipes(ingredients)
   }
 

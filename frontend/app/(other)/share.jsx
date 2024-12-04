@@ -60,12 +60,7 @@ const Share = () => {
   
         const data = await response.json();
         if (response.ok) {
-          // Update the fridge items with the data returned from the server
-          if (fridgeItems.length === 0) {
-            setFridgeItems((prevFridgeItems) => [...prevFridgeItems, processFridgeData(data["fridgeData"])]);
-          } else {
-            setFridgeItems(processFridgeData(data["fridgeData"]));
-          }
+          setFridgeItems(processFridgeData(data["fridgeData"]));
           Alert.alert('Success', 'You have joined the fridge successfully!');
           router.push("../(tabs)/inventory");
           return;
