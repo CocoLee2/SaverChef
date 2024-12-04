@@ -1,7 +1,7 @@
-import { FlatList, TouchableOpacity, View, Text, Image, StyleSheet, StatusBar, Alert, ScrollView } from 'react-native';
+import { FlatList, TouchableOpacity, View, Text, Image, StyleSheet, StatusBar, Alert } from 'react-native';
 import { SearchBar } from 'react-native-elements';
 import { router } from "expo-router";
-import { React, useState, useContext, useEffect} from 'react';
+import { React, useState, useContext, } from 'react';
 import { GlobalContext } from "../GlobalContext";
 import CustomButton from '../../components/CustomButton';
 import LottieView from 'lottie-react-native';
@@ -13,7 +13,6 @@ const Recipes = () => {
     fridgeItems, setFridgeItems, favoriteRecipes, setFavoriteRecipes, randomRecipes, setRandomRecipes } = useContext(GlobalContext);
 
   const [isLoading, setIsLoading] = useState(false);
-  const [recipes, setRecipes] = useState([]); // Store loaded recipes
 
   // This helper function is used by both handleUseMyIngredients and handleNewButtonPress.
   // It takes a list of validated strings as ingredients,

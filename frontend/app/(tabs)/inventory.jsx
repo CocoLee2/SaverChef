@@ -1,8 +1,8 @@
 import { StatusBar, View, Text, StyleSheet, TouchableOpacity, ScrollView, FlatList, TextInput, Alert, Dimensions, Image} from 'react-native'
-import React, { useState, useEffect, useRef, useContext } from 'react'
-import { ListItem, SearchBar } from "react-native-elements";
+import { React, useState, useEffect, useRef, useContext } from 'react'
+import { SearchBar } from 'react-native-elements';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
-import { router, useLocalSearchParams } from "expo-router";
+import { router } from "expo-router";
 import Modal from 'react-native-modal';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import { Ionicons } from '@expo/vector-icons';
@@ -13,6 +13,8 @@ import CustomButton from '../../components/CustomButton';
 
 
 const Inventory = () => {
+  const [search2, setSearch2] = useState('');
+
   const { userId, setUserId, username, setUsername, email, setEmail, password, setPassword, 
     fridgeItems, setFridgeItems, favoriteRecipes, setFavoriteRecipes, randomRecipes, setRandomRecipes } = useContext(GlobalContext);
   const [selectedFridge, setSelectedFridge] = useState(fridgeItems.length > 0 ? fridgeItems[0].fridgeId : null);
@@ -31,12 +33,11 @@ const Inventory = () => {
     return fridge ? fridge.fridgeName.slice(0, 10) : "No Fridge Selected";
   };
 
-  const [search, setSearch] = useState('');
   const [isModalVisible, setModalVisible] = useState(false);
   const [isDropdownVisible, setDropdownVisible] = useState(false);
   const [showUnitPicker, setShowUnitPicker] = useState(false);
   const [selectedUnit, setSelectedUnit] = useState('pcs');
-  const [selectedItem, setSelectedItem] = useState({ id: '', name: '', quantity: '', unit: 'pcs', bestBefore: new Date() });
+  const [selectedItem, setSelectedItem] = useState({ id: '', name: '', quantity: '', unit: 'pcs', bestBefore: new Date()});
   const scrollViewRef = useRef(null);
   const [newFridgeName, setNewFridgeName] = useState('');
   const [isEditingFridge, setIsEditingFridge] = useState(false);
@@ -44,9 +45,8 @@ const Inventory = () => {
   const [editedFridgeName, setEditedFridgeName] = useState('');
 
   const filteredFridgeItems = selectedFridgeObj ? selectedFridgeObj.fridgeItems.filter(item => 
-    item.name.toLowerCase().includes(search.toLowerCase())
+    item.name.toLowerCase().includes(search2.toLowerCase())
   ) : [];
-  
 
  
   const getImage = (foodName) => {
@@ -204,7 +204,7 @@ const Inventory = () => {
   };
 
   const handleNewButtonPress = async () => {
-    let ingredients = search.split(",").map(item => item.trim());
+    let ingredients = search2.split(",").map(item => item.trim());
     const validIngredientRegex = /^[a-zA-Z\s]+$/;
     // do some simple checks on the input strings
     ingredients = ingredients.filter(item => validIngredientRegex.test(item));
@@ -551,13 +551,13 @@ const Inventory = () => {
       <View style={styles.searchRowContainer}>
         <SearchBar
           placeholder="Type your ingredients"
-          onChangeText={setSearch}
-          value={search}
+          onChangeText={(text) => setSearch2(text)}
+          value={search2}
           containerStyle={styles.searchContainer}
           inputContainerStyle={styles.searchInput}
           inputStyle={styles.searchText}
         />
-  
+
         <CustomButton
           title="Search"
           handlePress={handleNewButtonPress}
