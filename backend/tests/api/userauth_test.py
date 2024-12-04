@@ -1,3 +1,4 @@
+from model.fridge_items import FridgeItems
 from database.database import db
 from model.fridge import Fridge
 from model.users import Users
@@ -43,4 +44,11 @@ def test_login(client):
     assert db.session.query(Fridge).join(Users).where(
         Users.email == "superchef@superchef.com").one().passcode == response.json["fridgeData"][0]["fridgePasscode"]
 
-# def test_delete_user(client):
+
+def test_delete_user(client):
+    response = client.post(
+        "/delete_account",
+        json={'email': "superchef@superchef.com"})
+    assert db.session.query(Fridge).join(Users).where(
+        Users.email == "superchef@superchef.com").count() == 0
+    assert db.session.query(FridgeItems).count() == 0

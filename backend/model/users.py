@@ -9,3 +9,5 @@ class Users(db.Model):
     email = db.Column(db.String(100), unique=True, nullable=False)
     password = db.Column(db.String(60), nullable=False)
     favoriteRecipes = db.Column(JSON, nullable=True)
+    fridges = db.relationship("Fridge", cascade="all, delete")
+    shared_fridges = db.relationship("FridgeMembers", cascade="all,delete")

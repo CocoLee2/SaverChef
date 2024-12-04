@@ -123,7 +123,7 @@ def delete_fridge_by_id():
         print(
             f"Request to delete fridge: fridge_id={fridge_id}, user_id={user_id}")
 
-        fridge = Fridge.query.get(fridge_id)
+        fridge = db.session.get(Fridge, fridge_id)
         if not fridge:
             return jsonify(
                 {"error": f"Fridge with id {fridge_id} does not exist"}), 400

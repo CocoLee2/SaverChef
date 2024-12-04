@@ -21,6 +21,11 @@ class Fridge(db.Model):
     passcode: str = db.Column(
         db.String(6), nullable=False, unique=True)  # used for sharing
 
+    fridge_members = db.relationship(
+        "FridgeMembers", cascade="all, delete-orphan")
+    fridge_items = db.relationship(
+        "FridgeItems", cascade="all, delete-orphan")
+
     def __init__(self, fridge_name, creator_id):
         alphabet = string.ascii_letters + string.digits
         self.name = fridge_name
