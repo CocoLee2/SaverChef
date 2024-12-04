@@ -176,7 +176,7 @@ const styles = StyleSheet.create({
     width: 110,
     height: 110,
     borderRadius: 50,
-    marginTop: 60,
+    marginTop: '35%',
     marginBottom: 10,
   },
   username: {

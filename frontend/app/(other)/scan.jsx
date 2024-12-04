@@ -92,7 +92,7 @@ export default function camera() {
 
     try {
       const response = await fetch(
-        "http://192.168.12.203:5001/fridge_item/add",
+        "http://127.0.0.1:5001/fridge_item/add",
         {
           method: "POST",
           headers: {
@@ -166,7 +166,7 @@ export default function camera() {
   const getBarcodeInfoHelper = async (barcode) => {
     try {
       const response = await fetch(
-        "http://192.168.12.203:5001/fridge_item/search_barcode",
+        "http://127.0.0.1:5001/fridge_item/search_barcode",
         {
           method: "POST",
           headers: {

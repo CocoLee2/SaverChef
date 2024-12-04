@@ -320,6 +320,7 @@ const styles = StyleSheet.create({
     padding: 20,
     width: '80%',
     alignSelf: 'center',
+    marginTop: '40%',
   },
   modalHeader: {
     flexDirection: 'row',
