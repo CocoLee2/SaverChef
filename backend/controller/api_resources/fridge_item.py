@@ -3,9 +3,11 @@ import os
 from flask import Blueprint, jsonify, request, Response
 import requests
 from model.fridge_members import FridgeMembers
+from model.push_token import PushToken
 from model.fridge import Fridge
 from database.database import db
 from model.fridge_items import FridgeItems
+from sqlalchemy.orm import joinedload
 
 fridge_item_bp = Blueprint('fridge_items', __name__, url_prefix='/fridge_item')
 
@@ -115,26 +117,84 @@ def update_or_delete_item():
         return str(e), 400
 
 
+
+"""
+Fetches all food items nearing their expiration date across all fridges, groups them by fridge, 
+and includes associated user IDs (creator and members). The response is structured to provide 
+fridge details, user information, and a list of expiring items for each fridge.
+"""
 @fridge_item_bp.route("/soon_to_expire", methods=["GET"])
 def soon_to_expire():
-    data = request.json
-    fridgeId = int(data['fridgeId'])
-    userId = int(data['userId'])
-    days = int(data["days"])
-    if db.session.get(Fridge, fridgeId) is None:
-        return jsonify({"message": "Fridge does not exist."}), 404
-    # checks to see if user is either the creator of the fridge or was given shared access to it
-    if db.session.get(Fridge, fridgeId).creator != userId and db.session.query(FridgeMembers).filter(FridgeMembers.fridge_id == fridgeId, FridgeMembers.member_id == userId).count() != 1:
-        return jsonify({"messsage": "User does not have permission to access this fridge"}), 403
-    if days <= 0:
-        return jsonify({"message": "Days must be greater than 0"}), 400
+    days = 5
     latest_expiration_date = date.today() + timedelta(days=days)
-    fridge_items = db.session.query(FridgeItems).filter(
-        FridgeItems.fridge_id == fridgeId, FridgeItems.expiration_date < latest_expiration_date).all()
-    result = []
-    for fridge_item in fridge_items:
-        result.append(fridge_item.serialize())
-    return jsonify({"message": "Successfully returned soon to expire food items", "fridgeItems": result}), 200
+
+    expiring_items = db.session.query(FridgeItems).filter(
+        FridgeItems.expiration_date < latest_expiration_date).all()
+
+    if not expiring_items:
+        return jsonify({"message": "No expiring items found."}), 200
+
+    fridge_data = {}
+    for item in expiring_items:
+        fridge_id = item.fridge_id
+
+        if fridge_id not in fridge_data:
+            fridge = db.session.query(Fridge).options(
+                joinedload(Fridge.fridge_members)).filter_by(id=fridge_id).first()
+
+            if fridge:
+                user_ids = [fridge.creator]
+                user_ids += [member.member_id for member in fridge.fridge_members]
+
+                fridge_data[fridge_id] = {
+                    "fridge_name": fridge.name,
+                    "creator_id": fridge.creator,
+                    "user_ids": user_ids,
+                    "expiring_items": []
+                }
+
+        fridge_data[fridge_id]["expiring_items"].append({
+            "item_id": item.id,
+            "name": item.name,
+            "expiration_date": item.expiration_date,
+            "quantity": item.quantity,
+            "quantifier": item.quantifier
+        })
+
+    # Uncomment the code below to enable push notifications
+    # for fridge_id, fridge_info in fridge_data.items():
+    #     for user_id in fridge_info["user_ids"]:
+    #         # Retrieve push token for the user from the database
+    #         push_token = db.session.query(UserPushTokens).filter_by(user_id=user_id).first()
+    #         if push_token:
+    #             send_push_notification(
+    #                 push_token.token,
+    #                 f"Items expiring soon in {fridge_info['fridge_name']}",
+    #                 f"{len(fridge_info['expiring_items'])} items are nearing expiration."
+    #             )
+
+    return jsonify({
+        "message": "Successfully returned soon-to-expire food items",
+        "fridges": list(fridge_data.values())
+    }), 200
+
+
+# Helper function to send push notifications
+# Uncomment this function when ready to send notifications
+# import requests
+# def send_push_notification(push_token, title, body):
+#     url = "https://exp.host/--/api/v2/push/send"
+#     headers = {
+#         "Content-Type": "application/json",
+#         "Accept": "application/json"
+#     }
+#     payload = {
+#         "to": push_token,
+#         "title": title,
+#         "body": body
+#     }
+#     response = requests.post(url, headers=headers, json=payload)
+#     print(f"Notification sent to {push_token}: {response.status_code}")
 
 
 @fridge_item_bp.route("/search_barcode", methods=["POST"])

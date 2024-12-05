@@ -5,6 +5,7 @@ from model.fridge_members import FridgeMembers
 from model.fridge import Fridge
 from model.fridge_items import FridgeItems
 from model.users import db, Users
+# from model.push_token import PushToken
 from dotenv import load_dotenv
 from os import getenv
 from sqlalchemy.orm.attributes import flag_modified
@@ -137,3 +138,36 @@ def get_fridge_data(user_id):
             fridge_data["fridgeItems"].append(fridge_item.serialize())
         fridge_results.append(fridge_data)
     return fridge_results
+
+
+# @app.route('/register-token', methods=['POST'])
+# def register_token():
+#     """
+#     Registers a push token for a user.
+#     Expects JSON payload: { "user_id": <int>, "token": <str> }
+#     """
+#     try:
+#         data = request.json
+
+#         # Validate input
+#         user_id = data.get('user_id')
+#         token = data.get('token')
+#         if not user_id or not token:
+#             return jsonify({"message": "Missing user_id or token"}), 400
+
+#         # Check if token already exists for the user
+#         existing_token = db.session.query(PushToken).filter_by(user_id=user_id, token=token).first()
+
+#         if existing_token:
+#             return jsonify({"message": "Token already registered"}), 200
+
+#         # Add or update the token
+#         new_token = PushToken(user_id=user_id, token=token)
+#         db.session.add(new_token)
+#         db.session.commit()
+
+#         return jsonify({"message": "Token registered successfully"}), 201
+
+#     except Exception as e:
+#         print(f"Error registering token: {e}")
+#         return jsonify({"message": "Internal server error"}), 500

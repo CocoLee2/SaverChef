@@ -1,14 +1,16 @@
-import { StatusBar, View, StyleSheet, ScrollView, Image, ImageBackground, Platform, Pressable, Button } from 'react-native';
+import { StatusBar, View, StyleSheet, ScrollView, Image, ImageBackground, Platform, Pressable } from 'react-native';
 import { router } from "expo-router";
 import logo from "../assets/images/logo.png";
 import backgroundImage from "../assets/images/index_bg.png";
 import LottieView from 'lottie-react-native';
 
+// Uncomment these imports when enabling notifications
 // import { useState, useEffect } from 'react';
 // import * as Device from 'expo-device';
 // import * as Notifications from 'expo-notifications';
 // import Constants from 'expo-constants';
 
+// Uncomment this when enabling notifications
 // Notifications.setNotificationHandler({
 //   handleNotification: async () => ({
 //     shouldShowAlert: true,
@@ -19,25 +21,16 @@ import LottieView from 'lottie-react-native';
 
 export default function App() {
   // const [expoPushToken, setExpoPushToken] = useState('');
+
   // useEffect(() => {
+  //   // Capture push token at app startup
   //   registerForPushNotificationsAsync().then(token => {
-  //     setExpoPushToken(token);
-  //   })
-  //   .catch((err) => console.log(err));
+  //     setExpoPushToken(token); // Store token locally
+  //   }).catch(err => console.log('Error registering for push notifications:', err));
   // }, []);
 
   // async function registerForPushNotificationsAsync() {
   //   let token;
-  
-  //   if (Platform.OS === 'android') {
-  //     await Notifications.setNotificationChannelAsync('default', {
-  //       name: 'default',
-  //       importance: Notifications.AndroidImportance.MAX,
-  //       vibrationPattern: [0, 250, 250, 250],
-  //       lightColor: '#FF231F7C',
-  //     });
-  //   }
-  
   //   if (Device.isDevice) {
   //     const { status: existingStatus } = await Notifications.getPermissionsAsync();
   //     let finalStatus = existingStatus;
@@ -46,32 +39,16 @@ export default function App() {
   //       finalStatus = status;
   //     }
   //     if (finalStatus !== 'granted') {
-  //       alert('Failed to get push token for push notification!');
+  //       alert('Failed to get push token for push notifications!');
   //       return;
   //     }
-
-  //     try {
-  //       const projectId =
-  //         Constants?.expoConfig?.extra?.eas?.projectId ?? Constants?.easConfig?.projectId;
-  //       if (!projectId) {
-  //         throw new Error('Project ID not found');
-  //       }
-  //       token = (
-  //         await Notifications.getExpoPushTokenAsync({
-  //           projectId,
-  //         })
-  //       ).data;
-  //       console.log(token);
-  //     } catch (e) {
-  //       token = `${e}`;
-  //     }
+  //     token = (await Notifications.getExpoPushTokenAsync()).data;
   //   } else {
   //     alert('Must use physical device for Push Notifications');
   //   }
-  
   //   return token;
   // }
-
+  
   return (
       <Pressable style={styles.container} onPress={() => router.push("/(other)/splash")}>
 
@@ -85,9 +62,7 @@ export default function App() {
               style={styles.logo}
               resizeMode="contain"
             />
-            
-            {/* <Button title="Send push notification" 
-            onPress={() => sendNotification("Apple", 3)}/> */}
+
             <LottieView
               source={require('./index_animation.json')}
               autoPlay

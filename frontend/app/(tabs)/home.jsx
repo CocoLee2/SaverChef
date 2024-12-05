@@ -6,10 +6,30 @@ import { GlobalContext } from "../GlobalContext";
 import userImage from '../../assets/images/userImage.webp';
 import InfoBox from '../../components/InfoBox.jsx';
 import images from '../../constants/images';
+// import axios from 'axios';
 
 const Home = () => {
   const { userId, setUserId, username, setUsername, email, setEmail, password, setPassword, 
     fridgeItems, setFridgeItems, favoriteRecipes, setFavoriteRecipes, randomRecipes, setRandomRecipes } = useContext(GlobalContext);
+
+    // used for send notifications
+    //  useEffect(() => {
+    //   if (expoPushToken && userId) {
+    //     registerPushToken(userId, expoPushToken);
+    //   }
+    // }, [expoPushToken, userId]);
+  
+    // async function registerPushToken(userId, token) {
+    //   try {
+    //     const response = await axios.post('https://127.0.0.1:5001/register-token', {
+    //       user_id: userId,
+    //       token: token,
+    //     });
+    //     console.log('Push token registered:', response.data.message);
+    //   } catch (error) {
+    //     console.error('Error registering push token:', error);
+    //   }
+
 
   // // used for debugging fridgeItems and setFridgeItems
   // console.log("line15 in home.jsx")
