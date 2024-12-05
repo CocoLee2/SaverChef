@@ -1,7 +1,9 @@
-from datetime import date
+from datetime import date, timedelta
 import os
 from flask import Blueprint, jsonify, request, Response
 import requests
+from model.fridge_members import FridgeMembers
+from model.fridge import Fridge
 from database.database import db
 from model.fridge_items import FridgeItems
 
@@ -111,6 +113,28 @@ def update_or_delete_item():
             return jsonify({"message": "Updated item successfully"}), 200
     except Exception as e:
         return str(e), 400
+
+
+@fridge_item_bp.route("/soon_to_expire", methods=["GET"])
+def soon_to_expire():
+    data = request.json
+    fridgeId = int(data['fridgeId'])
+    userId = int(data['userId'])
+    days = int(data["days"])
+    if db.session.get(Fridge, fridgeId) is None:
+        return jsonify({"message": "Fridge does not exist."}), 404
+    # checks to see if user is either the creator of the fridge or was given shared access to it
+    if db.session.get(Fridge, fridgeId).creator != userId and db.session.query(FridgeMembers).filter(FridgeMembers.fridge_id == fridgeId, FridgeMembers.member_id == userId).count() != 1:
+        return jsonify({"messsage": "User does not have permission to access this fridge"}), 403
+    if days <= 0:
+        return jsonify({"message": "Days must be greater than 0"}), 400
+    latest_expiration_date = date.today() + timedelta(days=days)
+    fridge_items = db.session.query(FridgeItems).filter(
+        FridgeItems.fridge_id == fridgeId, FridgeItems.expiration_date < latest_expiration_date).all()
+    result = []
+    for fridge_item in fridge_items:
+        result.append(fridge_item.serialize())
+    return jsonify({"message": "Successfully returned soon to expire food items", "fridgeItems": result}), 200
 
 
 @fridge_item_bp.route("/search_barcode", methods=["POST"])
