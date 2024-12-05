@@ -29,9 +29,16 @@ const Inventory = () => {
   const selectedFridgeObj = fridgeItems.find(fridge => fridge.fridgeId === selectedFridge);
   const getFridgeNameById = (id) => {
     const fridge = fridgeItems.find((fridge) => fridge.fridgeId === id);
-    // only show the first 10 letters of a fridge name
-    return fridge ? fridge.fridgeName.slice(0, 10) : "No Fridge Selected";
+  
+    if (!fridge) {
+      return "No Fridge "; // Ensure this fallback string is also exactly 10 characters
+    }
+  
+    const fridgeName = fridge.fridgeName.slice(0, 10); // Truncate if longer
+    // console.log(fridgeName.padEnd(10).length);
+    return fridgeName.padEnd(10); // Pad with spaces if shorter
   };
+  
 
   const [isModalVisible, setModalVisible] = useState(false);
   const [isDropdownVisible, setDropdownVisible] = useState(false);
@@ -186,6 +193,23 @@ const Inventory = () => {
     setIsEditingFridge(true);
   };
 
+  const leaveFridge = async (index) => {
+    const fridgeToLeave = fridgeItems[index];
+  
+    Alert.alert(
+      'Delete Fridge',
+      `Are you sure you want to leave ${fridgeToLeave.fridgeName}?`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Leave',
+          style: 'destructive',
+          onPress: () => handleLeaveFridge(fridgeToLeave.fridgeId, fridgeToLeave.fridgeName),
+        },
+      ]
+    );
+  };
+
   const deleteFridge = async (index) => {
     const fridgeToDelete = fridgeItems[index];
   
@@ -210,6 +234,54 @@ const Inventory = () => {
     ingredients = ingredients.filter(item => validIngredientRegex.test(item));
     fetchRecipes(ingredients)
   }
+
+  // todo
+  const handleLeaveFridge = async (leaveId, leaveName) => {
+    try {
+      const response = await fetch('http://127.0.0.1:5001/fridge/leave', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          user_id: userId,
+          fridge_id: leaveId,
+        }),
+      });
+  
+      const data = await response.json();
+      console.log("line 246")
+  
+      if (response.ok) {
+        // Update the selected fridge if the deleted fridge was the selected one
+        if (selectedFridge === leaveId) {
+          const remainingFridgeIds = fridgeIds.filter(id => id !== leaveId);
+          const newSelectedFridge = remainingFridgeIds.length > 0 ? remainingFridgeIds[0] : null;
+          setSelectedFridge(newSelectedFridge);
+        }
+  
+        // Remove the fridge from fridgeIds and fridgeItems array
+        setFridgeIds((prevFridgeIds) =>
+          prevFridgeIds.filter(id => id !== leaveId)
+        );
+        setFridgeItems((prevFridgeItems) =>
+          prevFridgeItems.filter(fridge => fridge.fridgeId !== leaveId)
+        );
+      } else if (response.status === 400) {
+        Alert.alert('Error', `${leaveName} does not exist.`);
+      } else if (response.status === 403) {
+        Alert.alert(
+          'Action Not Allowed',
+          `As the creator of ${leaveName}, you cannot leave the fridge. You can only delete it.`
+        );
+      } else {
+        Alert.alert('Error', data.message || 'Request failed. Please try again.');
+      }
+    } catch (error) {
+      console.error('Error:', error);
+      Alert.alert('Network Error', 'Something went wrong. Please try again later.');
+    }
+  };
     
   const handleDeleteFridge = async (deleteId, deleteName) => {
     try {
@@ -593,6 +665,7 @@ const Inventory = () => {
       ></ScrollView>
 
       {/* Dropdown Modal */}
+      {/* todo */}
       <Modal isVisible={isDropdownVisible} onBackdropPress={toggleDropdown} backdropOpacity={0.3} style={styles.dropdownModal}>
         <View style={styles.dropdown}>
             {fridgeIds.map((fridge, index) => (
@@ -608,15 +681,15 @@ const Inventory = () => {
                     ) : (
                         // Render fridge name with edit button
                         <TouchableOpacity
-                            style={styles.dropdownItem}
                             onPress={() => {
                                 setSelectedFridge(fridge);
                                 setDropdownVisible(false);
-                            }}
-                        >
+                            }}>
                             <Text style={styles.dropdownText}>
-        {fridge ? getFridgeNameById(fridge) : "Unnamed Fridge"}
-    </Text>
+                              {/* todo */}
+                              {/* (getFridgeNameById(fridge).length).toString() */}
+                                {fridge ? getFridgeNameById(fridge) : "Unnamed Fridge"}
+                            </Text>
                         </TouchableOpacity>
                     )}
 
@@ -624,6 +697,9 @@ const Inventory = () => {
                         <TouchableOpacity style={styles.editButton} onPress={() => startEditingFridge(index)}>
                             <Text style={styles.buttonText}>Edit</Text>
                         </TouchableOpacity>
+                        <TouchableOpacity style={styles.leaveButton} onPress={() => leaveFridge(index)}>
+                            <Text style={styles.buttonText}>Leave</Text>
+                        </TouchableOpacity> 
                         <TouchableOpacity style={styles.deleteButton} onPress={() => deleteFridge(index)}>
                             <Text style={styles.buttonText}>Delete</Text>
                         </TouchableOpacity> 
@@ -743,11 +819,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     flex: 1,
-  },
-
-  dropdownItem: {
-    paddingVertical: 10,
-    paddingHorizontal: 15,
   },
 
   dropdownText: {
@@ -975,7 +1046,8 @@ const styles = StyleSheet.create({
     backgroundColor: '#F0F0F0',
     padding: 12,
     borderRadius: 10,
-    marginBottom: 15,
+    marginBottom: 10,
+    marginTop: 10, 
     fontSize: 16,
   },
 
@@ -1072,11 +1144,11 @@ const styles = StyleSheet.create({
 
   addButton: {
     backgroundColor: '#F36C21',
-    padding: 10,
+    padding: 5,
     borderRadius: 5,
     alignItems: 'center',
-    marginTop: 10,
   },
+
   addButtonText: {
       color: '#FFF',
       fontSize: 16,
@@ -1092,27 +1164,30 @@ const styles = StyleSheet.create({
   },
 
   actionButtons: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
+      flexDirection: 'row', // Aligns buttons horizontally
+      justifyContent: 'flex-end', // Push buttons to the right
+      gap: 10, // Add space between buttons
   },
 
   editButton: {
-      backgroundColor: '#007AFF',
-      paddingVertical: 5,
-      paddingHorizontal: 10,
-      borderRadius: 5,
+      backgroundColor: '#f0ad4e',
+      padding: 8,
+      borderRadius: 4,
       alignItems: 'center',
-      justifyContent: 'center',
+  },
+
+  leaveButton: {
+      backgroundColor: '#5bc0de',
+      padding: 8,
+      borderRadius: 4,
+      alignItems: 'center',
   },
 
   deleteButton: {
-      backgroundColor: '#FF3B30',
-      paddingVertical: 5,
-      paddingHorizontal: 10,
-      borderRadius: 5,
+      backgroundColor: '#d9534f',
+      padding: 8,
+      borderRadius: 4,
       alignItems: 'center',
-      justifyContent: 'center',
   },
 
   saveButton: {

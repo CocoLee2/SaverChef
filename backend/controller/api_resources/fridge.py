@@ -185,3 +185,54 @@ def share_fridge():
     db.session.add(new_member)
     db.session.commit()
     return jsonify({"fridgeData": get_fridge_data(user_id)})
+
+
+
+@fridge_bp.route('/leave', methods=["POST"])
+def leave_fridge_by_id():
+    """
+    Allows a specific user to leave a given fridge by ID.
+
+    Input:
+    {
+        "user_id": int,
+        "fridge_id": int
+    }
+
+    Response codes:
+    200 - Successfully left fridge
+    400 - Fridge does not exist or bad request
+    403 - User is the creator of the given fridge (creator cannot leave, but only delete)
+    """
+    try:
+        fridge_id = request.json["fridge_id"]
+        user_id = request.json["user_id"]
+
+        print(f"Request to leave fridge: fridge_id={fridge_id}, user_id={user_id}")
+
+        # Check if the fridge exists
+        fridge = db.session.get(Fridge, fridge_id)
+        if not fridge:
+            return jsonify({"error": f"Fridge with ID {fridge_id} does not exist"}), 400
+
+        # Check if the user is the creator of the fridge
+        if fridge.creator == user_id:
+            return jsonify({"error": "Creator cannot leave the fridge; they must delete it"}), 403
+
+        # Check if the user is a member of the fridge
+        membership = db.session.query(FridgeMembers).filter_by(
+            fridge_id=fridge_id, member_id=user_id).first()
+        if not membership:
+            return jsonify({"error": "User is not a member of this fridge"}), 400
+
+        # Remove the user from the fridge
+        db.session.delete(membership)
+        db.session.commit()
+
+        return jsonify({"message": f"User {user_id} successfully left fridge {fridge_id}"}), 200
+
+    except KeyError as e:
+        return jsonify({"error": f"Missing key: {str(e)}"}), 400
+    except Exception as e:
+        print(f"Unhandled exception: {str(e)}")
+        return jsonify({"error": "An unexpected error occurred"}), 500
