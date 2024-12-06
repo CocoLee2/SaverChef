@@ -2,6 +2,17 @@
 
 Our app is a smart inventory manager designed to help users efficiently track the food in their fridge.  It sends alerts when items are approaching their expiration dates to minimize food waste. The app also offers tailored recipe suggestions based on the ingredients currently available to motivate people to cook their own foods with the intention of introducing cooking to beginners in order to save money and eat healthier. The frontend is built with React Native, and the backend uses a Flask RESTful API with a PostgreSQL databse.
 
+## Inside SaverChef
+<p align="center">
+  <img src="images/index.jpeg" alt="Image 1" width="180" />
+  <img src="images/home.jpeg" alt="Image 2" width="180" />
+  <img src="images/inventory.jpeg" alt="Image 3" width="180" />
+  <img src="images/recipes.jpeg" alt="Image 4" width="180" />
+  <img src="images/recipe.jpeg" alt="Image 5" width="180" />
+  <img src="images/profile.jpeg" alt="Image 6" width="180" />
+</p>
+
+
 ## Prerequisites
 - Python 3.11.1
 - PostgreSQL
