@@ -98,6 +98,53 @@ def test_delete_user_deletes_membership(client):
     assert db.session.query(FridgeMembers).count() == 0
 
 
+def test_leave_shared_fridge(client):
+    # tests to see if fridge members correctly leave a fridge
+    response = client.post(
+        "/signup",
+        json={
+            'username': "testperson",
+            'email': "testemail@email.com",
+            'password': "bad_password"})
+    user_id = response.json["user_id"]
+    fridge_id = response.json["fridge_id"]
+    fridge_passcode = response.json["fridge_passcode"]
+    # testing sharing testperson's fridge with superchef
+    superchef_id = db.session.query(Users).where(
+        Users.email == "superchef@superchef.com").one().id
+    response = client.post("/fridge/share", json={
+        'fridgePasscode': fridge_passcode,
+        'userId': superchef_id
+    })
+    assert response.status_code == 200
+    assert len(response.json["fridgeData"]) == 2
+    assert response.json["fridgeData"][0]["fridgeId"] == fridge_id or response.json["fridgeData"][1]["fridgeId"] == fridge_id
+
+    response = client.post("/fridge/leave", json={
+        'fridge_id': fridge_id,
+        'user_id': superchef_id
+    })
+    assert response.status_code == 200
+    # assumes that no sharing occurs in conftest.py. if there is, need to rewrite this
+    assert db.session.query(FridgeMembers).filter(
+        FridgeMembers.fridge_id == fridge_id).count() == 0
+
+    # tests that creator cannot leave
+    response = client.post("/fridge/leave", json={
+        'fridge_id': fridge_id,
+        'user_id': user_id
+    })
+
+    assert response.status_code == 403
+
+    # tests that user who isn't part of shared fridge can't leave
+    response = client.post("/fridge/leave", json={
+        'fridge_id': fridge_id,
+        'user_id': superchef_id
+    })
+    assert response.status_code == 400
+
+
 """
 Need tests for:
 - creating a fridge
