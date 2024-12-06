@@ -4,12 +4,12 @@ Our app is a smart inventory manager designed to help users efficiently track th
 
 ## Inside SaverChef
 <p align="center">
-  <img src="images/index.jpeg" alt="Image 1" width="100" />
-  <img src="images/home.jpeg" alt="Image 2" width="100" />
-  <img src="images/inventory.jpeg" alt="Image 3" width="100" />
-  <img src="images/recipes.jpeg" alt="Image 4" width="100" />
-  <img src="images/recipe.jpeg" alt="Image 5" width="100" />
-  <img src="images/profile.jpeg" alt="Image 6" width="100" />
+  <img src="images/index.jpeg" alt="Image 1" width="130" />
+  <img src="images/home.jpeg" alt="Image 2" width="130" />
+  <img src="images/inventory.jpeg" alt="Image 3" width="130" />
+  <img src="images/recipes.jpeg" alt="Image 4" width="130" />
+  <img src="images/recipe.jpeg" alt="Image 5" width="130" />
+  <img src="images/profile.jpeg" alt="Image 6" width="130" />
 </p>
 
 
